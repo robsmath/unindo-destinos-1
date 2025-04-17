@@ -57,6 +57,10 @@
   }
 }
 
+.input {
+  @apply w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:border-primary;
+}
+
 .blog-details-docs {
   @apply rounded-lg border border-white p-7.5 shadow-solid-3 transition-all dark:border-strokedark  dark:bg-blacksection xl:p-12.5;
 }
