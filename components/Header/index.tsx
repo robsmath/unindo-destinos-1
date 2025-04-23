@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import ThemeToggler from "./ThemeToggler";
 import menuData from "./menuData";
 import NavAuthenticated from "./NavAuthenticated";
 import NavUnauthenticated from "./NavUnauthenticated";
@@ -154,7 +153,8 @@ const Header = () => {
           </nav>
 
           <div className="mt-7 flex items-center gap-6 xl:mt-0">
-            {pathUrl === "/profile" ? (
+            {pathUrl === "/profile" ||
+            pathUrl === "/viagens/cadastro-viagem" ? (
               <NavAuthenticated />
             ) : (
               <NavUnauthenticated />
