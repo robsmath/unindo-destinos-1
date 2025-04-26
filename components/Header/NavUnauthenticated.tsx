@@ -11,7 +11,7 @@ const NavUnauthenticated = () => {
       {pathname !== "/auth/signin" && (
         <Link
           href="/auth/signin"
-          className="text-regular font-medium text-waterloo hover:text-primary"
+          className="flex items-center justify-center rounded-full border-2 border-primary px-7.5 py-2.5 text-regular font-semibold text-primary hover:bg-primary hover:text-white duration-300 ease-in-out transition"
         >
           Entrar
         </Link>
@@ -20,7 +20,7 @@ const NavUnauthenticated = () => {
       {pathname !== "/auth/signup" && (
         <Link
           href="/auth/signup"
-          className="flex items-center justify-center rounded-full bg-primary px-7.5 py-2.5 text-regular text-white duration-300 ease-in-out hover:bg-primaryho"
+          className="flex items-center justify-center rounded-full bg-primary px-7.5 py-2.5 text-regular font-semibold text-white hover:bg-primaryho duration-300 ease-in-out transition"
         >
           Crie sua conta
         </Link>

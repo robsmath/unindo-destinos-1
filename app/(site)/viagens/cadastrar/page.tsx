@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function CadastroViagemPage() {
   return (
-    <div className="pt-40 min-h-screen px-4">
+    <div className="pt-20 min-h-screen px-4">
       <CadastroViagem />
     </div>
   );

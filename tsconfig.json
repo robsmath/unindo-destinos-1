@@ -24,13 +24,15 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "react": [
-        "./node_modules/@types/react"
-      ]
-    },
+      "@/*": ["./*"],
+      "@/app/*": ["app/*"],
+      "@/components/*": ["components/*"],
+      "@/services/*": ["services/*"],
+      "@/types/*": ["types/*"],
+      "@/models/*": ["models/*"],
+      "@/context/*": ["context/*"]
+}
+,
     "strictNullChecks": true,
     "target": "ES2017"
   },

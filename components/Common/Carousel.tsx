@@ -31,6 +31,7 @@ const travelThemes = [
   "Barcelona Sagrada Familia",
   "Rio de Janeiro",
   "Grand Canyon USA",
+  "San Andres Colombia",
 ];
 
 export default function Carousel() {

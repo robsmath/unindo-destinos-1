@@ -3,14 +3,58 @@
 import { useAuth } from "@/app/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
+
+interface TokenPayload {
+  sub: string;
+  name?: string;
+}
 
 const NavAuthenticated = () => {
-  const { logout } = useAuth();
+  const { token, userName, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [firstName, setFirstName] = useState("");
+
+  const isValidToken = (token: unknown): token is string => {
+    return typeof token === "string" && token.trim() !== "";
+  };
+
+  useEffect(() => {
+    console.log("TOKEN RECEBIDO NO NAV:", token);
+    console.log("USERNAME RECEBIDO NO NAV:", userName);
+
+    if (userName) {
+      const nome = userName.split(" ")[0];
+      console.log("Peguei o nome do userName:", nome);
+      setFirstName(nome);
+      return;
+    }
+
+    if (isValidToken(token)) {
+      try {
+        const decoded = jwtDecode<TokenPayload>(token);
+        console.log("TOKEN DECODED:", decoded);
+
+        if (decoded.name) {
+          const nome = decoded.name.split(" ")[0];
+          console.log("Peguei o nome do token:", nome);
+          setFirstName(nome);
+        }
+      } catch (error) {
+        console.error("Erro ao decodificar o token:", error);
+      }
+    }
+  }, [token, userName]);
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-4">
+      {firstName && (
+        <span className="hidden text-base font-semibold text-black dark:text-white xl:block">
+          Olá, {firstName}
+        </span>
+      )}
+
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className="flex items-center focus:outline-none"

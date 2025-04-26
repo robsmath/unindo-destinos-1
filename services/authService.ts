@@ -1,11 +1,26 @@
 import api from "./api";
 
-interface LoginResponse {
-  data: string; // aqui o que o backend retorna (o JWT token)
+interface Usuario {
+  id: number;
+  nome: string;
+  email: string;
 }
 
-export const signIn = async (email: string, senha: string): Promise<string> => {
-  const response = await api.post<LoginResponse>("/auth/login", {
+interface LoginResponse {
+  token: string;
+  usuario: Usuario;
+}
+
+interface ApiResponse {
+  timestamp: string;
+  status: number;
+  error: string | null;
+  message: string;
+  data: LoginResponse;
+}
+
+export const signIn = async (email: string, senha: string): Promise<LoginResponse> => {
+  const response = await api.post<ApiResponse>("/auth/login", {
     email,
     senha,
   });

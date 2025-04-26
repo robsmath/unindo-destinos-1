@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function Register() {
   return (
-    <>
+    <div className="pt-20 min-h-screen px-4">
       <Signup />
-    </>
+    </div>
   );
 }

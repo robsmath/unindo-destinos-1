@@ -1,4 +1,5 @@
 "use client";
+
 import { cadastrarViagem } from "@/services/viagemService";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
@@ -23,12 +24,12 @@ const CadastroViagem = () => {
 
   if (!hasMounted) return null;
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await cadastrarViagem(form);
@@ -50,8 +51,8 @@ const CadastroViagem = () => {
   };
 
   return (
-    <section id="support" className="px-4 md:px-8 2xl:px-0">
-      <div className="relative mx-auto max-w-c-1390 px-7.5 pb-20 pt-60">
+    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4">
+      <div className="relative mx-auto max-w-c-1390 px-7.5">
         <div className="absolute left-0 top-0 -z-1 h-2/3 w-full rounded-lg bg-gradient-to-t from-transparent to-[#dee7ff47] dark:bg-gradient-to-t dark:to-[#252A42]" />
 
         <div className="flex flex-col-reverse flex-wrap gap-8 md:flex-row md:flex-nowrap md:justify-between xl:gap-20">
@@ -128,7 +129,7 @@ const CadastroViagem = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 2, delay: 0.1 }}
-            className="w-full md:w-2/5 lg:w-[26%] "
+            className="w-full md:w-2/5 lg:w-[26%]"
           >
             <div>
               <Image

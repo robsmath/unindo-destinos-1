@@ -3,14 +3,14 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
 
 const Signin = () => {
   const router = useRouter();
-  const { login } = useAuth(); // pega do context
+  const { login, isAuthenticated } = useAuth();
 
   const [data, setData] = useState({
     email: "",
@@ -20,14 +20,25 @@ const Signin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/profile");
+    }
+  }, [isAuthenticated, router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const token = await signIn(data.email, data.senha);
-      await login(token);
+      const response = await signIn(data.email, data.senha);
+
+      const { token, usuario } = await signIn(data.email, data.senha);
+      const name = usuario.nome;
+      const id = usuario.id;
+
+      login(token, name, id);
     } catch (err: any) {
       console.error("Erro ao fazer login:", err);
       setError(err.message || "Erro ao fazer login. Verifique suas credenciais.");
@@ -37,7 +48,7 @@ const Signin = () => {
   };
 
   return (
-    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-80 pb-16 px-4">
+    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4">
       <div className="relative z-1 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
         <div className="absolute bottom-17.5 left-0 -z-1 h-1/3 w-full">
           <Image
