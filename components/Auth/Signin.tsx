@@ -1,34 +1,44 @@
 "use client";
+
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { login } from "@/services/authService";
 import { useRouter } from "next/navigation";
+import { signIn } from "@/services/authService";
+import { useAuth } from "@/app/context/AuthContext";
 
 const Signin = () => {
   const router = useRouter();
+  const { login } = useAuth(); // pega do context
 
   const [data, setData] = useState({
     email: "",
-    senha: "", // usar "senha", não "password"
+    senha: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
-      await login(data.email, data.senha);
-      alert("Login realizado com sucesso!");
-      router.push("/profile");
+      const token = await signIn(data.email, data.senha);
+      await login(token);
     } catch (err: any) {
       console.error("Erro ao fazer login:", err);
-      alert("Erro ao fazer login. Verifique suas credenciais.");
+      setError(err.message || "Erro ao fazer login. Verifique suas credenciais.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-<section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-80 pb-16 px-4">
-<div className="relative z-1 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
+    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-80 pb-16 px-4">
+      <div className="relative z-1 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
         <div className="absolute bottom-17.5 left-0 -z-1 h-1/3 w-full">
           <Image
             src="/images/shape/shape-dotted-light.svg"
@@ -63,6 +73,7 @@ const Signin = () => {
                 value={data.email}
                 onChange={(e) => setData({ ...data, email: e.target.value })}
                 className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
+                required
               />
 
               <input
@@ -72,14 +83,20 @@ const Signin = () => {
                 value={data.senha}
                 onChange={(e) => setData({ ...data, senha: e.target.value })}
                 className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
+                required
               />
             </div>
+
+            {error && (
+              <div className="mb-4 text-center text-red-500">{error}</div>
+            )}
 
             <button
               type="submit"
               className="w-full rounded-full bg-primary px-6 py-3 font-medium text-white hover:bg-primaryho transition duration-300"
+              disabled={loading}
             >
-              Entrar
+              {loading ? "Entrando..." : "Entrar"}
             </button>
 
             <div className="mt-8 text-center border-t pt-5 dark:border-strokedark">

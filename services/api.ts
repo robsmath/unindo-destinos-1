@@ -1,9 +1,39 @@
+"use client";
+
 import axios from "axios";
 
 const api = axios.create({
-  baseURL:
-    "http://unindodestinos-prod-env.eba-2peq7mnh.us-east-1.elasticbeanstalk.com",
-  //baseURL: "http://localhost:5000"
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
+
+
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (typeof window !== "undefined" && error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/signin";
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

@@ -1,15 +1,15 @@
-import Signin from "@/components/Auth/Signin";
 import { Metadata } from "next";
+import Home from "@/components/Home/Home";
 
 export const metadata: Metadata = {
-  title: "Unindo Destinos",
+  title: "Unindo Destinos - Conectando Viajantes",
+  description: "Encontre novos amigos e destinos incríveis para viajar.",
 };
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <main>
-      {/* <!-- ===== TODO: Add Home page ===== --> */}
-      <Signin />
-    </main>
+    <div className="pt-40 min-h-screen px-4">
+      <Home />
+    </div>
   );
 }

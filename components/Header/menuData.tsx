@@ -9,25 +9,24 @@ const menuData: Menu[] = [
   },
   {
     id: 2,
-    title: "Viagens",
+    title: "Perfil",
     newTab: false,
-    path: "#",
+    path: "/profile",
   },
   {
-    id: 2.1,
+    id: 3,
     title: "Blog",
     newTab: false,
     path: "#",
   },
   {
-    id: 2.3,
+    id: 4,
     title: "Depoimentos",
     newTab: false,
     path: "#",
   },
-
   {
-    id: 4,
+    id: 5,
     title: "Suporte",
     newTab: false,
     path: "#",

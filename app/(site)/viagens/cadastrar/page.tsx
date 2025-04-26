@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   description: "Cadastre sua viagem agora na Unindo Destinos",
 };
 
-export default function ProfilePage() {
+export default function CadastroViagemPage() {
   return (
-    <>
+    <div className="pt-40 min-h-screen px-4">
       <CadastroViagem />
-    </>
+    </div>
   );
 }

@@ -1,20 +1,22 @@
 import api from "./api";
 
-interface UnsplashResponse {
-  results: {
-    urls: {
-      regular: string;
-    };
-  }[];
+interface UnsplashImage {
+  urls: {
+    regular: string;
+  };
 }
 
-export const getImage = async (query: string) => {
+interface UnsplashResponse {
+  results: UnsplashImage[];
+}
+
+export const getImage = async (query: string): Promise<string | null> => {
   const response = await api.get<UnsplashResponse>(
     "https://api.unsplash.com/search/photos",
     {
       params: {
         query: encodeURIComponent(query),
-        client_id: process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY,
+        client_id: 'eICEPRHv7p2i2XjIG5Vbotl7Nkzc9KOl9YX1EGIZWvc',
         per_page: 1,
       },
     },

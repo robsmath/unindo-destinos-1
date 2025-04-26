@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -7,6 +8,7 @@ import { useEffect, useState } from "react";
 import menuData from "./menuData";
 import NavAuthenticated from "./NavAuthenticated";
 import NavUnauthenticated from "./NavUnauthenticated";
+import { useAuth } from "@/app/context/AuthContext";
 
 const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
@@ -14,6 +16,7 @@ const Header = () => {
   const [stickyMenu, setStickyMenu] = useState(false);
 
   const pathUrl = usePathname();
+  const { isAuthenticated } = useAuth();
 
   // Sticky menu
   const handleStickyMenu = () => {
@@ -26,7 +29,10 @@ const Header = () => {
 
   useEffect(() => {
     window.addEventListener("scroll", handleStickyMenu);
-  });
+    return () => {
+      window.removeEventListener("scroll", handleStickyMenu);
+    };
+  }, []);
 
   return (
     <header
@@ -55,7 +61,7 @@ const Header = () => {
             />
           </a>
 
-          {/* <!-- Hamburger Toggle BTN --> */}
+          {/* Hamburger Toggle BTN */}
           <button
             aria-label="hamburger Toggler"
             className="block xl:hidden"
@@ -93,10 +99,10 @@ const Header = () => {
               </span>
             </span>
           </button>
-          {/* <!-- Hamburger Toggle BTN --> */}
+          {/* Hamburger Toggle BTN */}
         </div>
 
-        {/* Nav Menu Start   */}
+        {/* Nav Menu Start */}
         <div
           className={`invisible h-0 w-full items-center justify-between xl:visible xl:flex xl:h-auto xl:w-full ${
             navigationOpen &&
@@ -125,9 +131,7 @@ const Header = () => {
                         </span>
                       </button>
 
-                      <ul
-                        className={`dropdown ${dropdownToggler ? "flex" : ""}`}
-                      >
+                      <ul className={`dropdown ${dropdownToggler ? "flex" : ""}`}>
                         {menuItem.submenu.map((item, key) => (
                           <li key={key} className="hover:text-primary">
                             <Link href={item.path || "#"}>{item.title}</Link>
@@ -153,8 +157,7 @@ const Header = () => {
           </nav>
 
           <div className="mt-7 flex items-center gap-6 xl:mt-0">
-            {pathUrl === "/profile" ||
-            pathUrl === "/viagens/cadastro-viagem" ? (
+            {isAuthenticated ? (
               <NavAuthenticated />
             ) : (
               <NavUnauthenticated />
@@ -165,7 +168,5 @@ const Header = () => {
     </header>
   );
 };
-
-// w-full delay-300
 
 export default Header;

@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
-    <>
+    <div className="pt-40 min-h-screen px-4">
       <Profile />
-    </>
+    </div>
   );
 }
