@@ -5,12 +5,16 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+interface User {
+  id: number;
+  nome: string;
+}
+
 interface AuthContextType {
   token: string | null;
-  userName: string | null;
-  userId: number | null;
+  user: User | null;
   isAuthenticated: boolean;
-  login: (token: string, name: string, id: number | null) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
 }
 
@@ -18,20 +22,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const storedToken = Cookies.get("token");
     const storedUserName = localStorage.getItem("userName");
     const storedUserId = localStorage.getItem("userId");
-  
+
     if (storedToken) setToken(storedToken);
-    if (storedUserName) setUserName(storedUserName);
-    if (storedUserId) setUserId(Number(storedUserId));
+    if (storedUserName && storedUserId) {
+      setUser({
+        id: Number(storedUserId),
+        nome: storedUserName,
+      });
+    }
   }, []);
-  
 
   useEffect(() => {
     if (token) {
@@ -50,37 +56,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [token]);
 
-  const login = (newToken: string, name: string, id: number | null) => { 
+  const login = (newToken: string, user: User) => {
     Cookies.set("token", newToken, { expires: 7 });
-    localStorage.setItem("userName", name);
-    
-    if (id !== null && id !== undefined) {
-      localStorage.setItem("userId", id.toString());
-      setUserId(id);
-    } else {
-      console.error("ID de usuário inválido no login:", id);
-    }
-  
+    localStorage.setItem("userName", user.nome);
+    localStorage.setItem("userId", user.id.toString());
     setToken(newToken);
-    setUserName(name);
+    setUser(user);
     router.push("/profile");
   };
-  
 
   const logout = () => {
     Cookies.remove("token");
     localStorage.removeItem("userName");
     localStorage.removeItem("userId");
     setToken(null);
-    setUserName(null);
-    setUserId(null);
+    setUser(null);
     router.push("/auth/signin");
   };
 
   const isAuthenticated = Boolean(token);
 
   return (
-    <AuthContext.Provider value={{ token, userName, userId, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ token, user, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

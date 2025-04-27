@@ -8,7 +8,6 @@ export interface UsuarioDTO {
     cpf: string;
     fotoPerfil?: string;
     endereco?: EnderecoDTO;
-    // preferencia?: PreferenciaDTO; // Se quiser adicionar depois
   }
   
   export interface EnderecoDTO {

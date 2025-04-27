@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
+import { Loader2 } from "lucide-react"; // Adicionado para o spinner
 
 const Signin = () => {
   const router = useRouter();
@@ -32,24 +33,28 @@ const Signin = () => {
     setError("");
 
     try {
-      const response = await signIn(data.email, data.senha);
-
       const { token, usuario } = await signIn(data.email, data.senha);
       const name = usuario.nome;
       const id = usuario.id;
 
-      login(token, name, id);
+      login(token, { id, nome: name });
     } catch (err: any) {
       console.error("Erro ao fazer login:", err);
       setError(err.message || "Erro ao fazer login. Verifique suas credenciais.");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4">
-      <div className="relative z-1 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
+    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4 relative">
+      {/* Overlay de loading enquanto loading == true */}
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-70 z-50 flex items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      )}
+
+      <div className="relative z-10 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
         <div className="absolute bottom-17.5 left-0 -z-1 h-1/3 w-full">
           <Image
             src="/images/shape/shape-dotted-light.svg"

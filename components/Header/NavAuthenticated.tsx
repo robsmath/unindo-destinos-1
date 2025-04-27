@@ -12,7 +12,7 @@ interface TokenPayload {
 }
 
 const NavAuthenticated = () => {
-  const { token, userName, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
 
@@ -21,12 +21,8 @@ const NavAuthenticated = () => {
   };
 
   useEffect(() => {
-    console.log("TOKEN RECEBIDO NO NAV:", token);
-    console.log("USERNAME RECEBIDO NO NAV:", userName);
-
-    if (userName) {
-      const nome = userName.split(" ")[0];
-      console.log("Peguei o nome do userName:", nome);
+    if (user?.nome) {
+      const nome = user.nome.split(" ")[0];
       setFirstName(nome);
       return;
     }
@@ -34,18 +30,16 @@ const NavAuthenticated = () => {
     if (isValidToken(token)) {
       try {
         const decoded = jwtDecode<TokenPayload>(token);
-        console.log("TOKEN DECODED:", decoded);
 
         if (decoded.name) {
           const nome = decoded.name.split(" ")[0];
-          console.log("Peguei o nome do token:", nome);
           setFirstName(nome);
         }
       } catch (error) {
         console.error("Erro ao decodificar o token:", error);
       }
     }
-  }, [token, userName]);
+  }, [token, user]);
 
   return (
     <div className="relative flex items-center gap-4">
