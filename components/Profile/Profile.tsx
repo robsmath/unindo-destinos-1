@@ -9,18 +9,19 @@ import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import PersonalDataForm from "@/components/Profile/PersonalDataForm";
 import MinhasViagens from "@/components/Profile/MinhasViagens";
+import { uploadFotoPerfil } from "@/services/uploadService";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 const Profile = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, atualizarFotoPerfil } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const tabs = ["Dados Pessoais", "Minhas Viagens", "Minhas Preferências", "Meus Pets"];
@@ -38,20 +39,34 @@ const Profile = () => {
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam) {
-      const tabIndex = tabs.findIndex(tab => 
+      const tabIndex = tabs.findIndex(tab =>
         tab.toLowerCase().replace(/\s/g, "-") === tabParam.toLowerCase()
       );
       if (tabIndex !== -1) {
         setSelectedIndex(tabIndex);
       }
     }
-  }, [searchParams]); // <<< agora escuta os parâmetros da URL!
+  }, [searchParams]);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
+    if (!file || !user?.id) return;
+
+    const MAX_SIZE_MB = 2;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`O arquivo é muito grande. Limite de ${MAX_SIZE_MB}MB.`);
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const imageUrl = await uploadFotoPerfil(user.id, file);
+      atualizarFotoPerfil(imageUrl); // <<< Atualiza o contexto global
+    } catch (error) {
+      console.error("Erro ao fazer upload da foto:", error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -82,10 +97,15 @@ const Profile = () => {
             <div className="flex flex-col items-center mb-8">
               <div className="relative">
                 <img
-                  src={profileImage || "/images/user/avatar.png"}
+                  src={user?.fotoPerfil || "/images/user/avatar.png"}
                   alt="Foto de Perfil"
                   className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-md"
                 />
+                {uploading && (
+                  <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center rounded-full">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={handleAvatarClick}

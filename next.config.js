@@ -8,6 +8,7 @@ const nextConfig = {
       "localhost",
       "images.unsplash.com",
       "source.unsplash.com",
+      "unindo-destinos-uploads.s3.us-east-1.amazonaws.com",
     ],
     remotePatterns: [
       {

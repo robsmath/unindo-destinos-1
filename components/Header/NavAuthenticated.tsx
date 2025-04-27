@@ -54,11 +54,11 @@ const NavAuthenticated = () => {
         className="flex items-center focus:outline-none"
       >
         <Image
-          src="/images/user/avatar.png"
+          src={user?.fotoPerfil || "/images/user/avatar.png"}
           alt="Avatar"
           width={50}
           height={50}
-          className="rounded-full"
+          className="rounded-full object-cover"
         />
       </button>
 
