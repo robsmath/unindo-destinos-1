@@ -62,7 +62,7 @@ const Profile = () => {
 
     try {
       const imageUrl = await uploadFotoPerfil(user.id, file);
-      atualizarFotoPerfil(imageUrl); // <<< Atualiza o contexto global
+      atualizarFotoPerfil(imageUrl);
     } catch (error) {
       console.error("Erro ao fazer upload da foto:", error);
     } finally {

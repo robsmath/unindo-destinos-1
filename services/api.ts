@@ -9,7 +9,13 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = Cookies.get("token");
-    if (token && config.headers) { // 🔥 Confirma que headers existe
+
+    const isPublicRoute = (
+      (config.url?.includes("/auth/login")) ||
+      (config.method === "post" && config.url?.includes("/usuarios"))
+    );
+
+    if (token && config.headers && !isPublicRoute) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

@@ -3,6 +3,8 @@ export interface UsuarioDTO {
     nome: string;
     email: string;
     telefone: string;
+    emailVerificado?: boolean;
+    telefoneVerificado?: boolean;
     dataNascimento: string;
     genero: "MASCULINO" | "FEMININO" | "OUTRO" | "";
     cpf: string;

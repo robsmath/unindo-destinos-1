@@ -16,18 +16,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import "react-phone-input-2/lib/style.css";
 
-const formatCpfMask = (cpf: string) => {
-  if (!cpf) return "";
-  return cpf.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, "$1.$2.$3-$4");
-};
-
-const formatCepMask = (cep: string) => {
-  if (!cep) return "";
-  return cep.replace(/(\\d{5})(\\d{3})/, "$1-$2");
-};
-
 const PersonalDataForm = () => {
-  const { user } = useAuth();
+  const { user, atualizarFotoPerfil } = useAuth();
   const router = useRouter();
   const [userData, setUserData] = useState<UsuarioDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +30,9 @@ const PersonalDataForm = () => {
       return;
     }
     fetchUserData();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+  
 
   const fetchUserData = async () => {
     try {
@@ -54,6 +46,12 @@ const PersonalDataForm = () => {
           cep: userResult.endereco?.cep ?? "",
         },
       });
+
+      // 🔥 Atualiza foto no AuthContext se tiver
+      if (userResult.fotoPerfil) {
+        atualizarFotoPerfil(userResult.fotoPerfil);
+      }
+
     } catch (error) {
       toast.error("Erro ao carregar dados do usuário.");
       console.error(error);
@@ -154,14 +152,13 @@ const PersonalDataForm = () => {
     if (cleaned.length !== 11) return "";
     return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
   };
-  
+
   const formatCepMask = (cep: string) => {
     if (!cep) return "";
     const cleaned = cep.replace(/\D/g, "");
     if (cleaned.length !== 8) return "";
     return cleaned.replace(/(\d{5})(\d{3})/, "$1-$2");
   };
-  
 
   return (
     <motion.form
@@ -177,23 +174,65 @@ const PersonalDataForm = () => {
       </div>
 
       {/* Email */}
-      <div>
-        <label className="font-semibold">Email <span className="text-red-500">*</span></label>
-        <Input type="email" name="email" value={userData?.email ?? ""} onChange={handleChange} />
-      </div>
+        <div>
+          <label className="font-semibold">Email <span className="text-red-500">*</span></label>
+          <Input
+            type="email"
+            name="email"
+            value={userData?.email ?? ""}
+            onChange={handleChange}
+          />
+          {userData?.emailVerificado ? (
+            <p className="text-green-600 text-sm mt-1">✅ E-mail confirmado</p>
+          ) : (
+            <p className="text-red-500 text-sm mt-1">
+              ❌ Seu e-mail ainda não foi confirmado.{" "}
+              <span
+                className="text-blue-500 hover:underline cursor-pointer"
+                onClick={() => {
+                  if (userData) {
+                    router.push(`/profile/verificar?usuarioId=${userData.id}&emailVerificado=${userData.emailVerificado}&telefoneVerificado=${userData.telefoneVerificado}`);
+                  }
+                }}
+                
+              >
+                Clique aqui para verificar
+              </span>
+            </p>
+          )}
+        </div>
 
-      {/* Telefone */}
-      <div>
-        <label className="font-semibold">Telefone <span className="text-red-500">*</span></label>
-        <PhoneInput
-          country="br"
-          value={userData?.telefone?.replace("+", "") ?? ""}
-          onChange={handlePhoneChange}
-          inputClass="!w-full !input"
-          inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
-          placeholder="Ex: +55 (31) 98765-4321"
-        />
-      </div>
+        {/* Telefone */}
+        <div>
+          <label className="font-semibold">Telefone <span className="text-red-500">*</span></label>
+          <PhoneInput
+            country="br"
+            value={userData?.telefone?.replace("+", "") ?? ""}
+            onChange={handlePhoneChange}
+            inputClass="!w-full !input"
+            inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
+            placeholder="Ex: +55 (31) 98765-4321"
+          />
+          {userData?.telefoneVerificado ? (
+            <p className="text-green-600 text-sm mt-1">✅ Telefone confirmado</p>
+          ) : (
+            <p className="text-red-500 text-sm mt-1">
+              ❌ Seu telefone ainda não foi confirmado.{" "}
+              <span
+                className="text-blue-500 hover:underline cursor-pointer"
+                onClick={() => {
+                  if (userData) {
+                    router.push(`/profile/verificar?usuarioId=${userData.id}&emailVerificado=${userData.emailVerificado}&telefoneVerificado=${userData.telefoneVerificado}`);
+                  }
+                }}
+                
+              >
+                Clique aqui para verificar
+              </span>
+            </p>
+          )}
+        </div>
+
 
       {/* Data de nascimento */}
       <div>
@@ -220,16 +259,15 @@ const PersonalDataForm = () => {
       <div>
         <label className="font-semibold">CPF <span className="text-red-500">*</span></label>
         <InputMask
-        mask="999.999.999-99"
-        replacement={{ 9: /\d/ }}
-        showMask
-        name="cpf"
-        value={formatCpfMask(userData?.cpf ?? "")}
-        onChange={handleChange}
-        className="input w-full border rounded p-2 text-base"
-        placeholder="CPF"
+          mask="999.999.999-99"
+          replacement={{ 9: /\d/ }}
+          showMask
+          name="cpf"
+          value={formatCpfMask(userData?.cpf ?? "")}
+          onChange={handleChange}
+          className="input w-full border rounded p-2 text-base"
+          placeholder="CPF"
         />
-
       </div>
 
       {/* Endereço Expandível */}
@@ -256,16 +294,15 @@ const PersonalDataForm = () => {
                   <label className="font-semibold capitalize">{name} <span className="text-red-500">*</span></label>
                   {name === "cep" ? (
                     <InputMask
-                        mask="99999-999"
-                        replacement={{ 9: /\d/ }}
-                        showMask
-                        name="cep"
-                        value={formatCepMask(userData?.endereco?.cep ?? "")}
-                        onChange={handleEnderecoChange}
-                        className="input w-full border rounded p-2 text-base"
-                        placeholder="CEP"
-                  />
-                  
+                      mask="99999-999"
+                      replacement={{ 9: /\d/ }}
+                      showMask
+                      name="cep"
+                      value={formatCepMask(userData?.endereco?.cep ?? "")}
+                      onChange={handleEnderecoChange}
+                      className="input w-full border rounded p-2 text-base"
+                      placeholder="CEP"
+                    />
                   ) : (
                     <Input
                       type="text"

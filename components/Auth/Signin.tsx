@@ -6,8 +6,11 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/services/authService";
+import { getUserById } from "@/services/userService";
 import { useAuth } from "@/app/context/AuthContext";
-import { Loader2 } from "lucide-react"; // Adicionado para o spinner
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
 
 const Signin = () => {
   const router = useRouter();
@@ -31,23 +34,31 @@ const Signin = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+  
     try {
       const { token, usuario } = await signIn(data.email, data.senha);
-      const name = usuario.nome;
-      const id = usuario.id;
-
-      login(token, { id, nome: name });
+      login(token, {
+        id: usuario.id,
+        nome: usuario.nome,
+        fotoPerfil: usuario.fotoPerfil,
+      });
+  
+      router.replace("/profile");
+  
     } catch (err: any) {
-      console.error("Erro ao fazer login:", err);
-      setError(err.message || "Erro ao fazer login. Verifique suas credenciais.");
+      if (err.response && err.response.status === 404) {
+        setError("E-mail não encontrado. Verifique os dados.");
+      } else {
+        setError("Erro ao fazer login. Verifique suas credenciais.");
+      }
       setLoading(false);
     }
   };
+  
+  
 
   return (
     <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4 relative">
-      {/* Overlay de loading enquanto loading == true */}
       {loading && (
         <div className="absolute inset-0 bg-white bg-opacity-70 z-50 flex items-center justify-center">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -56,18 +67,8 @@ const Signin = () => {
 
       <div className="relative z-10 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
         <div className="absolute bottom-17.5 left-0 -z-1 h-1/3 w-full">
-          <Image
-            src="/images/shape/shape-dotted-light.svg"
-            alt="Dotted"
-            className="dark:hidden"
-            fill
-          />
-          <Image
-            src="/images/shape/shape-dotted-dark.svg"
-            alt="Dotted"
-            className="hidden dark:block"
-            fill
-          />
+          <Image src="/images/shape/shape-dotted-light.svg" alt="Dotted" className="dark:hidden" fill />
+          <Image src="/images/shape/shape-dotted-dark.svg" alt="Dotted" className="hidden dark:block" fill />
         </div>
 
         <motion.div
@@ -76,9 +77,7 @@ const Signin = () => {
           transition={{ duration: 1, delay: 0.1 }}
           className="animate_top rounded-lg bg-white px-7.5 pt-7.5 shadow-solid-8 dark:border dark:border-strokedark dark:bg-black xl:px-15 xl:pt-15"
         >
-          <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white">
-            Entre na sua conta
-          </h2>
+          <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white">Entre na sua conta</h2>
 
           <form onSubmit={handleLogin}>
             <div className="mb-8 flex flex-col gap-6">
@@ -91,7 +90,6 @@ const Signin = () => {
                 className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
                 required
               />
-
               <input
                 type="password"
                 placeholder="Senha"
@@ -103,9 +101,7 @@ const Signin = () => {
               />
             </div>
 
-            {error && (
-              <div className="mb-4 text-center text-red-500">{error}</div>
-            )}
+            {error && <div className="mb-4 text-center text-red-500">{error}</div>}
 
             <button
               type="submit"
