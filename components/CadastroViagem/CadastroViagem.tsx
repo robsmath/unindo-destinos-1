@@ -1,8 +1,7 @@
 "use client";
 
 import { cadastrarViagem, editarViagem, getViagemById } from "@/services/viagemService";
-import { salvarPreferenciasViagem } from "@/services/preferenciasService";
-import { getPreferenciaByViagemId } from "@/services/preferenciasService";
+import { salvarPreferenciasViagem, getPreferenciaByViagemId } from "@/services/preferenciasService";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -54,7 +53,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
 
   useEffect(() => {
     setHasMounted(true);
-  
+
     const carregarViagem = async () => {
       if (id) {
         try {
@@ -66,25 +65,24 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             estilo: viagem.estilo,
             status: viagem.status,
           });
-    
+
           const imagem = await getImage(viagem.destino);
           setImagemDestino(imagem || "/images/common/beach.jpg");
-    
+
           const preferenciasSalvas = await getPreferenciaByViagemId(id);
-            if (preferenciasSalvas !== null) {
-              setPreferencias(preferenciasSalvas);
-            } else {
-              setSemPreferencias(true);
-            }
+          if (preferenciasSalvas !== null) {
+            setPreferencias(preferenciasSalvas);
+          } else {
+            setSemPreferencias(true);
+          }
         } catch (error) {
           console.error("Erro ao carregar viagem ou preferências para edição", error);
         }
       }
     };
-     
+
     carregarViagem();
   }, [id]);
-  
 
   if (!hasMounted) return null;
 
@@ -270,11 +268,11 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.4 }}
                     >
-                    {semPreferencias && (
-                      <div className="mb-4 rounded-lg bg-yellow-100 p-4 text-yellow-800 text-sm">
-                        Nenhuma preferência cadastrada ainda para esta viagem. Você pode preenchê-las abaixo!
-                      </div>
-                    )}
+                      {semPreferencias && (
+                        <div className="mb-4 rounded-lg bg-yellow-100 p-4 text-yellow-800 text-sm">
+                          Nenhuma preferência cadastrada ainda para esta viagem. Você pode preenchê-las abaixo!
+                        </div>
+                      )}
                       <PreferenciasForm
                         preferencias={preferencias}
                         handlePreferenceChange={handlePreferenceChange}
@@ -284,7 +282,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                 </AnimatePresence>
               </div>
 
-              <button
+              <div className="flex flex-col gap-4 mt-6">
+                <button
                   type="submit"
                   disabled={loading}
                   className={`inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white transition-all duration-300
@@ -301,6 +300,16 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                   )}
                 </button>
 
+                {id && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${id}`)}
+                    className="inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                  >
+                    Cadastrar Roteiro
+                  </button>
+                )}
+              </div>
             </form>
           </motion.div>
 
@@ -308,7 +317,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 2, delay: 0.1 }}
-            className={`relative w-full md:w-2/5 lg:w-[26%] overflow-hidden rounded-lg transition-all duration-500`}
+            className="relative w-full md:w-2/5 lg:w-[26%] overflow-hidden rounded-lg transition-all duration-500"
             style={{ height: showPreferences ? "1000px" : "540px" }}
           >
             <motion.img
@@ -320,9 +329,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
-              />
+            />
           </motion.div>
-
         </div>
       </div>
     </section>
