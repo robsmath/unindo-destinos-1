@@ -1,10 +1,5 @@
 import api from "./api";
 
-interface DiaRoteiroDTO {
-  titulo: string;
-  descricao: string;
-}
-
 interface RoteiroRequestManual {
   observacao: string;
   valorEstimado?: number;
@@ -43,11 +38,15 @@ export const getRoteiroByViagemId = async (
       `/roteiros/viagem/${viagemId}`
     );
     return response.data.data;
-  } catch (error) {
-    console.error("Erro ao buscar roteiro por viagemId:", error);
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    console.error("Erro inesperado ao buscar roteiro:", error);
     return null;
   }
 };
+
 
 export const atualizarRoteiro = async (
   roteiroId: number,
