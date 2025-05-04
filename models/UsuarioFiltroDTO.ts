@@ -11,7 +11,7 @@ export interface UsuarioFiltroDTO {
     acomodacaoCompartilhada?: boolean;
     aceitaAnimaisGrandePorte?: boolean;
   
-    tipoHospedagem?: string;
-    transporteFavorito?: string;
+    tipoAcomodacao?: string;
+    tipoTransporte?: string;
   }
   

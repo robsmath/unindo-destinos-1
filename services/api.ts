@@ -11,8 +11,8 @@ api.interceptors.request.use(
     const token = Cookies.get("token");
 
     const isPublicRoute = (
-      (config.url?.includes("/auth/login")) ||
-      (config.method === "post" && config.url?.includes("/usuarios"))
+      config.url?.includes("/auth/login") ||
+      (config.method === "post" && config.url === "/usuarios")
     );
 
     if (token && config.headers && !isPublicRoute) {
@@ -20,9 +20,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;

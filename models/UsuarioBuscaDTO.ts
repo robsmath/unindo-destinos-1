@@ -1,7 +1,7 @@
 export interface UsuarioBuscaDTO {
     id: number;
     nome: string;
-    fotoPerfil: string | null;
+    fotoPerfil?: string;
     genero: "MASCULINO" | "FEMININO" | "OUTRO";
     idade: number;
   
@@ -12,7 +12,7 @@ export interface UsuarioBuscaDTO {
     acomodacaoCompartilhada: boolean;
     aceitaAnimaisGrandePorte: boolean;
   
-    tipoHospedagem: string;
-    transporteFavorito: string;
+    tipoAcomodacao: string;
+    tipoTransporte: string;
   }
   

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { getMinhasViagens } from "@/services/viagemService";
+import { Loader2 } from "lucide-react";
 
 const EncontrePessoas = () => {
   const { isAuthenticated } = useAuth();
@@ -25,49 +26,52 @@ const EncontrePessoas = () => {
     aceitaBebidasAlcoolicas: false,
     acomodacaoCompartilhada: false,
     aceitaAnimaisGrandePorte: false,
-    tipoHospedagem: "",
-    transporteFavorito: "",
+    tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
+    tipoTransporte: "NAO_TENHO_PREFERENCIA",
   });
+  
 
   const [usuarios, setUsuarios] = useState<UsuarioBuscaDTO[]>([]);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioBuscaDTO | null>(null);
   const [minhasViagens, setMinhasViagens] = useState<ViagemDTO[]>([]);
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<string>("");
 
+  useEffect(() => {
+    if (isAuthenticated === false) router.replace("/auth/signin");
+  }, [isAuthenticated]);
+
+  if (isAuthenticated === false) return null;
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const target = e.target;
-
-    if (target instanceof HTMLInputElement && target.type === "checkbox") {
-      setFiltros((prev) => ({
-        ...prev,
-        [target.name]: target.checked,
-      }));
-    } else {
-      setFiltros((prev) => ({
-        ...prev,
-        [target.name]: target.value,
-      }));
-    }
+    setFiltros((prev) => ({
+      ...prev,
+      [target.name]: target.type === "checkbox" ? (target as HTMLInputElement).checked : target.value,
+    }));
   };
 
   const buscar = async () => {
+    setLoading(true);
     try {
       const response = await buscarUsuarios(filtros);
       setUsuarios(response.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao buscar usuários");
+    } finally {
+      setLoading(false);
     }
   };
 
   const abrirModalConvite = async (usuario: UsuarioBuscaDTO) => {
     try {
       const response = await getMinhasViagens();
-      setMinhasViagens(response); // espera-se que já venha como ViagemDTO[]
+      setMinhasViagens(response);
       setUsuarioSelecionado(usuario);
-      setViagemSelecionadaId(""); // limpa seleção anterior
+      setViagemSelecionadaId("");
       setShowModal(true);
     } catch {
       toast.error("Erro ao carregar suas viagens");
@@ -80,156 +84,169 @@ const EncontrePessoas = () => {
       return;
     }
 
-    // aqui você chamaria o service de convite futuramente
     toast.success(`Convite enviado para ${usuarioSelecionado?.nome}`);
     setShowModal(false);
   };
 
-  useEffect(() => {
-    if (!isAuthenticated) router.replace("/signin");
-  }, [isAuthenticated]);
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Encontre Pessoas para Viajar</h1>
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url('/images/common/beach.jpg')` }}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-28">
+        <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+          <h1 className="text-3xl font-bold text-center text-blue-800 mb-6">
+            Encontre sua companhia de viagem! 🌍✈️
+          </h1>
 
-      {/* Modal de convite */}
-      {showModal && usuarioSelecionado && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
-            <h2 className="text-xl font-bold mb-4">
-              Convidar {usuarioSelecionado.nome}
-            </h2>
-
+          {/* Filtros */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <select
-              className="w-full border rounded px-3 py-2 mb-4"
-              value={viagemSelecionadaId}
-              onChange={(e) => setViagemSelecionadaId(e.target.value)}
+              name="genero"
+              value={filtros.genero}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2 w-full"
             >
-              <option value="">Selecione uma viagem</option>
-              {minhasViagens.map((v) => (
-                <option key={v.id} value={v.id}>
-                {v.destino}
-              </option>          
-              ))}
+              <option value="">Gênero</option>
+              <option value="MASCULINO">Masculino</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="OUTRO">Outro</option>
             </select>
 
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-2 bg-gray-300 rounded"
-                onClick={() => setShowModal(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={confirmarConvite}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Filtros */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <select name="genero" value={filtros.genero} onChange={handleChange}>
-          <option value="">Todos os Gêneros</option>
-          <option value="MASCULINO">Masculino</option>
-          <option value="FEMININO">Feminino</option>
-          <option value="OUTRO">Outro</option>
-        </select>
-
-        <input
-          type="number"
-          name="idadeMin"
-          placeholder="Idade Mínima"
-          value={filtros.idadeMin}
-          onChange={handleChange}
-        />
-        <input
-          type="number"
-          name="idadeMax"
-          placeholder="Idade Máxima"
-          value={filtros.idadeMax}
-          onChange={handleChange}
-        />
-        <input
-          name="tipoHospedagem"
-          placeholder="Tipo de Hospedagem"
-          value={filtros.tipoHospedagem}
-          onChange={handleChange}
-        />
-        <input
-          name="transporteFavorito"
-          placeholder="Transporte Favorito"
-          value={filtros.transporteFavorito}
-          onChange={handleChange}
-        />
-
-        {/* Booleanos */}
-        {[
-          "petFriendly",
-          "aceitaCriancas",
-          "aceitaFumantes",
-          "aceitaBebidasAlcoolicas",
-          "acomodacaoCompartilhada",
-          "aceitaAnimaisGrandePorte",
-        ].map((campo) => (
-          <label key={campo} className="flex items-center gap-2">
             <input
-              type="checkbox"
-              name={campo}
-              checked={filtros[campo as keyof UsuarioFiltroDTO] as boolean}
+              type="number"
+              name="idadeMin"
+              placeholder="Idade Mínima"
+              value={filtros.idadeMin}
               onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2 w-full"
             />
-            {campo.replace(/([A-Z])/g, " $1")}
-          </label>
-        ))}
-      </div>
-
-      <button
-        onClick={buscar}
-        className="bg-blue-600 text-white px-4 py-2 rounded mb-6"
-      >
-        Buscar
-      </button>
-
-      {/* Resultados */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {usuarios.map((user) => (
-          <div key={user.id} className="border rounded p-4 shadow-md bg-white">
-            <Image
-              src={user.fotoPerfil || "/images/user/avatar.png"}
-              alt="Foto"
-              width={100}
-              height={100}
-              className="rounded-full mb-2"
+            <input
+              type="number"
+              name="idadeMax"
+              placeholder="Idade Máxima"
+              value={filtros.idadeMax}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2 w-full"
             />
-            <h2 className="text-lg font-semibold">{user.nome}</h2>
-            <p>
-              {user.genero} - {user.idade} anos
-            </p>
-            <ul className="text-sm mt-2">
-              {user.petFriendly && <li>🐶 Pet Friendly</li>}
-              {user.aceitaCriancas && <li>👶 Aceita Crianças</li>}
-              {user.aceitaFumantes && <li>🚬 Aceita Fumantes</li>}
-              {user.aceitaBebidasAlcoolicas && <li>🍷 Aceita Bebidas</li>}
-              {user.acomodacaoCompartilhada && <li>🛏️ Acomodação Compartilhada</li>}
-              {user.aceitaAnimaisGrandePorte && <li>🐘 Aceita Animais Grandes</li>}
-            </ul>
-            <p className="text-sm mt-2">🏨 {user.tipoHospedagem}</p>
-            <p className="text-sm">🚗 {user.transporteFavorito}</p>
 
-            <button
-              className="bg-green-600 text-white px-3 py-1 rounded mt-4 w-full"
-              onClick={() => abrirModalConvite(user)}
+            <select
+              name="tipoAcomodacao"
+              value={filtros.tipoAcomodacao}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2 w-full"
             >
-              Convidar para minha viagem
+              <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
+              <option value="HOTEL">Hotel</option>
+              <option value="HOSTEL">Hostel</option>
+              <option value="AIRBNB">Airbnb</option>
+              <option value="POUSADA">Pousada</option>
+              <option value="CAMPING">Camping</option>
+              <option value="RESORT">Resort</option>
+              <option value="FAZENDA">Fazenda</option>
+              <option value="CASA_DE_AMIGOS">Casa de Amigos</option>
+            </select>
+
+            <select
+              name="transporteFavorito"
+              value={filtros.tipoTransporte}
+              onChange={handleChange}
+              className="border border-gray-300 rounded px-3 py-2 w-full"
+            >
+              <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
+              <option value="AVIAO">Avião</option>
+              <option value="CARRO">Carro</option>
+              <option value="ONIBUS">Ônibus</option>
+              <option value="TREM">Trem</option>
+              <option value="NAVIO">Navio</option>
+              <option value="MOTO">Moto</option>
+              <option value="BICICLETA">Bicicleta</option>
+              <option value="VAN">Van</option>
+              <option value="MOTORHOME">Motorhome</option>
+            </select>
+
+            {[
+              { nome: "petFriendly", label: "🐶 Pet Friendly" },
+              { nome: "aceitaCriancas", label: "👶 Aceita Crianças" },
+              { nome: "aceitaFumantes", label: "🚬 Aceita Fumantes" },
+              { nome: "aceitaBebidasAlcoolicas", label: "🍷 Aceita Bebidas" },
+              { nome: "acomodacaoCompartilhada", label: "🛏️ Acomodação Compartilhada" },
+              { nome: "aceitaAnimaisGrandePorte", label: "🐘 Animais de Grande Porte" },
+            ].map(({ nome, label }) => (
+              <label key={nome} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name={nome}
+                  checked={filtros[nome as keyof UsuarioFiltroDTO] as boolean}
+                  onChange={handleChange}
+                  className="accent-blue-600"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+
+          <div className="text-center mt-6">
+            <button
+              onClick={buscar}
+              className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 shadow"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Buscando...
+                </span>
+              ) : (
+                <>🔍 Buscar Pessoas</>
+              )}
             </button>
           </div>
-        ))}
+
+          <div className="mt-6">
+            {usuarios.length === 0 && !loading ? (
+              <p className="text-center text-gray-500">Nenhum resultado encontrado.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {usuarios.map((user) => (
+                  <div key={user.id} className="bg-white p-6 rounded-xl shadow-md text-center">
+                    <Image
+                      src={user.fotoPerfil || "/images/user/avatar.png"}
+                      alt="Foto"
+                      width={100}
+                      height={100}
+                      className="rounded-full mx-auto mb-3"
+                    />
+                    <h2 className="text-lg font-bold">{user.nome}</h2>
+                    <p className="text-gray-600">
+                      {user.genero} • {user.idade} anos
+                    </p>
+                    <ul className="text-sm text-left mt-3 space-y-1">
+                      {user.petFriendly && <li>🐶 Pet Friendly</li>}
+                      {user.aceitaCriancas && <li>👶 Aceita Crianças</li>}
+                      {user.aceitaFumantes && <li>🚬 Aceita Fumantes</li>}
+                      {user.aceitaBebidasAlcoolicas && <li>🍷 Aceita Bebidas</li>}
+                      {user.acomodacaoCompartilhada && <li>🛏️ Acomodação Compartilhada</li>}
+                      {user.aceitaAnimaisGrandePorte && <li>🐘 Animais Grandes</li>}
+                    </ul>
+                    <p className="text-sm mt-2">
+                      🏨 {user.tipoAcomodacao || "Hospedagem não informada"}
+                    </p>
+                    <p className="text-sm">
+                      🚗 {user.tipoTransporte || "Transporte não informado"}
+                    </p>
+                    <button
+                      className="bg-green-600 text-white px-4 py-2 rounded mt-4 hover:bg-green-700 w-full"
+                      onClick={() => abrirModalConvite(user)}
+                    >
+                      Convidar para Viagem
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
