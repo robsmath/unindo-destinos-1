@@ -6,11 +6,9 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/services/authService";
-import { getUserById } from "@/services/userService";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
 
 const Signin = () => {
   const router = useRouter();
@@ -34,17 +32,17 @@ const Signin = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-  
+
     try {
       const { token, usuario } = await signIn(data.email, data.senha);
+
       login(token, {
-        id: usuario.id,
         nome: usuario.nome,
         fotoPerfil: usuario.fotoPerfil,
       });
-  
+
       router.replace("/profile");
-  
+
     } catch (err: any) {
       if (err.response && err.response.status === 404) {
         setError("E-mail não encontrado. Verifique os dados.");
@@ -54,8 +52,6 @@ const Signin = () => {
       setLoading(false);
     }
   };
-  
-  
 
   return (
     <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4 relative">

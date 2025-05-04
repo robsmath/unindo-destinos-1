@@ -14,7 +14,28 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "react-phone-input-2/lib/style.css";
 
 const Signup = () => {
-  const [form, setForm] = useState({
+  type Genero = "" | "MASCULINO" | "FEMININO" | "OUTRO";
+
+const [form, setForm] = useState<{
+  nome: string;
+  email: string;
+  senha: string;
+  confirmSenha: string;
+  cpf: string;
+  telefone: string;
+  genero: Genero;
+  dataNascimento: string;
+  preferencias: { estiloViagem: string }[];
+  endereco: {
+    cep: string;
+    estado: string;
+    cidade: string;
+    bairro: string;
+    rua: string;
+    numero: string;
+    complemento: string;
+    };
+  }>({
     nome: "",
     email: "",
     senha: "",

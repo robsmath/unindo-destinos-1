@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
-import { getUserById, updateUser } from "@/services/userService";
+import { getUsuarioLogado, updateUsuarioLogado } from "@/services/userService";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { Loader2 } from "lucide-react";
 import "react-phone-input-2/lib/style.css";
 
 const PersonalDataForm = () => {
-  const { user, atualizarFotoPerfil } = useAuth();
+  const { atualizarFotoPerfil } = useAuth();
   const router = useRouter();
   const [userData, setUserData] = useState<UsuarioDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,18 +25,12 @@ const PersonalDataForm = () => {
   const [showAddress, setShowAddress] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) {
-      router.push("/auth/signin");
-      return;
-    }
     fetchUserData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-  
+  }, []);
 
   const fetchUserData = async () => {
     try {
-      const userResult = await getUserById(user!.id);
+      const userResult = await getUsuarioLogado();
       setUserData({
         ...userResult,
         cpf: userResult.cpf ?? "",
@@ -47,11 +41,9 @@ const PersonalDataForm = () => {
         },
       });
 
-      // 🔥 Atualiza foto no AuthContext se tiver
       if (userResult.fotoPerfil) {
         atualizarFotoPerfil(userResult.fotoPerfil);
       }
-
     } catch (error) {
       toast.error("Erro ao carregar dados do usuário.");
       console.error(error);
@@ -119,7 +111,7 @@ const PersonalDataForm = () => {
     setSaving(true);
     try {
       if (userData) {
-        await updateUser(user!.id, {
+        await updateUsuarioLogado({
           ...userData,
           cpf: userData.cpf.replace(/\D/g, ""),
           endereco: {
@@ -167,80 +159,33 @@ const PersonalDataForm = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Nome */}
       <div>
         <label className="font-semibold">Nome <span className="text-red-500">*</span></label>
         <Input name="nome" value={userData?.nome ?? ""} onChange={handleChange} />
       </div>
 
-      {/* Email */}
-        <div>
-          <label className="font-semibold">Email <span className="text-red-500">*</span></label>
-          <Input
-            type="email"
-            name="email"
-            value={userData?.email ?? ""}
-            onChange={handleChange}
-          />
-          {userData?.emailVerificado ? (
-            <p className="text-green-600 text-sm mt-1">✅ E-mail confirmado</p>
-          ) : (
-            <p className="text-red-500 text-sm mt-1">
-              ❌ Seu e-mail ainda não foi confirmado.{" "}
-              <span
-                className="text-blue-500 hover:underline cursor-pointer"
-                onClick={() => {
-                  if (userData) {
-                    router.push(`/profile/verificar?usuarioId=${userData.id}&emailVerificado=${userData.emailVerificado}&telefoneVerificado=${userData.telefoneVerificado}`);
-                  }
-                }}
-                
-              >
-                Clique aqui para verificar
-              </span>
-            </p>
-          )}
-        </div>
+      <div>
+        <label className="font-semibold">Email <span className="text-red-500">*</span></label>
+        <Input type="email" name="email" value={userData?.email ?? ""} onChange={handleChange} />
+      </div>
 
-        {/* Telefone */}
-        <div>
-          <label className="font-semibold">Telefone <span className="text-red-500">*</span></label>
-          <PhoneInput
-            country="br"
-            value={userData?.telefone?.replace("+", "") ?? ""}
-            onChange={handlePhoneChange}
-            inputClass="!w-full !input"
-            inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
-            placeholder="Ex: +55 (31) 98765-4321"
-          />
-          {userData?.telefoneVerificado ? (
-            <p className="text-green-600 text-sm mt-1">✅ Telefone confirmado</p>
-          ) : (
-            <p className="text-red-500 text-sm mt-1">
-              ❌ Seu telefone ainda não foi confirmado.{" "}
-              <span
-                className="text-blue-500 hover:underline cursor-pointer"
-                onClick={() => {
-                  if (userData) {
-                    router.push(`/profile/verificar?usuarioId=${userData.id}&emailVerificado=${userData.emailVerificado}&telefoneVerificado=${userData.telefoneVerificado}`);
-                  }
-                }}
-                
-              >
-                Clique aqui para verificar
-              </span>
-            </p>
-          )}
-        </div>
+      <div>
+        <label className="font-semibold">Telefone <span className="text-red-500">*</span></label>
+        <PhoneInput
+          country="br"
+          value={userData?.telefone?.replace("+", "") ?? ""}
+          onChange={handlePhoneChange}
+          inputClass="!w-full !input"
+          inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
+          placeholder="Ex: +55 (31) 98765-4321"
+        />
+      </div>
 
-
-      {/* Data de nascimento */}
       <div>
         <label className="font-semibold">Data de Nascimento <span className="text-red-500">*</span></label>
         <Input type="date" name="dataNascimento" value={userData?.dataNascimento ?? ""} onChange={handleChange} />
       </div>
 
-      {/* Gênero */}
       <div>
         <label className="font-semibold">Gênero <span className="text-red-500">*</span></label>
         <Select value={userData?.genero ?? ""} onValueChange={handleGeneroChange}>
@@ -255,7 +200,6 @@ const PersonalDataForm = () => {
         </Select>
       </div>
 
-      {/* CPF */}
       <div>
         <label className="font-semibold">CPF <span className="text-red-500">*</span></label>
         <InputMask
@@ -270,7 +214,6 @@ const PersonalDataForm = () => {
         />
       </div>
 
-      {/* Endereço Expandível */}
       <div className="mt-6">
         <button
           type="button"
@@ -291,7 +234,7 @@ const PersonalDataForm = () => {
             >
               {["cep", "rua", "numero", "complemento", "bairro", "cidade", "estado"].map((name) => (
                 <div key={name}>
-                  <label className="font-semibold capitalize">{name} <span className="text-red-500">*</span></label>
+                  <label className="font-semibold capitalize">{name}</label>
                   {name === "cep" ? (
                     <InputMask
                       mask="99999-999"
@@ -319,7 +262,6 @@ const PersonalDataForm = () => {
         </AnimatePresence>
       </div>
 
-      {/* Botão salvar */}
       <Button type="submit" disabled={saving} className="w-full mt-6 text-base">
         {saving ? "Salvando..." : "Salvar Alterações"}
       </Button>

@@ -2,7 +2,6 @@ import api from "./api";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 
 interface Usuario {
-  id: number;
   nome: string;
   email: string;
   fotoPerfil?: string;
@@ -34,17 +33,12 @@ interface ApiResponseCadastro {
   status: number;
   message: string;
   data: {
-    id: number;
     emailVerificado: boolean;
     telefoneVerificado: boolean;
   };
 }
 
-export const cadastrarUsuario = async (dados: any) => {
+export const cadastrarUsuario = async (dados: UsuarioDTO): Promise<UsuarioDTO> => {
   const response = await api.post<ApiResponse<UsuarioDTO>>("/usuarios", dados);
   return response.data.data;
 };
-
-
-
-

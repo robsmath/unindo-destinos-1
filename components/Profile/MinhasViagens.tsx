@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -13,7 +12,6 @@ import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
 
 const MinhasViagens = () => {
-  const { user }: { user: { id: number } | null } = useAuth();
   const router = useRouter();
 
   const [viagens, setViagens] = useState<ViagemDTO[]>([]);
@@ -21,14 +19,12 @@ const MinhasViagens = () => {
   const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
-    if (user?.id) {
-      carregarViagens();
-    }
-  }, [user]);
+    carregarViagens();
+  }, []);
 
   const carregarViagens = async () => {
     try {
-      const response = await getMinhasViagens(user!.id);
+      const response = await getMinhasViagens();
       setViagens(response);
 
       const novasImagens: { [key: number]: string } = {};
@@ -39,10 +35,9 @@ const MinhasViagens = () => {
           const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
         })
-      );      
-      
-      setImagensViagens(novasImagens);
+      );
 
+      setImagensViagens(novasImagens);
     } catch (error) {
       console.error("Erro ao carregar viagens", error);
     } finally {

@@ -8,26 +8,22 @@ import {
 } from "@/services/preferenciasService";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
-import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 const MinhasPreferencias = () => {
-  const { user } = useAuth();
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
-      carregarPreferencias(user.id);
-    }
-  }, [user]);
+    carregarPreferencias();
+  }, []);
 
-  const carregarPreferencias = async (usuarioId: number) => {
+  const carregarPreferencias = async () => {
     setLoading(true);
     try {
-      const prefs = await getPreferenciasDoUsuario(usuarioId);
+      const prefs = await getPreferenciasDoUsuario();
       setPreferencias(
         prefs ?? {
           generoPreferido: "NAO_TENHO_PREFERENCIA",
@@ -55,7 +51,7 @@ const MinhasPreferencias = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = type === "checkbox" && "checked" in e.target ? (e.target as HTMLInputElement).checked : undefined;
-  
+
     setPreferencias((prev) =>
       prev
         ? {
@@ -65,19 +61,18 @@ const MinhasPreferencias = () => {
         : null
     );
   };
-  
 
   const handleSubmit = async () => {
-    if (!user?.id || !preferencias) return;
+    if (!preferencias) return;
 
     setSalvando(true);
     try {
-      const existente = await getPreferenciasDoUsuario(user.id);
+      const existente = await getPreferenciasDoUsuario();
       if (!existente) {
-        await salvarPreferenciasDoUsuario(user.id, preferencias);
+        await salvarPreferenciasDoUsuario(preferencias);
         toast.success("Preferências salvas com sucesso!");
       } else {
-        await atualizarPreferenciasDoUsuario(user.id, preferencias);
+        await atualizarPreferenciasDoUsuario(preferencias);
         toast.success("Preferências atualizadas com sucesso!");
       }
     } catch (error) {

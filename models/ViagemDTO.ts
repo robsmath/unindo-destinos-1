@@ -26,5 +26,5 @@ export interface ViagemDTO {
     | "CONCLUIDA"
     | "CANCELADA";
   categoriaViagem: "NACIONAL" | "INTERNACIONAL";
-  criadorViagemId: number;
+  criadorViagemId?: number; // ✅ agora opcional
 }

@@ -1,5 +1,7 @@
 import api from "./api";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
+import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
+import { UsuarioFiltroDTO } from "@/models/UsuarioFiltroDTO";
 
 interface ApiResponse<T> {
   timestamp: string;
@@ -9,11 +11,21 @@ interface ApiResponse<T> {
   data: T;
 }
 
-export const getUserById = async (id: number): Promise<UsuarioDTO> => {
-  const response = await api.get<ApiResponse<UsuarioDTO>>(`/usuarios/${id}`);
+export const getUsuarioLogado = async (): Promise<UsuarioDTO> => {
+  const response = await api.get<ApiResponse<UsuarioDTO>>(`/usuarios/me`);
   return response.data.data;
 };
 
-export const updateUser = async (id: number, userData: UsuarioDTO): Promise<void> => {
-  await api.put(`/usuarios/${id}`, userData);
+export const updateUsuarioLogado = async (userData: UsuarioDTO): Promise<void> => {
+  await api.put(`/usuarios/me`, userData);
+};
+
+export const buscarUsuarios = async (
+  filtros: UsuarioFiltroDTO
+): Promise<ApiResponse<UsuarioBuscaDTO[]>> => {
+  const response = await api.post<ApiResponse<UsuarioBuscaDTO[]>>(
+    "/usuarios/encontrar",
+    filtros
+  );
+  return response.data;
 };

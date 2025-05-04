@@ -6,7 +6,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 interface User {
-  id: number;
   nome: string;
   fotoPerfil?: string;
 }
@@ -30,13 +29,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const storedToken = Cookies.get("token");
     const storedUserName = localStorage.getItem("userName");
-    const storedUserId = localStorage.getItem("userId");
     const storedFotoPerfil = localStorage.getItem("userFotoPerfil");
 
     if (storedToken) setToken(storedToken);
-    if (storedUserName && storedUserId) {
+    if (storedUserName) {
       setUser({
-        id: Number(storedUserId),
         nome: storedUserName,
         fotoPerfil: storedFotoPerfil || undefined,
       });
@@ -63,7 +60,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (newToken: string, user: User) => {
     Cookies.set("token", newToken, { expires: 7 });
     localStorage.setItem("userName", user.nome);
-    localStorage.setItem("userId", user.id.toString());
     if (user.fotoPerfil) {
       localStorage.setItem("userFotoPerfil", user.fotoPerfil);
     }
@@ -75,7 +71,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     Cookies.remove("token");
     localStorage.removeItem("userName");
-    localStorage.removeItem("userId");
     localStorage.removeItem("userFotoPerfil");
     setToken(null);
     setUser(null);

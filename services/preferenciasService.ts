@@ -32,10 +32,10 @@ export const salvarPreferenciasViagem = async (viagemId: number, preferencias: P
   }
 };
 
-// 🔹 Preferência do Usuário
-export const getPreferenciasDoUsuario = async (usuarioId: number): Promise<PreferenciasDTO | null> => {
+// 🔹 Preferência do Usuário (com @AuthenticationPrincipal)
+export const getPreferenciasDoUsuario = async (): Promise<PreferenciasDTO | null> => {
   try {
-    const response = await api.get<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario/${usuarioId}`);
+    const response = await api.get<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario`);
     return response.data.data;
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
@@ -45,9 +45,9 @@ export const getPreferenciasDoUsuario = async (usuarioId: number): Promise<Prefe
   }
 };
 
-export const salvarPreferenciasDoUsuario = async (usuarioId: number, preferencias: PreferenciasDTO) => {
+export const salvarPreferenciasDoUsuario = async (preferencias: PreferenciasDTO) => {
   try {
-    const response = await api.post<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario/${usuarioId}`, preferencias);
+    const response = await api.post<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario`, preferencias);
     return response.data.data;
   } catch (error) {
     console.error("Erro ao salvar preferências do usuário:", error);
@@ -55,9 +55,9 @@ export const salvarPreferenciasDoUsuario = async (usuarioId: number, preferencia
   }
 };
 
-export const atualizarPreferenciasDoUsuario = async (usuarioId: number, preferencias: PreferenciasDTO) => {
+export const atualizarPreferenciasDoUsuario = async (preferencias: PreferenciasDTO) => {
   try {
-    const response = await api.put<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario/${usuarioId}`, preferencias);
+    const response = await api.put<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario`, preferencias);
     return response.data.data;
   } catch (error) {
     console.error("Erro ao atualizar preferências do usuário:", error);

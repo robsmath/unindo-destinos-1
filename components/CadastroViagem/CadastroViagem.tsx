@@ -226,20 +226,17 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       return;
     }
 
-    if (!user?.id) {
-      toast.error("Usuário não encontrado. Faça login novamente.", { position: "top-center" });
+    if (!user) {
+      toast.error("Usuário não autenticado. Faça login novamente.", { position: "top-center" });
       return;
     }
-
+    
     setLoading(true);
 
     try {
       let viagemId: number;
 
-      const viagemRequest = {
-        ...form,
-        criadorViagemId: user.id,
-      };
+      const viagemRequest = { ...form };
 
       if (id) {
         await editarViagem(id, { ...viagemRequest, id });

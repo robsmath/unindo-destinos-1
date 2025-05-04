@@ -10,26 +10,25 @@ interface ApiResponse<T> {
 }
 
 export const cadastrarViagem = async (dados: ViagemDTO): Promise<ViagemDTO> => {
+  // 🔥 Não precisa mais enviar o criadorViagemId no DTO, backend usa o usuário autenticado
   const response = await api.post<ApiResponse<ViagemDTO>>("/viagens", dados);
   return response.data.data;
 };
 
-
-export const editarViagem = async (id: number, dados: ViagemDTO) => {
-  return api.put(`/viagens/${id}`, dados);
+export const editarViagem = async (id: number, dados: ViagemDTO): Promise<void> => {
+  await api.put(`/viagens/${id}`, dados);
 };
 
-export const getMinhasViagens = async (usuarioId: number): Promise<ViagemDTO[]> => {
-  const response = await api.get<ApiResponse<ViagemDTO[]>>(`/viagens/usuario/${usuarioId}`);
+export const getMinhasViagens = async (): Promise<ViagemDTO[]> => {
+  const response = await api.get<ApiResponse<ViagemDTO[]>>("/viagens/minhas");
   return response.data.data;
 };
 
-export const deletarViagem = async (id: number) => {
-  return api.delete(`/viagens/${id}`);
+export const deletarViagem = async (id: number): Promise<void> => {
+  await api.delete(`/viagens/${id}`);
 };
 
 export const getViagemById = async (id: number): Promise<ViagemDTO> => {
   const response = await api.get<ApiResponse<ViagemDTO>>(`/viagens/${id}`);
   return response.data.data;
 };
-

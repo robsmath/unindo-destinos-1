@@ -51,7 +51,7 @@ const Profile = () => {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user?.id) return;
+    if (!file) return;
 
     const MAX_SIZE_MB = 2;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
@@ -62,7 +62,7 @@ const Profile = () => {
     setUploading(true);
 
     try {
-      const imageUrl = await uploadFotoPerfil(user.id, file);
+      const imageUrl = await uploadFotoPerfil(file);
       atualizarFotoPerfil(imageUrl);
     } catch (error) {
       console.error("Erro ao fazer upload da foto:", error);
