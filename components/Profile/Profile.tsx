@@ -8,6 +8,7 @@ import { FaCamera } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import PersonalDataForm from "@/components/Profile/PersonalDataForm";
+import MinhasPreferencias from "@/components/Profile/MinhasPreferencias";
 import MinhasViagens from "@/components/Profile/MinhasViagens";
 import { uploadFotoPerfil } from "@/services/uploadService";
 
@@ -153,9 +154,7 @@ const Profile = () => {
                 </TabPanel>
 
                 <TabPanel>
-                  <div className="text-center text-black dark:text-white font-medium">
-                    [Preferências de Viagem]
-                  </div>
+                  <MinhasPreferencias />
                 </TabPanel>
 
                 <TabPanel>

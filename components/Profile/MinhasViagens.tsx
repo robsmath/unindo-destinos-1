@@ -8,8 +8,8 @@ import { motion } from "framer-motion";
 import { getMinhasViagens, deletarViagem } from "@/services/viagemService";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { Loader2 } from "lucide-react";
-import { getImage } from "@/services/unsplashService";
-import { toast } from "sonner"; // ✅
+import { getImage } from "@/services/googleImageService";
+import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
 
 const MinhasViagens = () => {
@@ -35,11 +35,12 @@ const MinhasViagens = () => {
 
       await Promise.all(
         response.map(async (viagem) => {
-          const imagem = await getImage(viagem.destino);
+          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
+          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
         })
-      );
-
+      );      
+      
       setImagensViagens(novasImagens);
 
     } catch (error) {

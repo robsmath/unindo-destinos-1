@@ -5,7 +5,7 @@ import { salvarPreferenciasViagem, getPreferenciaByViagemId } from "@/services/p
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getImage } from "@/services/unsplashService";
+import { getImage } from "@/services/googleImageService";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { useAuth } from "@/app/context/AuthContext";
+import paisesTraduzidos from "@/models/paisesTraduzidos";
 
 interface CadastroViagemProps {
   viagemId?: string;
@@ -25,6 +26,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [showPreferences, setShowPreferences] = useState(false);
   const [semPreferencias, setSemPreferencias] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cidadeInternacional, setCidadeInternacional] = useState("");
+  const [consultaImagem, setConsultaImagem] = useState<{ [key: number]: string }>({});
 
   const [form, setForm] = useState<Omit<ViagemDTO, "id" | "criadorViagemId">>({
     destino: "",
@@ -32,11 +35,11 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     dataFim: "",
     estilo: "AVENTURA",
     status: "PENDENTE",
+    categoriaViagem: "NACIONAL"
   });
-
+  
   const [preferencias, setPreferencias] = useState<PreferenciasDTO>({
     generoPreferido: "MASCULINO",
-    faixaEtariaPreferida: "ADULTOS",
     petFriendly: false,
     aceitaCriancas: false,
     aceitaFumantes: false,
@@ -46,29 +49,117 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     estiloViagem: "AVENTURA",
     tipoAcomodacao: "HOTEL",
     tipoTransporte: "AVIAO",
+    idadeMinima: 18,
+    idadeMaxima: 60,
+    valorMedioViagem: 0,
   });
-
+  
   const router = useRouter();
+  const [estado, setEstado] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [paises, setPaises] = useState<string[]>([]);
+  const [estados, setEstados] = useState<{ id: number; sigla: string; nome: string }[]>([]);
+  const [cidades, setCidades] = useState<string[]>([]);
+
   const id = viagemId ? Number(viagemId) : null;
+  
+  useEffect(() => {
+    const buscarImagem = async () => {
+      if (form.destino) {
+        const urlImagem = await fetchImagemPaisagemDestino(form.destino, form.categoriaViagem);
+        setImagemDestino(urlImagem || "/images/common/beach.jpg");
+      }
+    };
+    buscarImagem();
+  }, [form.destino]);
+
+  useEffect(() => {
+    if (id) {
+      const descricaoSalva = localStorage.getItem(`imagemCustom-${id}`);
+      if (descricaoSalva) {
+        setConsultaImagem((prev) => ({ ...prev, 1: descricaoSalva }));
+      }
+    }
+  }, [id]);
+  
+  useEffect(() => {
+    const fetchDados = async () => {
+      if (form.categoriaViagem === "NACIONAL") {
+        const estadosRes = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
+        const estadosJson = await estadosRes.json();
+        setEstados(estadosJson.map((e) => ({ id: e.id, sigla: e.sigla, nome: e.nome })));
+      } else {
+        const paisesRes = await fetch("https://restcountries.com/v3.1/all");
+        const paisesJson = await paisesRes.json();
+        setPaises(paisesJson.map((p) => p.name.common).sort());
+      }
+    };
+    fetchDados();
+    setCidades([]);
+  }, [form.categoriaViagem]);
+
+  useEffect(() => {
+    const fetchCidades = async () => {
+      if (form.categoriaViagem === "NACIONAL" && estado) {
+        const estadosRes = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
+        const estadosJson = await estadosRes.json();
+        const estadoObj = estadosJson.find((e) => e.sigla === estado);
+        const cidadesRes = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoObj.id}/municipios`);
+        const cidadesJson = await cidadesRes.json();
+        setCidades(cidadesJson.map((c) => c.nome));
+      }
+      
+    };
+    fetchCidades();
+  }, [estado]);
 
   useEffect(() => {
     setHasMounted(true);
-
+  
     const carregarViagem = async () => {
       if (id) {
         try {
           const viagem = await getViagemById(id);
+  
           setForm({
             destino: viagem.destino,
             dataInicio: viagem.dataInicio,
             dataFim: viagem.dataFim,
             estilo: viagem.estilo,
             status: viagem.status,
+            categoriaViagem: viagem.categoriaViagem ?? "NACIONAL",
           });
-
-          const imagem = await getImage(viagem.destino);
+  
+          if (viagem.categoriaViagem === "NACIONAL") {
+            const [cidadeSalva, estadoSalvo] = viagem.destino.split(" - ");
+            if (cidadeSalva && estadoSalvo) {
+              setEstado(estadoSalvo.trim());
+              setCidade(cidadeSalva.trim());
+            }
+          } else if (viagem.categoriaViagem === "INTERNACIONAL") {
+            // Extrai cidade e país do destino
+            const [cidadeParte, paisParte] = viagem.destino.split(" - ").map((s) => s.trim());
+  
+            // Encontra o nome original em inglês com base no nome em português
+            const paisIngles = Object.keys(paisesTraduzidos).find(
+              (key) => paisesTraduzidos[key] === paisParte
+            );
+  
+            setCidadeInternacional(cidadeParte || "");
+  
+            // Atualiza o form com o destino já correto (sem sobrescrever o país traduzido)
+            setForm(prev => ({
+              ...prev,
+              categoriaViagem: "INTERNACIONAL",
+              destino: `${cidadeParte} - ${paisesTraduzidos[paisIngles || ""] || paisParte}`,
+            }));
+          }
+  
+          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
+          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           setImagemDestino(imagem || "/images/common/beach.jpg");
 
+  
           const preferenciasSalvas = await getPreferenciaByViagemId(id);
           if (preferenciasSalvas !== null) {
             setPreferencias(preferenciasSalvas);
@@ -80,9 +171,10 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
         }
       }
     };
-
+  
     carregarViagem();
   }, [id]);
+  
 
   if (!hasMounted) return null;
 
@@ -176,16 +268,17 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     }
   };
 
-  const fetchImagemPaisagemDestino = async (destino: string) => {
+  const fetchImagemPaisagemDestino = async (destino: string, categoriaViagem: string): Promise<string> => {
     try {
-      if (!destino) return null;
-      const imagem = await getImage(destino);
+      const descricaoCustom = id ? localStorage.getItem(`imagemCustom-${id}`) : null;
+      const imagem = await getImage(descricaoCustom || destino, categoriaViagem);
       return imagem || "/images/common/beach.jpg";
     } catch (error) {
       console.error("Erro ao buscar imagem:", error);
       return "/images/common/beach.jpg";
     }
   };
+  
 
   return (
     <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen pt-40 pb-16 px-4">
@@ -202,55 +295,168 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             </h2>
 
             <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="destino"
-                placeholder="Destino"
-                value={form.destino}
-                onChange={handleChange}
-                onBlur={async (e) => {
-                  const urlImagem = await fetchImagemPaisagemDestino(e.target.value);
-                  setImagemDestino(urlImagem || "/images/common/beach.jpg");
-                }}
-                className="input mb-7.5"
-              />
 
-              <div className="mb-7.5 flex flex-col gap-7.5 lg:flex-row lg:justify-between">
-                <input
-                  type="date"
-                  name="dataInicio"
-                  value={form.dataInicio}
-                  onChange={handleChange}
-                  className="input lg:w-1/2"
-                />
-                <input
-                  type="date"
-                  name="dataFim"
-                  value={form.dataFim}
-                  onChange={handleChange}
-                  className="input lg:w-1/2"
-                />
-              </div>
+{/* Tipo de Viagem */}
+<label className="block text-sm font-medium text-gray-700">Tipo de Viagem</label>
+<select
+  name="categoriaViagem"
+  value={form.categoriaViagem}
+  onChange={(e) => {
+    handleChange(e);
+    setEstado("");
+    setCidade("");
+    setForm(prev => ({ ...prev, destino: "" }));
+  }}
+  className="input mb-1"
+>
+  <option value="NACIONAL">Nacional</option>
+  <option value="INTERNACIONAL">Internacional</option>
+</select>
 
-              <select
-                name="estilo"
-                value={form.estilo}
-                onChange={handleChange}
-                className="input mb-7.5"
-              >
-                <option value="AVENTURA">Aventura</option>
-                <option value="CULTURA">Cultura</option>
-                <option value="RELAXAMENTO">Relaxamento</option>
-                <option value="GASTRONOMIA">Gastronomia</option>
-                <option value="ROMANTICA">Romântica</option>
-                <option value="RELIGIOSA">Religiosa</option>
-                <option value="COMPRAS">Compras</option>
-                <option value="PRAIA">Praia</option>
-                <option value="HISTORICA">Histórica</option>
-                <option value="TECNOLOGIA">Tecnologia</option>
-                <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
-              </select>
+<p className="text-xs text-gray-500 mb-4">Escolha se a viagem será dentro do Brasil ou para outro país.</p>
 
+{/* País + Cidade/Estado (para internacional) */}
+{form.categoriaViagem === "INTERNACIONAL" && (
+  <>
+    {/* País */}
+    <label className="block text-sm font-medium text-gray-700">País</label>
+    <select
+      name="pais"
+      value={form.destino.split(" - ").pop() || ""}
+      onChange={(e) => {
+        const pais = e.target.value;
+        const cidade = cidadeInternacional.trim();
+        const paisTraduzido = paisesTraduzidos[pais] || pais;
+        const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
+        setForm(prev => ({ ...prev, destino }));
+      }}
+      className="input mb-1"
+    >
+      <option value="">Selecione um país</option>
+      {paises.map((pais) => (
+        <option key={pais} value={pais}>
+          {paisesTraduzidos[pais] || pais}
+        </option>
+      ))}
+    </select>
+    <p className="text-xs text-gray-500 mb-4">Escolha o país de destino da viagem.</p>
+
+    {/* Cidade/Estado digitado */}
+    <label className="block text-sm font-medium text-gray-700">Cidade ou estado</label>
+    <input
+      type="text"
+      value={cidadeInternacional}
+      onChange={(e) => {
+        const cidade = e.target.value;
+        setCidadeInternacional(cidade);
+        const paisIngles = paises.find(p => (paisesTraduzidos[p] || p) === form.destino.split(" - ").pop()?.trim());
+        const paisTraduzido = paisesTraduzidos[paisIngles || ""] || "";
+        const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
+        setForm(prev => ({ ...prev, destino }));
+      }}
+      className="input mb-1"
+      placeholder="Ex: Londres, Paris, Roma..."
+    />
+    <p className="text-xs text-gray-500 mb-4">Digite a cidade ou estado de destino.</p>
+  </>
+)}
+
+
+{/* Estado (para nacional) */}
+{form.categoriaViagem === "NACIONAL" && (
+  <>
+    <label className="block text-sm font-medium text-gray-700">Estado</label>
+    <select
+      value={estado}
+      onChange={(e) => {
+        const novoEstado = e.target.value;
+        setEstado(novoEstado);
+        setCidade("");
+        setForm(prev => ({ ...prev, destino: "" }));
+      }}
+      className="input mb-1"
+    >
+      <option value="">Selecione um estado</option>
+      {estados.map((estado) => (
+        <option key={estado.id} value={estado.sigla}>{estado.nome}</option>
+      ))}
+    </select>
+    <p className="text-xs text-gray-500 mb-4">Escolha o estado brasileiro para destino da viagem.</p>
+
+    {estado && (
+      <>
+        <label className="block text-sm font-medium text-gray-700">Cidade</label>
+        <select
+          value={cidade}
+          onChange={(e) => {
+            const novaCidade = e.target.value;
+            setCidade(novaCidade);
+            setForm(prev => ({ ...prev, destino: `${novaCidade} - ${estado}` }));
+          }}
+          className="input mb-1"
+        >
+          <option value="">Selecione uma cidade</option>
+          {cidades.map((cidade) => (
+            <option key={cidade} value={cidade}>{cidade}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-500 mb-4">Selecione a cidade de destino dentro do estado escolhido.</p>
+      </>
+    )}
+  </>
+)}
+
+{/* Destino gerado automaticamente */}
+{form.destino && (
+  <div className="mb-4">
+    <label className="block text-sm font-medium text-gray-700">Destino</label>
+    <input
+      type="text"
+      value={form.destino}
+      readOnly
+      className="input"
+    />
+    <p className="text-xs text-gray-500 mt-1">Este campo é preenchido automaticamente com base nas seleções acima.</p>
+  </div>
+)}
+
+{/* Datas */}
+<label className="block text-sm font-medium text-gray-700">Data de Início</label>
+<input
+  type="date"
+  name="dataInicio"
+  value={form.dataInicio}
+  onChange={handleChange}
+  className="input mb-1"
+/>
+<p className="text-xs text-gray-500 mb-4">Data em que a viagem começa.</p>
+
+<label className="block text-sm font-medium text-gray-700">Data de Fim</label>
+<input
+  type="date"
+  name="dataFim"
+  value={form.dataFim}
+  onChange={handleChange}
+  className="input mb-1"
+/>
+<p className="text-xs text-gray-500 mb-4">Data prevista para o fim da viagem.</p>
+
+{/* Estilo */}
+<label className="block text-sm font-medium text-gray-700">Estilo de Viagem</label>
+<select name="estilo" value={form.estilo} onChange={handleChange} className="input mb-1">
+  <option value="AVENTURA">Aventura</option>
+  <option value="CULTURA">Cultura</option>
+  <option value="RELAXAMENTO">Relaxamento</option>
+  <option value="GASTRONOMIA">Gastronomia</option>
+  <option value="ROMANTICA">Romântica</option>
+  <option value="RELIGIOSA">Religiosa</option>
+  <option value="COMPRAS">Compras</option>
+  <option value="PRAIA">Praia</option>
+  <option value="HISTORICA">Histórica</option>
+  <option value="TECNOLOGIA">Tecnologia</option>
+  <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
+</select>
+<p className="text-xs text-gray-500 mt-1 mb-4">Qual o estilo principal da viagem que você está planejando.</p>
               <div className="mb-7.5">
                 <button
                   type="button"
@@ -316,21 +522,56 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 2, delay: 0.1 }}
-            className="relative w-full md:w-2/5 lg:w-[26%] overflow-hidden rounded-lg transition-all duration-500"
-            style={{ height: showPreferences ? "1000px" : "540px" }}
+            transition={{ duration: 1 }}
+            className="relative w-full md:w-[35%] lg:w-[32%] xl:w-[30%] overflow-hidden rounded-lg bg-white p-4 shadow-md flex flex-col transition-all duration-700"
+            style={{
+              height: showPreferences ? "760px" : "640px", 
+              transition: "height 0.7s ease-in-out",
+            }}
           >
-            <motion.img
-              key={imagemDestino}
-              src={imagemDestino}
-              alt="Imagem do destino"
-              className="object-cover w-full h-full rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
+            <div className="w-full h-[75%] mb-4">
+              <motion.img
+                key={imagemDestino}
+                src={imagemDestino}
+                alt="Imagem do destino"
+                className="object-cover w-full h-full rounded-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+              />
+            </div>
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Consulta personalizada de imagem
+            </label>
+            <input
+              type="text"
+              value={consultaImagem[1] || form.destino}
+              onChange={(e) =>
+                setConsultaImagem((prev) => ({ ...prev, 1: e.target.value }))
+              }
+              placeholder="Ex: Torre Eiffel - Paris - França"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Digite uma nova descrição se quiser alterar a imagem automaticamente buscada para este destino.
+            </p>
+
+            <button
+              onClick={async () => {
+                const descricaoFinal = consultaImagem[1] || form.destino;
+                if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);
+
+                const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
+                setImagemDestino(novaImagem || "/images/common/beach.jpg");
+              }}
+              className="mt-3 w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded hover:bg-blue-700 transition-all"
+            >
+              Buscar nova imagem
+            </button>
           </motion.div>
+
         </div>
       </div>
     </section>

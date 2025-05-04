@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 
 interface PreferenciasFormProps {
@@ -7,6 +7,37 @@ interface PreferenciasFormProps {
 }
 
 const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handlePreferenceChange }) => {
+  const [idadeMinimaErro, setIdadeMinimaErro] = useState("");
+  const [idadeMaximaErro, setIdadeMaximaErro] = useState("");
+
+  const handleValidatedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const numericValue = parseInt(value);
+
+    if (name === "idadeMinima") {
+      if (numericValue < 18) {
+        setIdadeMinimaErro("A idade mínima deve ser no mínimo 18 anos.");
+        return;
+      } else if (preferencias.idadeMaxima && numericValue > preferencias.idadeMaxima) {
+        setIdadeMinimaErro("A idade mínima não pode ser maior que a idade máxima.");
+        return;
+      } else {
+        setIdadeMinimaErro("");
+      }
+    }
+
+    if (name === "idadeMaxima") {
+      if (preferencias.idadeMinima && numericValue < preferencias.idadeMinima) {
+        setIdadeMaximaErro("A idade máxima não pode ser menor que a idade mínima.");
+        return;
+      } else {
+        setIdadeMaximaErro("");
+      }
+    }
+
+    handlePreferenceChange(e);
+  };
+
   return (
     <div className="mt-4 space-y-4">
 
@@ -15,7 +46,7 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <select
           name="generoPreferido"
           value={preferencias.generoPreferido}
-          onChange={handlePreferenceChange}
+          onChange={handleValidatedChange}
           className="input"
         >
           <option value="MASCULINO">Masculino</option>
@@ -27,44 +58,72 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <p className="text-xs text-gray-500 ml-1">Gênero dos participantes que você prefere na viagem.</p>
       </div>
 
-      {/* Faixa Etária */}
+      {/* Faixa Etária personalizada */}
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="text-sm">Idade mínima</label>
+          <input
+            type="number"
+            name="idadeMinima"
+            min={18}
+            value={preferencias.idadeMinima || ""}
+            onChange={handleValidatedChange}
+            className="input"
+          />
+          {idadeMinimaErro && <p className="text-red-500 text-xs mt-1">{idadeMinimaErro}</p>}
+        </div>
+        <div className="flex-1">
+          <label className="text-sm">Idade máxima</label>
+          <input
+            type="number"
+            name="idadeMaxima"
+            min={18}
+            value={preferencias.idadeMaxima || ""}
+            onChange={handleValidatedChange}
+            className="input"
+          />
+          {idadeMaximaErro && <p className="text-red-500 text-xs mt-1">{idadeMaximaErro}</p>}
+        </div>
+      </div>
+      <p className="text-xs text-gray-500 ml-1">Faixa etária dos viajantes que você prefere.</p>
+
+      {/* Valor médio por viagem */}
       <div>
-        <select
-          name="faixaEtariaPreferida"
-          value={preferencias.faixaEtariaPreferida}
-          onChange={handlePreferenceChange}
+        <label className="text-sm">Valor médio por viagem (R$)</label>
+        <input
+          type="number"
+          name="valorMedioViagem"
+          min={0}
+          step={50}
+          value={preferencias.valorMedioViagem || ""}
+          onChange={handleValidatedChange}
           className="input"
-        >
-          <option value="INFANTIL">Infantil</option>
-          <option value="ADOLESCENTES">Adolescentes</option>
-          <option value="JOVENS_ADULTOS">Jovens Adultos</option>
-          <option value="ADULTOS">Adultos</option>
-          <option value="MEIA_IDADE">Meia Idade</option>
-          <option value="MELHOR_IDADE">Melhor Idade</option>
-          <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
-        </select>
-        <p className="text-xs text-gray-500 ml-1">Faixa etária dos viajantes que você prefere.</p>
+        />
+        <p className="text-xs text-gray-500 ml-1">Quanto você está disposto(a) a gastar por viagem, em média.</p>
       </div>
 
       {/* Checkboxes */}
       <div className="flex flex-col gap-2">
-        <label><input type="checkbox" name="petFriendly" checked={preferencias.petFriendly} onChange={handlePreferenceChange}/> Pet Friendly</label>
-        <p className="text-xs text-gray-500 ml-7">Aceita animais de estimação durante a viagem.</p>
-
-        <label><input type="checkbox" name="aceitaCriancas" checked={preferencias.aceitaCriancas} onChange={handlePreferenceChange}/> Aceita Crianças</label>
-        <p className="text-xs text-gray-500 ml-7">Aberto a viajantes com crianças.</p>
-
-        <label><input type="checkbox" name="aceitaFumantes" checked={preferencias.aceitaFumantes} onChange={handlePreferenceChange}/> Aceita Fumantes</label>
-        <p className="text-xs text-gray-500 ml-7">Aceita fumantes entre os participantes.</p>
-
-        <label><input type="checkbox" name="aceitaBebidasAlcoolicas" checked={preferencias.aceitaBebidasAlcoolicas} onChange={handlePreferenceChange}/> Aceita Bebidas Alcoólicas</label>
-        <p className="text-xs text-gray-500 ml-7">Aceita consumo de bebidas alcoólicas na viagem.</p>
-
-        <label><input type="checkbox" name="acomodacaoCompartilhada" checked={preferencias.acomodacaoCompartilhada} onChange={handlePreferenceChange}/> Acomodação Compartilhada</label>
-        <p className="text-xs text-gray-500 ml-7">Disponível para dividir hospedagem.</p>
-
-        <label><input type="checkbox" name="aceitaAnimaisGrandePorte" checked={preferencias.aceitaAnimaisGrandePorte} onChange={handlePreferenceChange}/> Aceita Animais de Grande Porte</label>
-        <p className="text-xs text-gray-500 ml-7">Aceita cães ou animais de grande porte.</p>
+        {[
+          { name: "petFriendly", label: "Pet Friendly", desc: "Aceita animais de estimação durante a viagem." },
+          { name: "aceitaCriancas", label: "Aceita Crianças", desc: "Aberto a viajantes com crianças." },
+          { name: "aceitaFumantes", label: "Aceita Fumantes", desc: "Aceita fumantes entre os participantes." },
+          { name: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas Alcoólicas", desc: "Aceita consumo de bebidas alcoólicas na viagem." },
+          { name: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", desc: "Disponível para dividir hospedagem." },
+          { name: "aceitaAnimaisGrandePorte", label: "Aceita Animais de Grande Porte", desc: "Aceita cães ou animais de grande porte." },
+        ].map((item) => (
+          <div key={item.name}>
+            <label>
+              <input
+                type="checkbox"
+                name={item.name}
+                checked={(preferencias as any)[item.name]}
+                onChange={handleValidatedChange}
+              /> {item.label}
+            </label>
+            <p className="text-xs text-gray-500 ml-7">{item.desc}</p>
+          </div>
+        ))}
       </div>
 
       {/* Tipo de Acomodação */}
@@ -72,7 +131,7 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <select
           name="tipoAcomodacao"
           value={preferencias.tipoAcomodacao}
-          onChange={handlePreferenceChange}
+          onChange={handleValidatedChange}
           className="input"
         >
           <option value="HOTEL">Hotel</option>
@@ -93,7 +152,7 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <select
           name="tipoTransporte"
           value={preferencias.tipoTransporte}
-          onChange={handlePreferenceChange}
+          onChange={handleValidatedChange}
           className="input"
         >
           <option value="AVIAO">Avião</option>
