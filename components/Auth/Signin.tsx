@@ -40,8 +40,13 @@ const Signin = () => {
         nome: usuario.nome,
         fotoPerfil: usuario.fotoPerfil,
       });
-
-      router.replace("/profile");
+      
+      if (!usuario.emailVerificado || !usuario.telefoneVerificado) {
+        router.replace("/profile/verificar");
+      } else {
+        router.replace("/profile");
+      }
+      
 
     } catch (err: any) {
       if (err.response && err.response.status === 404) {

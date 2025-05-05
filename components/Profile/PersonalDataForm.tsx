@@ -165,12 +165,35 @@ const PersonalDataForm = () => {
       </div>
 
       <div>
-        <label className="font-semibold">Email <span className="text-red-500">*</span></label>
-        <Input type="email" name="email" value={userData?.email ?? ""} onChange={handleChange} />
+        <label className="font-semibold">
+          Email <span className="text-red-500">*</span>
+        </label>
+        <Input
+          type="email"
+          name="email"
+          value={userData?.email ?? ""}
+          onChange={handleChange}
+        />
+        {userData?.emailVerificado ? (
+          <p className="mt-1 text-green-600 text-sm">✅ E-mail verificado</p>
+        ) : (
+          <p className="mt-1 text-red-600 text-sm">
+            ❌ E-mail não verificado –{" "}
+            <button
+              type="button"
+              onClick={() => router.push("/profile/verificar")}
+              className="underline text-blue-600"
+            >
+              Verificar agora
+            </button>
+          </p>
+        )}
       </div>
 
       <div>
-        <label className="font-semibold">Telefone <span className="text-red-500">*</span></label>
+        <label className="font-semibold">
+          Telefone <span className="text-red-500">*</span>
+        </label>
         <PhoneInput
           country="br"
           value={userData?.telefone?.replace("+", "") ?? ""}
@@ -179,7 +202,22 @@ const PersonalDataForm = () => {
           inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
           placeholder="Ex: +55 (31) 98765-4321"
         />
+        {userData?.telefoneVerificado ? (
+          <p className="mt-1 text-green-600 text-sm">✅ Telefone verificado</p>
+        ) : (
+          <p className="mt-1 text-red-600 text-sm">
+            ❌ Telefone não verificado –{" "}
+            <button
+              type="button"
+              onClick={() => router.push("/profile/verificar")}
+              className="underline text-blue-600"
+            >
+              Verificar agora
+            </button>
+          </p>
+        )}
       </div>
+
 
       <div>
         <label className="font-semibold">Data de Nascimento <span className="text-red-500">*</span></label>

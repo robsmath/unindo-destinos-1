@@ -1,15 +1,10 @@
 import api from "./api";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 
-interface Usuario {
-  nome: string;
-  email: string;
-  fotoPerfil?: string;
-}
 
 interface LoginResponse {
   token: string;
-  usuario: Usuario;
+  usuario: UsuarioDTO;
 }
 
 interface ApiResponse<T> {
