@@ -20,16 +20,15 @@ const EncontrePessoas = () => {
     genero: "",
     idadeMin: "",
     idadeMax: "",
-    petFriendly: false,
-    aceitaCriancas: false,
-    aceitaFumantes: false,
-    aceitaBebidasAlcoolicas: false,
-    acomodacaoCompartilhada: false,
-    aceitaAnimaisGrandePorte: false,
+    petFriendly: undefined,
+    aceitaCriancas: undefined,
+    aceitaFumantes: undefined,
+    aceitaBebidasAlcoolicas: undefined,
+    acomodacaoCompartilhada: undefined,
+    aceitaAnimaisGrandePorte: undefined,
     tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
     tipoTransporte: "NAO_TENHO_PREFERENCIA",
   });
-  
 
   const [usuarios, setUsuarios] = useState<UsuarioBuscaDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,14 +49,31 @@ const EncontrePessoas = () => {
     const target = e.target;
     setFiltros((prev) => ({
       ...prev,
-      [target.name]: target.type === "checkbox" ? (target as HTMLInputElement).checked : target.value,
+      [target.name]: target.type === "checkbox"
+        ? (target as HTMLInputElement).checked
+        : target.value,
     }));
   };
 
   const buscar = async () => {
     setLoading(true);
     try {
-      const response = await buscarUsuarios(filtros);
+      const filtrosLimpos: any = {
+        genero: filtros.genero || null,
+        idadeMin: filtros.idadeMin || null,
+        idadeMax: filtros.idadeMax || null,
+        tipoAcomodacao: filtros.tipoAcomodacao,
+        tipoTransporte: filtros.tipoTransporte,
+      };
+
+      if (filtros.petFriendly) filtrosLimpos.petFriendly = true;
+      if (filtros.aceitaCriancas) filtrosLimpos.aceitaCriancas = true;
+      if (filtros.aceitaFumantes) filtrosLimpos.aceitaFumantes = true;
+      if (filtros.aceitaBebidasAlcoolicas) filtrosLimpos.aceitaBebidasAlcoolicas = true;
+      if (filtros.acomodacaoCompartilhada) filtrosLimpos.acomodacaoCompartilhada = true;
+      if (filtros.aceitaAnimaisGrandePorte) filtrosLimpos.aceitaAnimaisGrandePorte = true;
+
+      const response = await buscarUsuarios(filtrosLimpos);
       setUsuarios(response.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao buscar usuários");
@@ -101,41 +117,17 @@ const EncontrePessoas = () => {
 
           {/* Filtros */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <select
-              name="genero"
-              value={filtros.genero}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-3 py-2 w-full"
-            >
+            <select name="genero" value={filtros.genero} onChange={handleChange} className="border border-gray-300 rounded px-3 py-2 w-full">
               <option value="">Gênero</option>
               <option value="MASCULINO">Masculino</option>
               <option value="FEMININO">Feminino</option>
               <option value="OUTRO">Outro</option>
             </select>
 
-            <input
-              type="number"
-              name="idadeMin"
-              placeholder="Idade Mínima"
-              value={filtros.idadeMin}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-3 py-2 w-full"
-            />
-            <input
-              type="number"
-              name="idadeMax"
-              placeholder="Idade Máxima"
-              value={filtros.idadeMax}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-3 py-2 w-full"
-            />
+            <input type="number" name="idadeMin" placeholder="Idade Mínima" value={filtros.idadeMin} onChange={handleChange} className="border border-gray-300 rounded px-3 py-2 w-full" />
+            <input type="number" name="idadeMax" placeholder="Idade Máxima" value={filtros.idadeMax} onChange={handleChange} className="border border-gray-300 rounded px-3 py-2 w-full" />
 
-            <select
-              name="tipoAcomodacao"
-              value={filtros.tipoAcomodacao}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-3 py-2 w-full"
-            >
+            <select name="tipoAcomodacao" value={filtros.tipoAcomodacao} onChange={handleChange} className="border border-gray-300 rounded px-3 py-2 w-full">
               <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
               <option value="HOTEL">Hotel</option>
               <option value="HOSTEL">Hostel</option>
@@ -147,12 +139,7 @@ const EncontrePessoas = () => {
               <option value="CASA_DE_AMIGOS">Casa de Amigos</option>
             </select>
 
-            <select
-              name="transporteFavorito"
-              value={filtros.tipoTransporte}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-3 py-2 w-full"
-            >
+            <select name="tipoTransporte" value={filtros.tipoTransporte} onChange={handleChange} className="border border-gray-300 rounded px-3 py-2 w-full">
               <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
               <option value="AVIAO">Avião</option>
               <option value="CARRO">Carro</option>
@@ -177,7 +164,7 @@ const EncontrePessoas = () => {
                 <input
                   type="checkbox"
                   name={nome}
-                  checked={filtros[nome as keyof UsuarioFiltroDTO] as boolean}
+                  checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
                   onChange={handleChange}
                   className="accent-blue-600"
                 />
@@ -209,32 +196,39 @@ const EncontrePessoas = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {usuarios.map((user) => (
-                  <div key={user.id} className="bg-white p-6 rounded-xl shadow-md text-center">
-                    <Image
-                      src={user.fotoPerfil || "/images/user/avatar.png"}
-                      alt="Foto"
-                      width={100}
-                      height={100}
-                      className="rounded-full mx-auto mb-3"
-                    />
-                    <h2 className="text-lg font-bold">{user.nome}</h2>
-                    <p className="text-gray-600">
-                      {user.genero} • {user.idade} anos
-                    </p>
-                    <ul className="text-sm text-left mt-3 space-y-1">
-                      {user.petFriendly && <li>🐶 Pet Friendly</li>}
-                      {user.aceitaCriancas && <li>👶 Aceita Crianças</li>}
-                      {user.aceitaFumantes && <li>🚬 Aceita Fumantes</li>}
-                      {user.aceitaBebidasAlcoolicas && <li>🍷 Aceita Bebidas</li>}
-                      {user.acomodacaoCompartilhada && <li>🛏️ Acomodação Compartilhada</li>}
-                      {user.aceitaAnimaisGrandePorte && <li>🐘 Animais Grandes</li>}
-                    </ul>
-                    <p className="text-sm mt-2">
-                      🏨 {user.tipoAcomodacao || "Hospedagem não informada"}
-                    </p>
-                    <p className="text-sm">
-                      🚗 {user.tipoTransporte || "Transporte não informado"}
-                    </p>
+                  <div key={user.id} className="bg-white p-6 rounded-xl shadow-md text-center min-h-[460px] flex flex-col justify-between">
+                    <div>
+                      <Image
+                        src={user.fotoPerfil?.startsWith("http") ? user.fotoPerfil : "/images/user/avatar.png"}
+                        alt="Foto"
+                        width={100}
+                        height={100}
+                        className="rounded-full mx-auto mb-3"
+                      />
+                      <h2 className="text-lg font-bold">{user.nome}</h2>
+                      <p className="text-gray-600">{user.genero} • {user.idade} anos</p>
+                      <ul className="text-sm text-left mt-3 space-y-1">
+                        {user.petFriendly && <li>🐶 Pet Friendly</li>}
+                        {user.aceitaCriancas && <li>👶 Aceita Crianças</li>}
+                        {user.aceitaFumantes && <li>🚬 Aceita Fumantes</li>}
+                        {user.aceitaBebidasAlcoolicas && <li>🍷 Aceita Bebidas</li>}
+                        {user.acomodacaoCompartilhada && <li>🛏️ Acomodação Compartilhada</li>}
+                        {user.aceitaAnimaisGrandePorte && <li>🐘 Animais Grandes</li>}
+                        {!user.petFriendly &&
+                          !user.aceitaCriancas &&
+                          !user.aceitaFumantes &&
+                          !user.aceitaBebidasAlcoolicas &&
+                          !user.acomodacaoCompartilhada &&
+                          !user.aceitaAnimaisGrandePorte && (
+                            <li className="italic text-gray-400">
+                              Preferências de viagem não informadas.
+                            </li>
+                          )}
+                      </ul>
+                      <p className="text-sm mt-2">🏨 {user.tipoAcomodacao || "Hospedagem não informada"}</p>
+                      <p className="text-sm">🚗 {user.tipoTransporte || "Transporte não informado"}</p>
+                    </div>
+
                     <button
                       className="bg-green-600 text-white px-4 py-2 rounded mt-4 hover:bg-green-700 w-full"
                       onClick={() => abrirModalConvite(user)}
@@ -248,6 +242,43 @@ const EncontrePessoas = () => {
           </div>
         </div>
       </div>
+
+      {/* MODAL DE CONVITE */}
+      {showModal && usuarioSelecionado && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4 text-center">
+              Convidar {usuarioSelecionado.nome} para qual viagem?
+            </h2>
+            <select
+              value={viagemSelecionadaId}
+              onChange={(e) => setViagemSelecionadaId(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
+            >
+              <option value="">Selecione uma viagem</option>
+              {minhasViagens.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.destino} ({v.dataInicio})
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarConvite}
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
+              >
+                Enviar Convite
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
