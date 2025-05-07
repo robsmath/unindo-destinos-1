@@ -174,8 +174,8 @@ const [form, setForm] = useState<{
 
           {/* CPF */}
           <InputMask
-            mask="999.999.999-99"
-            replacement={{ 9: /\d/ }}
+            mask="___.___.___-__"
+            replacement={{ _: /\d/ }}
             name="cpf"
             value={form.cpf}
             onChange={handleChange}
@@ -224,8 +224,8 @@ const [form, setForm] = useState<{
                 className="space-y-4"
               >
                 <InputMask
-                  mask="99999-999"
-                  replacement={{ 9: /\d/ }}
+                  mask="_____-___"
+                  replacement={{ _: /\d/ }}
                   name="endereco.cep"
                   value={form.endereco.cep}
                   onChange={(e) => {
