@@ -47,7 +47,6 @@ export const getRoteiroByViagemId = async (
   }
 };
 
-
 export const atualizarRoteiro = async (
   roteiroId: number,
   data: RoteiroRequestManual
@@ -57,4 +56,20 @@ export const atualizarRoteiro = async (
 
 export const deletarRoteiroByViagemId = async (viagemId: number) => {
   return await api.delete(`/roteiros/viagem/${viagemId}`);
+};
+
+export const baixarRoteiroPdf = async (roteiroId: number): Promise<Blob> => {
+  const response = await api.get<Blob>(`/roteiros/${roteiroId}/pdf`, {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
+export const enviarRoteiroPorEmail = async (
+  roteiroId: number,
+  email: string
+) => {
+  return await api.post(`/roteiros/${roteiroId}/enviar-email`, null, {
+    params: { email },
+  });
 };

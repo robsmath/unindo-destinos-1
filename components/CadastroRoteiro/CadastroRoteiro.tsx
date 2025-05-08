@@ -1,17 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import LoadingOverlay from "@/components/Common/LoadingOverlay";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import html2pdf from "html2pdf.js";
 import {
   deletarRoteiroByViagemId,
   atualizarRoteiro,
   gerarRoteiroComIa,
   getRoteiroByViagemId,
+  baixarRoteiroPdf,
+  enviarRoteiroPorEmail,
 } from "@/services/roteiroService";
-import { Loader2, AlertTriangle, CheckCircle2, Pencil } from "lucide-react";
+
+import { Loader2, AlertTriangle, CheckCircle2, Pencil, Mail } from "lucide-react";
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 
@@ -26,7 +29,9 @@ const CadastroRoteiro = () => {
   const [valorEstimado, setValorEstimado] = useState<number | undefined>();
   const [diasRoteiro, setDiasRoteiro] = useState<{ titulo: string; descricao: string }[]>([]);
   const [observacoesFinais, setObservacoesFinais] = useState<string>("");
-  const [imagemDestino, setImagemDestino] = useState<string>("/images/common/beach.jpg");
+  const [loadingSalvar, setLoadingSalvar] = useState(false);
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const [loadingEmail, setLoadingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingTela, setLoadingTela] = useState(true);
   const [roteiroId, setRoteiroId] = useState<number | null>(null);
@@ -153,7 +158,7 @@ const CadastroRoteiro = () => {
     }
 
     try {
-      setLoading(true);
+      setLoadingSalvar(true);
       await atualizarRoteiro(roteiroId, {
         observacao,
         valorEstimado,
@@ -169,7 +174,7 @@ const CadastroRoteiro = () => {
         icon: <AlertTriangle className="text-red-600" />,
       });
     } finally {
-      setLoading(false);
+      setLoadingSalvar(false);
     }
   };
 
@@ -260,63 +265,59 @@ const CadastroRoteiro = () => {
     }
   };
 
-const handleExportarPdf = () => {
-  const elemento = document.getElementById("pdf-preview");
-  if (!elemento) {
-    toast.error("Erro ao exportar PDF: elemento não encontrado.");
-    return;
-  }
-
-  const originalDisplay = elemento.style.display;
-  elemento.style.display = "block";
-
-  const options = {
-    margin: 0.5,
-    filename: "roteiro_viagem.pdf",
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+  const handleExportarPdf = async () => {
+    if (!roteiroId) {
+      toast.error("ID do roteiro não encontrado.");
+      return;
+    }
+  
+    setLoadingPdf(true);
+  
+    try {
+      const blob = await baixarRoteiroPdf(roteiroId);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "roteiro_viagem.pdf";
+      link.click();
+    } catch {
+      toast.error("Erro ao exportar PDF.");
+    } finally {
+      setLoadingPdf(false);
+    }
   };
-
-  html2pdf()
-    .set(options)
-    .from(elemento)
-    .save()
-    .then(() => {
-      elemento.style.display = originalDisplay || "none";
-    })
-    .catch(() => {
-      toast.error("Falha ao gerar o PDF.");
-      elemento.style.display = originalDisplay || "none";
-    });
-};
-
-
+  
   const handleEnviarPorEmail = async () => {
     if (!roteiroId) return;
+  
     const email = prompt("Digite o e-mail de destino:");
     if (!email || !email.includes("@")) {
       toast.error("E-mail inválido");
       return;
     }
-
+  
+    setLoadingEmail(true);
+  
     try {
-      await fetch(`/roteiros/${roteiroId}/enviar-email?email=${email}`, {
-        method: "POST",
-      });
+      await enviarRoteiroPorEmail(roteiroId, email);
       toast.success("E-mail enviado com sucesso!");
     } catch {
       toast.error("Erro ao enviar e-mail");
+    } finally {
+      setLoadingEmail(false);
     }
   };
 
   return (
-    <section
-      className={`min-h-screen bg-cover bg-center flex justify-center ${
-        modoCriacao === "MANUAL" ? "pt-36 items-start" : "items-center"
-      }`}
-      style={{ backgroundImage: "url('/images/common/beach.jpg')" }}
-    >
+    <>
+      {loading && <LoadingOverlay />}
+  
+      <section
+        className={`min-h-screen bg-cover bg-center flex justify-center ${
+          modoCriacao === "MANUAL" ? "pt-36 items-start" : "items-center"
+        }`}
+        style={{ backgroundImage: "url('/images/common/beach.jpg')" }}
+      >
       {loadingTela ? (
         <div className="flex justify-center items-center min-h-screen">
           <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
@@ -421,29 +422,46 @@ const handleExportarPdf = () => {
           )}
             {modoCriacao === "MANUAL" ? (
               <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8">
-                <button
-                  onClick={salvarRoteiroManual}
-                  disabled={loading}
-                  className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                >
-                  {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                  Salvar Roteiro
-                </button>
-
-                <button
-                  onClick={handleExportarPdf}
-                  className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3"
-                >
-                  Exportar como PDF
-                </button>
-
-                <button
-                  onClick={handleEnviarPorEmail}
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3"
-                >
-                  Enviar por E-mail
-                </button>
-              </div>
+              <button
+                onClick={salvarRoteiroManual}
+                disabled={loadingSalvar}
+                className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+              >
+                {loadingSalvar ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5" />
+                )}
+                Salvar Roteiro
+              </button>
+            
+              <button
+                onClick={handleExportarPdf}
+                disabled={loadingPdf}
+                className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+              >
+                {loadingPdf ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Pencil className="h-5 w-5" />
+                )}
+                Exportar como PDF
+              </button>
+            
+              <button
+                onClick={handleEnviarPorEmail}
+                disabled={loadingEmail}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+              >
+                {loadingEmail ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Mail className="h-5 w-5" />
+                )}
+                Enviar por E-mail
+              </button>
+            </div>
+            
             ) : (
               <div className="mt-8">
                 <button
@@ -458,28 +476,8 @@ const handleExportarPdf = () => {
             )}
         </div>
       )}
-
-      {/* PDF invisível para exportação */}
-      <div id="pdf-preview" className="hidden p-8 max-w-3xl mx-auto text-black bg-white">
-        <img src="/images/logo/unindo-destinos-logo.png" alt="Unindo Destinos" className="w-32 mb-4" />
-        <img src={imagemDestino} alt="Destino" className="w-full h-64 object-cover mb-6 rounded-md" />
-        <h1 className="text-2xl font-bold mb-6">Roteiro de Viagem</h1>
-
-        {diasRoteiro.map((dia, index) => (
-          <div key={index} className="mb-4">
-            <h2 className="text-xl font-semibold mb-1">{dia.titulo}</h2>
-            <pre className="whitespace-pre-wrap text-sm">{dia.descricao}</pre>
-          </div>
-        ))}
-
-        {observacoesFinais && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-2">Observações Finais</h2>
-            <pre className="whitespace-pre-wrap text-sm">{observacoesFinais}</pre>
-          </div>
-        )}
-      </div>
     </section>
+    </>
   );
 };
 
