@@ -26,7 +26,7 @@ const CadastroRoteiro = () => {
   const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");
   const [observacao, setObservacao] = useState("");
   const [tipoViagem, setTipoViagem] = useState<TipoViagem>("CONFORTAVEL");
-  const [valorEstimado, setValorEstimado] = useState<number | undefined>();
+  const [valorEstimado, setValorEstimado] = useState<string>("R$ 0,00");
   const [diasRoteiro, setDiasRoteiro] = useState<{ titulo: string; descricao: string }[]>([]);
   const [observacoesFinais, setObservacoesFinais] = useState<string>("");
   const [loadingSalvar, setLoadingSalvar] = useState(false);
@@ -52,7 +52,14 @@ const CadastroRoteiro = () => {
           setRoteiroId(roteiro.id);
           setObservacao(roteiro.observacao || "");
           setTipoViagem(roteiro.tipoViagem || "CONFORTAVEL");
-          setValorEstimado(roteiro.valorEstimado || undefined);
+          setValorEstimado(
+            roteiro.valorEstimado
+              ? new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(roteiro.valorEstimado)
+              : "R$ 0,00"
+          );          
           const resultado = parseDescricaoComObservacoes(roteiro.descricao || "");
           setDiasRoteiro(resultado.dias);
           setObservacoesFinais(resultado.observacoesFinais);
@@ -159,13 +166,13 @@ const CadastroRoteiro = () => {
 
     try {
       setLoadingSalvar(true);
+      const valorEmNumero = parseFloat(valorEstimado.replace(/\D/g, "")) / 100;
       await atualizarRoteiro(roteiroId, {
         observacao,
-        valorEstimado,
+        valorEstimado: valorEmNumero,
         tipoViagem,
         descricao: montarDescricaoFromDias(),
       });
-
       toast.success("Roteiro atualizado com sucesso!", {
         icon: <CheckCircle2 className="text-green-600" />,
       });
@@ -189,7 +196,15 @@ const CadastroRoteiro = () => {
       if (roteiroGerado) {
         setRoteiroId(roteiroGerado.id);
         setObservacao(roteiroGerado.observacao || "");
-        setValorEstimado(roteiroGerado.valorEstimado || undefined);
+        setValorEstimado(
+          roteiroGerado.valorEstimado
+            ? new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(roteiroGerado.valorEstimado)
+            : "R$ 0,00"
+        );
+        
         setTipoViagem(roteiroGerado.tipoViagem || "CONFORTAVEL");
 
         const resultado = parseDescricaoComObservacoes(roteiroGerado.descricao || "");
@@ -365,12 +380,20 @@ const CadastroRoteiro = () => {
             <>
               <div className="mb-6">
                 <label className="block font-semibold mb-2">Valor Estimado:</label>
-                <input type="number"
+                <input
+                  type="text"
                   className="input w-full"
-                  value={valorEstimado ?? ""}
-                  onChange={(e) => setValorEstimado(parseFloat(e.target.value))} />
+                  value={valorEstimado}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "");
+                    const formatted = new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(parseFloat(raw) / 100 || 0);
+                    setValorEstimado(formatted);
+                  }}
+                />
               </div>
-
               <h3 className="text-2xl font-semibold mb-2">Dias do Roteiro:</h3>
               <p className="text-sm text-gray-600 italic mb-4">
                 Todas as atividades abaixo são apenas sugestões e podem ser alteradas conforme sua preferência.
@@ -404,10 +427,9 @@ const CadastroRoteiro = () => {
               </AnimatePresence>
 
               <button onClick={adicionarDia}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4">
-                Adicionar Dia
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4 flex items-center gap-2">
+                📅 Adicionar dia
               </button>
-
               <div className="mt-10">
                 <h3 className="text-2xl font-semibold mb-2">Observações Finais:</h3>
                 <textarea
@@ -421,7 +443,7 @@ const CadastroRoteiro = () => {
             </>
           )}
             {modoCriacao === "MANUAL" ? (
-              <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8">
+              <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8 justify-center">
               <button
                 onClick={salvarRoteiroManual}
                 disabled={loadingSalvar}

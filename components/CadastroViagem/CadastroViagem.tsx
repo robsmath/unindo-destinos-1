@@ -485,11 +485,11 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-col gap-4 mt-6">
+              <div className="flex flex-row gap-4 mt-6">
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white transition-all duration-300
+                  className={`flex-1 inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white transition-all duration-300
                     ${loading ? "bg-primary/70 animate-pulse" : "bg-primary hover:bg-primaryho"}
                     disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
@@ -507,12 +507,13 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                   <button
                     type="button"
                     onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${id}`)}
-                    className="inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                    className="flex-1 inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white bg-purple-600 hover:bg-purple-700 transition-all duration-300"
                   >
-                    Cadastrar Roteiro
+                    Roteiro 🗺️
                   </button>
                 )}
               </div>
+
             </form>
           </motion.div>
 
