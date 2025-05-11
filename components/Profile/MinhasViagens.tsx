@@ -8,21 +8,34 @@ import { usePerfil } from "@/app/context/PerfilContext";
 import { deletarViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
-import { Loader2 } from "lucide-react";
 
 const MinhasViagens = () => {
   const router = useRouter();
   const { viagens, imagensViagens, atualizarViagens } = usePerfil();
 
   const [ordenacao, setOrdenacao] = useState<"dataDesc" | "dataAsc" | "az" | "za">("dataDesc");
+  const [filtroStatus, setFiltroStatus] = useState<string>("TODOS");
+
+  const viagensFiltradas = useMemo(() => {
+    if (filtroStatus === "TODOS") return viagens;
+    return viagens.filter((v) => v.status === filtroStatus);
+  }, [viagens, filtroStatus]);
 
   const viagensOrdenadas = useMemo(() => {
-    const copia = [...viagens];
+    const copia = [...viagensFiltradas];
     switch (ordenacao) {
       case "dataAsc":
-        return copia.sort((a, b) => new Date(a.dataInicio).getTime() - new Date(b.dataInicio).getTime());
+        return copia.sort(
+          (a, b) =>
+            new Date(a.dataInicio + "T12:00:00").getTime() -
+            new Date(b.dataInicio + "T12:00:00").getTime()
+        );
       case "dataDesc":
-        return copia.sort((a, b) => new Date(b.dataInicio).getTime() - new Date(a.dataInicio).getTime());
+        return copia.sort(
+          (a, b) =>
+            new Date(b.dataInicio + "T12:00:00").getTime() -
+            new Date(a.dataInicio + "T12:00:00").getTime()
+        );
       case "az":
         return copia.sort((a, b) => a.destino.localeCompare(b.destino));
       case "za":
@@ -30,7 +43,7 @@ const MinhasViagens = () => {
       default:
         return copia;
     }
-  }, [viagens, ordenacao]);
+  }, [viagensFiltradas, ordenacao]);
 
   const handleEditar = (id: number) => {
     router.push(`/viagens/editar/${id}`);
@@ -49,7 +62,7 @@ const MinhasViagens = () => {
     try {
       await deletarViagem(id);
       toast.success("Viagem deletada com sucesso!", { position: "top-center" });
-      await atualizarViagens(); // atualiza o contexto
+      await atualizarViagens();
     } catch (error) {
       console.error("Erro ao deletar viagem", error);
       toast.error("Erro ao deletar viagem. Tente novamente.", { position: "top-center" });
@@ -57,10 +70,29 @@ const MinhasViagens = () => {
   };
 
   return (
-    <div className="flex flex-col items-center p-4">
+    <motion.div
+      className="flex flex-col items-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       <h2 className="text-2xl font-bold mb-6">Minhas Viagens</h2>
 
-      <div className="mb-4 flex justify-end w-full max-w-5xl">
+      <div className="mb-6 -mt-4 flex justify-between w-full max-w-5xl z-10 relative gap-4">
+        <select
+          value={filtroStatus}
+          onChange={(e) => setFiltroStatus(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2"
+        >
+          <option value="TODOS">🧭 Todos os Status</option>
+          <option value="RASCUNHO">📌 Rascunho</option>
+          <option value="PENDENTE">⏳ Pendente</option>
+          <option value="CONFIRMADA">✅ Confirmada</option>
+          <option value="EM_ANDAMENTO">🛫 Em andamento</option>
+          <option value="CONCLUIDA">🏁 Concluída</option>
+          <option value="CANCELADA">❌ Cancelada</option>
+        </select>
+
         <select
           value={ordenacao}
           onChange={(e) => setOrdenacao(e.target.value as any)}
@@ -73,46 +105,76 @@ const MinhasViagens = () => {
         </select>
       </div>
 
-      {viagens.length === 0 ? (
-        <div className="text-gray-500">Você ainda não cadastrou nenhuma viagem.</div>
+      {viagensOrdenadas.length === 0 ? (
+        <div className="text-gray-500">Nenhuma viagem encontrada com esse filtro.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {viagensOrdenadas.map((viagem) => (
             <motion.div
               key={viagem.id}
               whileHover={{ scale: 1.05 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden w-80"
+              className="bg-white rounded-2xl shadow-lg overflow-hidden w-80 cursor-pointer"
+              onClick={() => handleEditar(viagem.id)}
             >
               <div className="relative w-full h-48">
                 <img
                   src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
                   alt={viagem.destino}
-                  className="object-cover w-full h-48 rounded-t-2xl transition-all duration-500 ease-in-out"
+                  className={`object-cover w-full h-48 rounded-t-2xl transition-all duration-500 ease-in-out ${
+                    ["CONCLUIDA", "CANCELADA"].includes(viagem.status) ? "grayscale" : ""
+                  }`}
                 />
               </div>
 
               <div className="p-4 flex flex-col items-center">
                 <h3 className="text-lg font-semibold text-center">{viagem.destino}</h3>
+                <span
+                  className={`text-xs font-semibold px-3 py-1 rounded-full mb-2 capitalize ${
+                    viagem.status === "CONFIRMADA"
+                      ? "bg-green-100 text-green-800"
+                      : viagem.status === "EM_ANDAMENTO"
+                      ? "bg-blue-100 text-blue-800"
+                      : viagem.status === "CONCLUIDA"
+                      ? "bg-gray-200 text-gray-700"
+                      : viagem.status === "CANCELADA"
+                      ? "bg-red-100 text-red-800"
+                      : viagem.status === "PENDENTE"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {viagem.status.replace("_", " ").toLowerCase()}
+                </span>
                 <p className="text-sm text-gray-500 text-center mb-4">
-                  De {new Date(viagem.dataInicio).toLocaleDateString("pt-BR")} até {new Date(viagem.dataFim).toLocaleDateString("pt-BR")}
+                  De {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} até{" "}
+                  {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
                 </p>
                 <div className="flex justify-center gap-5">
                   <button
-                    onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${viagem.id}`)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/viagens/cadastrarRoteiro?viagemId=${viagem.id}`);
+                    }}
                     className="text-purple-600 hover:text-purple-800"
                     title="Ver Roteiro"
                   >
                     <FaMapMarkedAlt size={18} />
                   </button>
                   <button
-                    onClick={() => handleEditar(viagem.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditar(viagem.id);
+                    }}
                     className="text-blue-600 hover:text-blue-800"
                     title="Editar"
                   >
                     <FaEdit size={18} />
                   </button>
                   <button
-                    onClick={() => handleDeletar(viagem.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletar(viagem.id);
+                    }}
                     className="text-red-600 hover:text-red-800"
                     title="Excluir"
                   >
@@ -133,7 +195,7 @@ const MinhasViagens = () => {
         <span>✈️</span>
         Cadastrar Viagem
       </motion.button>
-    </div>
+    </motion.div>
   );
 };
 

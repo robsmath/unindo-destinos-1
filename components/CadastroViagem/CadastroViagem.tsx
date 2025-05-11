@@ -278,8 +278,12 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   
 
   return (
-    <section className="bg-gradient-to-b from-gray-100 to-white min-h-screen pt-40 pb-16 px-4">
+      <section
+        className="min-h-screen bg-cover bg-center pt-36 pb-16 px-4"
+        style={{ backgroundImage: "url('/images/common/beach.jpg')" }}
+      >
       <div className="relative mx-auto max-w-c-1390 px-7.5">
+
         <div className="flex flex-col-reverse flex-wrap gap-8 md:flex-row md:flex-nowrap md:justify-between xl:gap-20">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -287,9 +291,27 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             transition={{ duration: 1, delay: 0.1 }}
             className="w-full rounded-lg bg-white p-7.5 shadow-solid-8 md:w-3/5 lg:w-3/4 xl:p-15"
           >
-            <h2 className="mb-2 text-3xl font-semibold text-black xl:text-sectiontitle2">
-              {id ? "Editar Viagem" : "Cadastre sua viagem"}
-            </h2>
+            <div className="relative mb-8">
+              <button
+                onClick={() => router.push("/profile?tab=minhas-viagens")}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow hover:scale-105 transition"
+                title="Voltar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-orange-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <h2 className="text-3xl font-semibold text-center text-black">
+                {id ? "Editar Viagem" : "Cadastre sua viagem"}
+              </h2>
+            </div>
 
             <form onSubmit={handleSubmit}>
 

@@ -63,16 +63,15 @@ const NavAuthenticated = () => {
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-black dark:ring-white z-50">
+        <div className="absolute top-1/2 left-full ml-4 transform -translate-y-1/2 w-52 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50 dark:bg-black dark:ring-white">
           <div className="py-1">
             <Link
               href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
               onClick={() => setMenuOpen(false)}
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
             >
               Perfil
             </Link>
-
             <button
               onClick={() => {
                 logout();

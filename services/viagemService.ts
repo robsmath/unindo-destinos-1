@@ -10,7 +10,6 @@ interface ApiResponse<T> {
 }
 
 export const cadastrarViagem = async (dados: ViagemDTO): Promise<ViagemDTO> => {
-  // 🔥 Não precisa mais enviar o criadorViagemId no DTO, backend usa o usuário autenticado
   const response = await api.post<ApiResponse<ViagemDTO>>("/viagens", dados);
   return response.data.data;
 };
@@ -32,3 +31,12 @@ export const getViagemById = async (id: number): Promise<ViagemDTO> => {
   const response = await api.get<ApiResponse<ViagemDTO>>(`/viagens/${id}`);
   return response.data.data;
 };
+
+export const confirmarViagem = async (id: number) => {
+  return api.put(`/viagens/${id}/status`, null, { params: { novoStatus: "CONFIRMADA" } });
+};
+
+export const cancelarViagem = async (id: number) => {
+  return api.put(`/viagens/${id}/status`, null, { params: { novoStatus: "CANCELADA" } });
+};
+

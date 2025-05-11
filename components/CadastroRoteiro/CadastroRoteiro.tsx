@@ -15,7 +15,7 @@ import {
   enviarRoteiroPorEmail,
 } from "@/services/roteiroService";
 
-import { Loader2, AlertTriangle, CheckCircle2, Pencil, Mail } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle2, Pencil, Mail, Trash2 } from "lucide-react";
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 
@@ -335,182 +335,204 @@ const CadastroRoteiro = () => {
         }`}
         style={{ backgroundImage: "url('/images/common/beach.jpg')" }}
       >
-      {loadingTela ? (
-        <div className="flex justify-center items-center min-h-screen">
-          <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
-        </div>
-      ) : (
         <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 m-4">
-          <h2 className="text-3xl font-bold mb-8 text-center flex justify-center items-center gap-2">
-            Roteiro <Pencil className="h-6 w-6 text-gray-500" />
-          </h2>
-
-          {roteiroInexistente && (
-            <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-6 border border-yellow-300 text-center">
-              Nenhum roteiro foi cadastrado ainda para esta viagem. Você pode criá-lo abaixo!
+          {loadingTela ? (
+            <div className="flex justify-center items-center h-[300px]">
+              <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
             </div>
-          )}
-
-          <div className="mb-6">
-            <label className="block font-semibold mb-2">Modo de Criação:</label>
-            <select value={modoCriacao}
-              onChange={(e) => setModoCriacao(e.target.value as "MANUAL" | "IA")}
-              className="input w-full">
-              <option value="MANUAL">Manual</option>
-              <option value="IA">Gerar com IA</option>
-            </select>
-          </div>
-
-          <div className="mb-6">
-            <label className="block font-semibold mb-2">Observação:</label>
-            <textarea className="input w-full" value={observacao}
-              onChange={(e) => setObservacao(e.target.value)} />
-          </div>
-
-          <div className="mb-6">
-            <label className="block font-semibold mb-2">Tipo de Viagem:</label>
-            <select className="input w-full"
-              value={tipoViagem}
-              onChange={(e) => setTipoViagem(e.target.value as TipoViagem)}>
-              <option value="ECONOMICA">Econômica</option>
-              <option value="CONFORTAVEL">Confortável</option>
-              <option value="LUXO">Luxo</option>
-            </select>
-          </div>
-
-          {modoCriacao === "MANUAL" && (
-            <>
-              <div className="mb-6">
-                <label className="block font-semibold mb-2">Valor Estimado:</label>
-                <input
-                  type="text"
-                  className="input w-full"
-                  value={valorEstimado}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, "");
-                    const formatted = new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(parseFloat(raw) / 100 || 0);
-                    setValorEstimado(formatted);
-                  }}
-                />
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">Dias do Roteiro:</h3>
-              <p className="text-sm text-gray-600 italic mb-4">
-                Todas as atividades abaixo são apenas sugestões e podem ser alteradas conforme sua preferência.
-              </p>
-
-              <AnimatePresence>
-                {diasRoteiro.map((dia, index) => (
-                  <motion.div key={index}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm mb-4 relative">
-                    <h4 className="text-lg font-bold text-gray-700 mb-2">Dia {index + 1}</h4>
-                    <input className="w-full border border-gray-300 rounded-md p-2 mb-3"
-                      placeholder="Título do dia"
-                      value={dia.titulo}
-                      onChange={(e) => atualizarDia(index, "titulo", e.target.value)} />
-                    <textarea className="w-full border border-gray-300 rounded-md p-2 resize-none"
-                      placeholder="Descrição das atividades"
-                      rows={4}
-                      value={dia.descricao}
-                      onChange={(e) => atualizarDia(index, "descricao", e.target.value)} />
-                    <button type="button"
-                      onClick={() => removerDia(index)}
-                      className="absolute top-4 right-4 text-red-500 hover:text-red-700 font-semibold">
-                      Remover
-                    </button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              <button onClick={adicionarDia}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4 flex items-center gap-2">
-                📅 Adicionar dia
-              </button>
-              <div className="mt-10">
-                <h3 className="text-2xl font-semibold mb-2">Observações Finais:</h3>
-                <textarea
-                  className="w-full border border-gray-300 rounded-md p-4 whitespace-pre-line"
-                  rows={6}
-                  placeholder="Insira observações complementares do roteiro..."
-                  value={observacoesFinais}
-                  onChange={(e) => setObservacoesFinais(e.target.value)}
-                />
-              </div>
-            </>
-          )}
-            {modoCriacao === "MANUAL" ? (
-              <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8 justify-center">
-              <button
-                onClick={salvarRoteiroManual}
-                disabled={loadingSalvar}
-                className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-              >
-                {loadingSalvar ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="h-5 w-5" />
-                )}
-                Salvar Roteiro
-              </button>
-            
-              <button
-                onClick={handleExportarPdf}
-                disabled={loadingPdf}
-                className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-              >
-                {loadingPdf ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Pencil className="h-5 w-5" />
-                )}
-                Exportar como PDF
-              </button>
-            
-              <button
-                onClick={() => setMostrarModalEmail(true)}
-                disabled={loadingEmail}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-              >
-                {loadingEmail ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Mail className="h-5 w-5" />
-                )}
-                Enviar por E-mail
-              </button>
-            </div>    
-            ) : (
-              <div className="mt-8">
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="relative mb-8">
                 <button
-                  onClick={gerarRoteiro}
-                  disabled={loading}
-                  className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                  onClick={() => router.back()}
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow hover:scale-105 transition"
+                  title="Voltar"
                 >
-                  {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                  {loading ? "Gerando..." : "Gerar Roteiro com IA"}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
-              </div>
-            )}
-        </div>
-      )}
-    </section>
-    {mostrarModalEmail && roteiroId && (
-  <EnviarRoteiroModal
-    aberto={mostrarModalEmail}
-    onClose={() => setMostrarModalEmail(false)}
-    roteiroId={roteiroId!}
-    viagemId={Number(viagemId)}
-/>
 
-)}
+                <h2 className="text-3xl font-bold text-center flex justify-center items-center gap-2">
+                  Roteiro <span className="text-2xl">🗺️</span>
+                </h2>
+              </div>
+              {roteiroInexistente && (
+                <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-6 border border-yellow-300 text-center">
+                  Nenhum roteiro foi cadastrado ainda para esta viagem. Você pode criá-lo abaixo!
+                </div>
+              )}
+  
+              <div className="mb-6">
+                <label className="block font-semibold mb-2">Modo de Criação:</label>
+                <select value={modoCriacao}
+                  onChange={(e) => setModoCriacao(e.target.value as "MANUAL" | "IA")}
+                  className="input w-full">
+                  <option value="MANUAL">Manual</option>
+                  <option value="IA">Gerar com IA</option>
+                </select>
+              </div>
+  
+              <div className="mb-6">
+                <label className="block font-semibold mb-2">Observação:</label>
+                <textarea className="input w-full" value={observacao}
+                  onChange={(e) => setObservacao(e.target.value)} />
+              </div>
+  
+              <div className="mb-6">
+                <label className="block font-semibold mb-2">Tipo de Viagem:</label>
+                <select className="input w-full"
+                  value={tipoViagem}
+                  onChange={(e) => setTipoViagem(e.target.value as TipoViagem)}>
+                  <option value="ECONOMICA">Econômica</option>
+                  <option value="CONFORTAVEL">Confortável</option>
+                  <option value="LUXO">Luxo</option>
+                </select>
+              </div>
+  
+              {modoCriacao === "MANUAL" && (
+                <>
+                  <div className="mb-6">
+                    <label className="block font-semibold mb-2">Valor Estimado:</label>
+                    <input
+                      type="text"
+                      className="input w-full"
+                      value={valorEstimado}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "");
+                        const formatted = new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(parseFloat(raw) / 100 || 0);
+                        setValorEstimado(formatted);
+                      }}
+                    />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-2">Dias do Roteiro:</h3>
+                  <p className="text-sm text-gray-600 italic mb-4">
+                    Todas as atividades abaixo são apenas sugestões e podem ser alteradas conforme sua preferência.
+                  </p>
+  
+                  <AnimatePresence>
+                    {diasRoteiro.map((dia, index) => (
+                      <motion.div key={index}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm mb-4 relative">
+                        <h4 className="text-lg font-bold text-gray-700 mb-2">📅 Dia {index + 1}</h4>
+                        <input className="w-full border border-gray-300 rounded-md p-2 mb-3"
+                          placeholder="Título do dia"
+                          value={dia.titulo}
+                          onChange={(e) => atualizarDia(index, "titulo", e.target.value)} />
+                        <textarea className="w-full border border-gray-300 rounded-md p-2 resize-none"
+                          placeholder="Descrição das atividades"
+                          rows={4}
+                          value={dia.descricao}
+                          onChange={(e) => atualizarDia(index, "descricao", e.target.value)} />
+                        <button
+                          type="button"
+                          onClick={() => removerDia(index)}
+                          className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                          title="Remover dia"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+  
+                  <button onClick={adicionarDia}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4 flex items-center gap-2">
+                    📅 Adicionar dia
+                  </button>
+                  <div className="mt-10">
+                    <h3 className="text-2xl font-semibold mb-2">Observações Finais:</h3>
+                    <textarea
+                      className="w-full border border-gray-300 rounded-md p-4 whitespace-pre-line"
+                      rows={6}
+                      placeholder="Insira observações complementares do roteiro..."
+                      value={observacoesFinais}
+                      onChange={(e) => setObservacoesFinais(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+              {modoCriacao === "MANUAL" ? (
+                <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8 justify-center">
+                  <button
+                    onClick={salvarRoteiroManual}
+                    disabled={loadingSalvar}
+                    className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                  >
+                    {loadingSalvar ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-5 w-5" />
+                    )}
+                    Salvar Roteiro
+                  </button>
+  
+                  <button
+                    onClick={handleExportarPdf}
+                    disabled={loadingPdf}
+                    className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                  >
+                    {loadingPdf ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Pencil className="h-5 w-5" />
+                    )}
+                    Exportar como PDF
+                  </button>
+  
+                  <button
+                    onClick={() => setMostrarModalEmail(true)}
+                    disabled={loadingEmail}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                  >
+                    {loadingEmail ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Mail className="h-5 w-5" />
+                    )}
+                    Enviar por E-mail
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-8">
+                  <button
+                    onClick={gerarRoteiro}
+                    disabled={loading}
+                    className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                  >
+                    {loading && <Loader2 className="h-5 w-5 animate-spin" />}
+                    {loading ? "Gerando..." : "Gerar Roteiro com IA"}
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </div>
+      </section>
+  
+      {mostrarModalEmail && roteiroId && (
+        <EnviarRoteiroModal
+          aberto={mostrarModalEmail}
+          onClose={() => setMostrarModalEmail(false)}
+          roteiroId={roteiroId!}
+          viagemId={Number(viagemId)}
+        />
+      )}
     </>
   );
+  
 };
 
 export default CadastroRoteiro;

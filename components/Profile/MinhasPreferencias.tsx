@@ -8,7 +8,7 @@ import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { motion } from "framer-motion"; 
 
 const MinhasPreferencias = () => {
   const { preferencias } = usePerfil();
@@ -60,7 +60,12 @@ const MinhasPreferencias = () => {
   }
 
   return (
-    <div className="flex justify-center p-4">
+    <motion.div
+      className="flex justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="w-full max-w-2xl">
         <h2 className="text-2xl font-bold text-center mb-6">Minhas Preferências</h2>
         <PreferenciasForm preferencias={preferenciasEditaveis} handlePreferenceChange={handleChange} />
@@ -72,9 +77,8 @@ const MinhasPreferencias = () => {
           {salvando ? "Salvando..." : "Salvar Preferências"}
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
-  
 };
 
 export default MinhasPreferencias;
