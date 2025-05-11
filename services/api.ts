@@ -23,4 +23,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (typeof window !== "undefined" && (error.response?.status === 401 || error.response?.status === 403)) {
+      Cookies.remove("token");
+      window.location.href = "/auth/signin?erro=expirado";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

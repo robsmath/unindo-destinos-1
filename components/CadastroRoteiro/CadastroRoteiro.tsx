@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import LoadingOverlay from "@/components/Common/LoadingOverlay";
 import { useRouter, useSearchParams } from "next/navigation";
+import EnviarRoteiroModal from "@/components/Modals/EnviarRoteiroModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -36,6 +37,7 @@ const CadastroRoteiro = () => {
   const [loadingTela, setLoadingTela] = useState(true);
   const [roteiroId, setRoteiroId] = useState<number | null>(null);
   const [roteiroInexistente, setRoteiroInexistente] = useState(false);
+  const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
 
   useEffect(() => {
     const carregarRoteiro = async () => {
@@ -471,7 +473,7 @@ const CadastroRoteiro = () => {
               </button>
             
               <button
-                onClick={handleEnviarPorEmail}
+                onClick={() => setMostrarModalEmail(true)}
                 disabled={loadingEmail}
                 className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
               >
@@ -482,8 +484,7 @@ const CadastroRoteiro = () => {
                 )}
                 Enviar por E-mail
               </button>
-            </div>
-            
+            </div>    
             ) : (
               <div className="mt-8">
                 <button
@@ -499,6 +500,15 @@ const CadastroRoteiro = () => {
         </div>
       )}
     </section>
+    {mostrarModalEmail && roteiroId && (
+  <EnviarRoteiroModal
+    aberto={mostrarModalEmail}
+    onClose={() => setMostrarModalEmail(false)}
+    roteiroId={roteiroId!}
+    viagemId={Number(viagemId)}
+/>
+
+)}
     </>
   );
 };

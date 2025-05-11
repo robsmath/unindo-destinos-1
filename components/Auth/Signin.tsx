@@ -9,6 +9,8 @@ import { signIn } from "@/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+
 
 const Signin = () => {
   const router = useRouter();
@@ -22,11 +24,20 @@ const Signin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
     if (isAuthenticated) {
       router.replace("/profile");
     }
   }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    const erro = searchParams.get("erro");
+    if (erro === "expirado") {
+      toast.warning("Sua sessão expirou. Faça login novamente.");
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +49,10 @@ const Signin = () => {
 
       login(token, {
         nome: usuario.nome,
+        email: usuario.email,
         fotoPerfil: usuario.fotoPerfil,
       });
+      
       
       if (!usuario.emailVerificado || !usuario.telefoneVerificado) {
         router.replace("/profile/verificar");

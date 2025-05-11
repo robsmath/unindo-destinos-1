@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/app/context/AuthContext";
-import { getUsuarioLogado, updateUsuarioLogado } from "@/services/userService";
+import { usePerfil } from "@/app/context/PerfilContext";
+import { updateUsuarioLogado } from "@/services/userService";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,40 +17,26 @@ import { Loader2 } from "lucide-react";
 import "react-phone-input-2/lib/style.css";
 
 const PersonalDataForm = () => {
-  const { atualizarFotoPerfil } = useAuth();
   const router = useRouter();
+  const { usuario } = usePerfil();
+
   const [userData, setUserData] = useState<UsuarioDTO | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showAddress, setShowAddress] = useState(false);
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const userResult = await getUsuarioLogado();
+    if (usuario) {
       setUserData({
-        ...userResult,
-        cpf: userResult.cpf ?? "",
-        dataNascimento: userResult.dataNascimento ? userResult.dataNascimento.split("T")[0] : "",
+        ...usuario,
+        cpf: usuario.cpf ?? "",
+        dataNascimento: usuario.dataNascimento?.split("T")[0] ?? "",
         endereco: {
-          ...userResult.endereco!,
-          cep: userResult.endereco?.cep ?? "",
+          ...usuario.endereco!,
+          cep: usuario.endereco?.cep ?? "",
         },
       });
-
-      if (userResult.fotoPerfil) {
-        atualizarFotoPerfil(userResult.fotoPerfil);
-      }
-    } catch (error) {
-      toast.error("Erro ao carregar dados do usuário.");
-      console.error(error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [usuario]);
 
   const buscarEndereco = async (cep: string) => {
     try {
@@ -130,14 +116,6 @@ const PersonalDataForm = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   const formatCpfMask = (cpf: string) => {
     if (!cpf) return "";
     const cleaned = cpf.replace(/\D/g, "");
@@ -152,6 +130,14 @@ const PersonalDataForm = () => {
     return cleaned.replace(/(\d{5})(\d{3})/, "$1-$2");
   };
 
+  if (!userData) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <motion.form
       onSubmit={handleSubmit}
@@ -159,22 +145,19 @@ const PersonalDataForm = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
+      <h2 className="text-2xl font-bold text-center mb-6">Dados Pessoais</h2>
+
       <div>
         <label className="font-semibold">Nome <span className="text-red-500">*</span></label>
-        <Input name="nome" value={userData?.nome ?? ""} onChange={handleChange} />
+        <Input name="nome" value={userData.nome} onChange={handleChange} />
       </div>
 
       <div>
         <label className="font-semibold">
           Email <span className="text-red-500">*</span>
         </label>
-        <Input
-          type="email"
-          name="email"
-          value={userData?.email ?? ""}
-          onChange={handleChange}
-        />
-        {userData?.emailVerificado ? (
+        <Input type="email" name="email" value={userData.email} onChange={handleChange} />
+        {userData.emailVerificado ? (
           <p className="mt-1 text-green-600 text-sm">✅ E-mail verificado</p>
         ) : (
           <p className="mt-1 text-red-600 text-sm">
@@ -191,18 +174,16 @@ const PersonalDataForm = () => {
       </div>
 
       <div>
-        <label className="font-semibold">
-          Telefone <span className="text-red-500">*</span>
-        </label>
+        <label className="font-semibold">Telefone <span className="text-red-500">*</span></label>
         <PhoneInput
           country="br"
-          value={userData?.telefone?.replace("+", "") ?? ""}
+          value={userData.telefone?.replace("+", "") ?? ""}
           onChange={handlePhoneChange}
           inputClass="!w-full !input"
           inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
           placeholder="Ex: +55 (31) 98765-4321"
         />
-        {userData?.telefoneVerificado ? (
+        {userData.telefoneVerificado ? (
           <p className="mt-1 text-green-600 text-sm">✅ Telefone verificado</p>
         ) : (
           <p className="mt-1 text-red-600 text-sm">
@@ -218,15 +199,14 @@ const PersonalDataForm = () => {
         )}
       </div>
 
-
       <div>
         <label className="font-semibold">Data de Nascimento <span className="text-red-500">*</span></label>
-        <Input type="date" name="dataNascimento" value={userData?.dataNascimento ?? ""} onChange={handleChange} />
+        <Input type="date" name="dataNascimento" value={userData.dataNascimento ?? ""} onChange={handleChange} />
       </div>
 
       <div>
         <label className="font-semibold">Gênero <span className="text-red-500">*</span></label>
-        <Select value={userData?.genero ?? ""} onValueChange={handleGeneroChange}>
+        <Select value={userData.genero ?? ""} onValueChange={handleGeneroChange}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Selecione" />
           </SelectTrigger>
@@ -245,7 +225,7 @@ const PersonalDataForm = () => {
           replacement={{ 9: /\d/ }}
           showMask
           name="cpf"
-          value={formatCpfMask(userData?.cpf ?? "")}
+          value={formatCpfMask(userData.cpf)}
           onChange={handleChange}
           className="input w-full border rounded p-2 text-base"
           placeholder="CPF"
@@ -279,7 +259,7 @@ const PersonalDataForm = () => {
                       replacement={{ 9: /\d/ }}
                       showMask
                       name="cep"
-                      value={formatCepMask(userData?.endereco?.cep ?? "")}
+                      value={formatCepMask(userData.endereco?.cep ?? "")}
                       onChange={handleEnderecoChange}
                       className="input w-full border rounded p-2 text-base"
                       placeholder="CEP"
@@ -288,7 +268,7 @@ const PersonalDataForm = () => {
                     <Input
                       type="text"
                       name={name}
-                      value={userData?.endereco?.[name as keyof typeof userData.endereco] ?? ""}
+                      value={userData.endereco?.[name as keyof typeof userData.endereco] ?? ""}
                       onChange={handleEnderecoChange}
                       className="text-base"
                     />

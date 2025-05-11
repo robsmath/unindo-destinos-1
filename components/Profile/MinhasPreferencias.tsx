@@ -1,58 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  getPreferenciasDoUsuario,
-  salvarPreferenciasDoUsuario,
-  atualizarPreferenciasDoUsuario,
-} from "@/services/preferenciasService";
+import { usePerfil } from "@/app/context/PerfilContext";
+import { salvarPreferenciasDoUsuario, atualizarPreferenciasDoUsuario } from "@/services/preferenciasService";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 
 const MinhasPreferencias = () => {
-  const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { preferencias } = usePerfil();
+  const [preferenciasEditaveis, setPreferenciasEditaveis] = useState<PreferenciasDTO | null>(null);
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    carregarPreferencias();
-  }, []);
-
-  const carregarPreferencias = async () => {
-    setLoading(true);
-    try {
-      const prefs = await getPreferenciasDoUsuario();
-      setPreferencias(
-        prefs ?? {
-          generoPreferido: "NAO_TENHO_PREFERENCIA",
-          idadeMinima: null,
-          idadeMaxima: null,
-          valorMedioViagem: null,
-          petFriendly: false,
-          aceitaCriancas: false,
-          aceitaFumantes: false,
-          aceitaBebidasAlcoolicas: false,
-          acomodacaoCompartilhada: false,
-          aceitaAnimaisGrandePorte: false,
-          estiloViagem: "NAO_TENHO_PREFERENCIA",
-          tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
-          tipoTransporte: "NAO_TENHO_PREFERENCIA",
-        }
-      );
-    } catch (err) {
-      toast.error("Erro ao carregar preferências.");
-    } finally {
-      setLoading(false);
+    if (preferencias) {
+      setPreferenciasEditaveis(preferencias);
     }
-  };
+  }, [preferencias]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = type === "checkbox" && "checked" in e.target ? (e.target as HTMLInputElement).checked : undefined;
 
-    setPreferencias((prev) =>
+    setPreferenciasEditaveis((prev) =>
       prev
         ? {
             ...prev,
@@ -63,18 +36,13 @@ const MinhasPreferencias = () => {
   };
 
   const handleSubmit = async () => {
-    if (!preferencias) return;
+    if (!preferenciasEditaveis) return;
 
     setSalvando(true);
     try {
-      const existente = await getPreferenciasDoUsuario();
-      if (!existente) {
-        await salvarPreferenciasDoUsuario(preferencias);
-        toast.success("Preferências salvas com sucesso!");
-      } else {
-        await atualizarPreferenciasDoUsuario(preferencias);
-        toast.success("Preferências atualizadas com sucesso!");
-      }
+      const metodo = preferencias ? atualizarPreferenciasDoUsuario : salvarPreferenciasDoUsuario;
+      await metodo(preferenciasEditaveis);
+      toast.success("Preferências salvas com sucesso!");
     } catch (error) {
       toast.error("Erro ao salvar preferências.");
     } finally {
@@ -82,7 +50,7 @@ const MinhasPreferencias = () => {
     }
   };
 
-  if (loading || !preferencias) {
+  if (!preferenciasEditaveis) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
@@ -92,20 +60,21 @@ const MinhasPreferencias = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-4 px-4">
-      <h2 className="text-xl font-semibold mb-4 text-center">Minhas Preferências</h2>
-      <PreferenciasForm preferencias={preferencias} handlePreferenceChange={handleChange} />
-      <div className="flex justify-end mt-6">
-        <button
+    <div className="flex justify-center p-4">
+      <div className="w-full max-w-2xl">
+        <h2 className="text-2xl font-bold text-center mb-6">Minhas Preferências</h2>
+        <PreferenciasForm preferencias={preferenciasEditaveis} handlePreferenceChange={handleChange} />
+        <Button
           onClick={handleSubmit}
           disabled={salvando}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="w-full mt-6 text-base"
         >
           {salvando ? "Salvando..." : "Salvar Preferências"}
-        </button>
+        </Button>
       </div>
     </div>
   );
+  
 };
 
 export default MinhasPreferencias;

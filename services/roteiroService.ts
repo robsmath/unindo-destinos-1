@@ -65,6 +65,13 @@ export const baixarRoteiroPdf = async (roteiroId: number): Promise<Blob> => {
   return response.data;
 };
 
+export const getNomesParticipantes = async (viagemId: number): Promise<string[]> => {
+  const response = await api.get<string[]>(`/viagens/${viagemId}/participantes/nomes`);
+  return response.data;
+};
+
+
+
 export const enviarRoteiroPorEmail = async (
   roteiroId: number,
   email: string

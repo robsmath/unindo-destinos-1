@@ -1,49 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaMapMarkedAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { getMinhasViagens, deletarViagem } from "@/services/viagemService";
-import { ViagemDTO } from "@/models/ViagemDTO";
-import { Loader2 } from "lucide-react";
-import { getImage } from "@/services/googleImageService";
+import { usePerfil } from "@/app/context/PerfilContext";
+import { deletarViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
+import { Loader2 } from "lucide-react";
 
 const MinhasViagens = () => {
   const router = useRouter();
+  const { viagens, imagensViagens, atualizarViagens } = usePerfil();
 
-  const [viagens, setViagens] = useState<ViagemDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
+  const [ordenacao, setOrdenacao] = useState<"dataDesc" | "dataAsc" | "az" | "za">("dataDesc");
 
-  useEffect(() => {
-    carregarViagens();
-  }, []);
-
-  const carregarViagens = async () => {
-    try {
-      const response = await getMinhasViagens();
-      setViagens(response);
-
-      const novasImagens: { [key: number]: string } = {};
-
-      await Promise.all(
-        response.map(async (viagem) => {
-          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
-        })
-      );
-
-      setImagensViagens(novasImagens);
-    } catch (error) {
-      console.error("Erro ao carregar viagens", error);
-    } finally {
-      setLoading(false);
+  const viagensOrdenadas = useMemo(() => {
+    const copia = [...viagens];
+    switch (ordenacao) {
+      case "dataAsc":
+        return copia.sort((a, b) => new Date(a.dataInicio).getTime() - new Date(b.dataInicio).getTime());
+      case "dataDesc":
+        return copia.sort((a, b) => new Date(b.dataInicio).getTime() - new Date(a.dataInicio).getTime());
+      case "az":
+        return copia.sort((a, b) => a.destino.localeCompare(b.destino));
+      case "za":
+        return copia.sort((a, b) => b.destino.localeCompare(a.destino));
+      default:
+        return copia;
     }
-  };
+  }, [viagens, ordenacao]);
 
   const handleEditar = (id: number) => {
     router.push(`/viagens/editar/${id}`);
@@ -62,7 +49,7 @@ const MinhasViagens = () => {
     try {
       await deletarViagem(id);
       toast.success("Viagem deletada com sucesso!", { position: "top-center" });
-      carregarViagens();
+      await atualizarViagens(); // atualiza o contexto
     } catch (error) {
       console.error("Erro ao deletar viagem", error);
       toast.error("Erro ao deletar viagem. Tente novamente.", { position: "top-center" });
@@ -73,13 +60,24 @@ const MinhasViagens = () => {
     <div className="flex flex-col items-center p-4">
       <h2 className="text-2xl font-bold mb-6">Minhas Viagens</h2>
 
-      {loading ? (
-        <div className="flex justify-center items-center h-40">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+      <div className="mb-4 flex justify-end w-full max-w-5xl">
+        <select
+          value={ordenacao}
+          onChange={(e) => setOrdenacao(e.target.value as any)}
+          className="border border-gray-300 rounded px-3 py-2"
+        >
+          <option value="dataDesc">📅 Mais recentes</option>
+          <option value="dataAsc">📅 Mais antigas</option>
+          <option value="az">🔤 A-Z</option>
+          <option value="za">🔤 Z-A</option>
+        </select>
+      </div>
+
+      {viagens.length === 0 ? (
+        <div className="text-gray-500">Você ainda não cadastrou nenhuma viagem.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {viagens.map((viagem) => (
+          {viagensOrdenadas.map((viagem) => (
             <motion.div
               key={viagem.id}
               whileHover={{ scale: 1.05 }}
@@ -94,19 +92,31 @@ const MinhasViagens = () => {
               </div>
 
               <div className="p-4 flex flex-col items-center">
-                <h3 className="text-lg font-semibold mb-2 text-center">{viagem.destino}</h3>
-                <div className="flex gap-4">
+                <h3 className="text-lg font-semibold text-center">{viagem.destino}</h3>
+                <p className="text-sm text-gray-500 text-center mb-4">
+                  De {new Date(viagem.dataInicio).toLocaleDateString("pt-BR")} até {new Date(viagem.dataFim).toLocaleDateString("pt-BR")}
+                </p>
+                <div className="flex justify-center gap-5">
+                  <button
+                    onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${viagem.id}`)}
+                    className="text-purple-600 hover:text-purple-800"
+                    title="Ver Roteiro"
+                  >
+                    <FaMapMarkedAlt size={18} />
+                  </button>
                   <button
                     onClick={() => handleEditar(viagem.id)}
                     className="text-blue-600 hover:text-blue-800"
+                    title="Editar"
                   >
-                    <FaEdit size={20} />
+                    <FaEdit size={18} />
                   </button>
                   <button
                     onClick={() => handleDeletar(viagem.id)}
                     className="text-red-600 hover:text-red-800"
+                    title="Excluir"
                   >
-                    <FaTrash size={20} />
+                    <FaTrash size={18} />
                   </button>
                 </div>
               </div>

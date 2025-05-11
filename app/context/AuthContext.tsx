@@ -4,9 +4,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 interface User {
   nome: string;
+  email: string;
   fotoPerfil?: string;
 }
 
@@ -29,12 +31,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const storedToken = Cookies.get("token");
     const storedUserName = localStorage.getItem("userName");
+    const storedUserEmail = localStorage.getItem("userEmail");
     const storedFotoPerfil = localStorage.getItem("userFotoPerfil");
 
     if (storedToken) setToken(storedToken);
-    if (storedUserName) {
+    if (storedUserName && storedUserEmail) {
       setUser({
         nome: storedUserName,
+        email: storedUserEmail,
         fotoPerfil: storedFotoPerfil || undefined,
       });
     }
@@ -45,7 +49,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const interceptor = axios.interceptors.response.use(
         (response) => response,
         (error) => {
-          if (error.response && error.response.status === 401) {
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            toast.error("Sua sessão expirou. Faça login novamente.");
             logout();
           }
           return Promise.reject(error);
@@ -60,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (newToken: string, user: User) => {
     Cookies.set("token", newToken, { expires: 7 });
     localStorage.setItem("userName", user.nome);
+    localStorage.setItem("userEmail", user.email);
     if (user.fotoPerfil) {
       localStorage.setItem("userFotoPerfil", user.fotoPerfil);
     }
@@ -71,6 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     Cookies.remove("token");
     localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
     localStorage.removeItem("userFotoPerfil");
     setToken(null);
     setUser(null);
@@ -88,7 +95,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = Boolean(token);
 
   return (
-    <AuthContext.Provider value={{ token, user, isAuthenticated, login, logout, atualizarFotoPerfil }}>
+    <AuthContext.Provider
+      value={{ token, user, isAuthenticated, login, logout, atualizarFotoPerfil }}
+    >
       {children}
     </AuthContext.Provider>
   );

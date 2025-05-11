@@ -54,16 +54,16 @@ const NavAuthenticated = () => {
         className="flex items-center focus:outline-none"
       >
         <Image
-          src={user?.fotoPerfil || "/images/user/avatar.png"}
+          src={user?.fotoPerfil?.startsWith("http") ? user.fotoPerfil : "/images/user/avatar.png"}
           alt="Avatar"
-          width={50}
-          height={50}
-          className="rounded-full object-cover"
+          width={40}
+          height={40}
+          className="rounded-full object-cover aspect-square ring-2 ring-white"
         />
       </button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-black dark:ring-white">
+        <div className="absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-black dark:ring-white z-50">
           <div className="py-1">
             <Link
               href="/profile"
