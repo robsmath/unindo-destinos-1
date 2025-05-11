@@ -59,12 +59,12 @@ const PersonalDataForm = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (userData) {
       const { name, value } = e.target;
       setUserData({ ...userData, [name]: value });
     }
-  };
+  };  
 
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (userData) {
@@ -146,7 +146,17 @@ const PersonalDataForm = () => {
       animate={{ opacity: 1 }}
     >
       <h2 className="text-2xl font-bold text-center mb-6">Dados Pessoais</h2>
-
+      <div>
+        <label className="font-semibold">Descrição</label>
+        <textarea
+          name="descricao"
+          value={userData.descricao ?? ""}
+          onChange={handleChange}
+          rows={4}
+          className="w-full border rounded p-2 text-base"
+          placeholder="Fale um pouco sobre você, seus interesses, hobbies, etc."
+        />
+      </div>
       <div>
         <label className="font-semibold">Nome <span className="text-red-500">*</span></label>
         <Input name="nome" value={userData.nome} onChange={handleChange} />

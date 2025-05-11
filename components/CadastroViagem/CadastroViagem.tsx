@@ -476,6 +476,58 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
 </select>
 <p className="text-xs text-gray-500 mt-1 mb-4">Qual o estilo principal da viagem que você está planejando.</p>
+{/* Status da Viagem */}
+<div className="mb-5">
+  <label className="block text-sm font-medium text-gray-700 mb-1">Status da Viagem</label>
+  <p className="text-sm text-gray-800 mb-2">
+    <span className="font-semibold">Status atual:</span>{" "}
+    {form.status === "CONFIRMADA"
+      ? "Confirmada ✅"
+      : form.status === "CANCELADA"
+      ? "Cancelada ❌"
+      : form.status === "EM_ANDAMENTO"
+      ? "Em andamento 🕒"
+      : form.status === "CONCLUIDA"
+      ? "Concluída 🏁"
+      : form.status === "RASCUNHO"
+      ? "Rascunho ✍️"
+      : "Pendente ⏳"}
+  </p>
+
+  {/* Mostrar botões se status permitir */}
+  {(form.status !== "EM_ANDAMENTO" && form.status !== "CONCLUIDA" && form.status !== "CANCELADA") && (
+    <div className="flex gap-3">
+      {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (
+        <button
+          type="button"
+          onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
+          className="px-3 py-1.5 text-sm rounded-md border font-medium 
+            border-green-600 text-green-700 hover:bg-green-50 transition"
+        >
+          ✅ Confirmar
+        </button>
+      )}
+
+      {/* Cancelar é permitido em PENDENTE, RASCUNHO e CONFIRMADA */}
+      {["PENDENTE", "RASCUNHO", "CONFIRMADA"].includes(form.status) && (
+        <button
+          type="button"
+          onClick={() => setForm((prev) => ({ ...prev, status: "CANCELADA" }))}
+          className="px-3 py-1.5 text-sm rounded-md border font-medium 
+            border-red-600 text-red-700 hover:bg-red-50 transition"
+        >
+          ❌ Cancelar
+        </button>
+      )}
+    </div>
+  )}
+
+  <p className="text-xs text-gray-500 mt-1">
+    Você pode confirmar ou cancelar esta viagem. Viagens em andamento, concluídas ou canceladas não permitem alterações de status.
+  </p>
+</div>
+
+
               <div className="mb-7.5">
                 <button
                   type="button"
@@ -507,21 +559,22 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-row gap-4 mt-6">
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`flex-1 inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white transition-all duration-300
-                    ${loading ? "bg-primary/70 animate-pulse" : "bg-primary hover:bg-primaryho"}
-                    disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md 
+                    bg-orange-600 text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Salvando...</span>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Salvando...
                     </>
                   ) : (
-                    id ? "Atualizar Viagem" : "Cadastrar viagem"
+                    <>
+                      ✏️ {id ? "Atualizar Viagem" : "Cadastrar Viagem"}
+                    </>
                   )}
                 </button>
 
@@ -529,9 +582,10 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                   <button
                     type="button"
                     onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${id}`)}
-                    className="flex-1 inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 font-medium text-white bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md 
+                      bg-purple-600 text-white hover:bg-purple-700 transition"
                   >
-                    Roteiro 🗺️
+                    🗺️ Roteiro
                   </button>
                 )}
               </div>

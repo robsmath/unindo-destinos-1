@@ -11,6 +11,9 @@ import Image from "next/image";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { getMinhasViagens } from "@/services/viagemService";
 import { Loader2 } from "lucide-react";
+import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
+import { FaCheckCircle } from "react-icons/fa";
+import ConviteViagemModal from "@/components/EncontrePessoas/ConviteViagemModal";
 
 
 const EncontrePessoas = () => {
@@ -41,6 +44,9 @@ const EncontrePessoas = () => {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioBuscaDTO | null>(null);
   const [minhasViagens, setMinhasViagens] = useState<ViagemDTO[]>([]);
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<string>("");
+  const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
+  const [carregandoConvite, setCarregandoConvite] = useState(false);
+  const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isAuthenticated === false) {
@@ -133,27 +139,38 @@ const EncontrePessoas = () => {
     }
   };
   
-  const abrirModalConvite = async (usuario: UsuarioBuscaDTO) => {
+  const abrirModalConvite = async (usuario: UsuarioBuscaDTO, fecharOutroModal?: () => void) => {
+    setUsuarioCarregandoId(usuario.id);
     try {
       const response = await getMinhasViagens();
       setMinhasViagens(response);
       setUsuarioSelecionado(usuario);
       setViagemSelecionadaId("");
-      setShowModal(true);
+      if (fecharOutroModal) fecharOutroModal();
+      setTimeout(() => setShowModal(true), 150);
     } catch {
       toast.error("Erro ao carregar suas viagens");
+    } finally {
+      setUsuarioCarregandoId(null);
     }
   };
+  
 
   const confirmarConvite = async () => {
     if (!viagemSelecionadaId) {
       toast.error("Selecione uma viagem");
       return;
+    } 
+    setCarregandoConvite(true);  
+    try {
+      toast.success(`Convite enviado para ${usuarioSelecionado?.nome}`);
+      setShowModal(false);
+    } catch {
+      toast.error("Erro ao enviar convite");
+    } finally {
+      setCarregandoConvite(false);
     }
-
-    toast.success(`Convite enviado para ${usuarioSelecionado?.nome}`);
-    setShowModal(false);
-  };
+  };  
 
   return (
     <div
@@ -388,14 +405,23 @@ const EncontrePessoas = () => {
             </button>
           </div>
 
-
           <div className="mt-6">
             {usuarios.length === 0 && !loading ? (
               <p className="text-center text-gray-500">Nenhum resultado encontrado.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {usuarios.map((user) => (
-                  <div key={user.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 text-center min-h-[520px] flex flex-col justify-between cursor-pointer">
+                  <div
+                    key={user.id}
+                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 text-center min-h-[520px] flex flex-col justify-between cursor-pointer"
+                    onClick={(e) => {
+                      const clicouNoBotao = (e.target as HTMLElement).closest("button");
+                      if (!clicouNoBotao) {
+                        setUsuarioSelecionado(user);
+                        setModalPerfilAberto(true);
+                      }
+                    }}
+                  >
                     <div>
                       <Image
                         src={user.fotoPerfil?.startsWith("http") ? user.fotoPerfil : "/images/user/avatar.png"}
@@ -407,7 +433,7 @@ const EncontrePessoas = () => {
                       <h2 className="text-lg font-bold flex items-center justify-center gap-1">
                         {extrairPrimeiroEUltimoNome(user.nome)}
                         {user.emailVerificado && user.telefoneVerificado && (
-                          <span title="Perfil verificado">✅</span>
+                          <FaCheckCircle title="Perfil verificado" className="text-green-600" />
                         )}
                       </h2>
                       <p className="text-gray-600">{user.genero} • {user.idade} anos</p>
@@ -434,58 +460,58 @@ const EncontrePessoas = () => {
                     </div>
 
                     <button
-                      className="bg-green-600 text-white px-4 py-2 rounded mt-4 hover:bg-green-700 w-full"
+                      className="bg-orange-600 text-white px-4 py-2 rounded mt-4 hover:bg-orange-700 w-full font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
                       onClick={() => abrirModalConvite(user)}
+                      disabled={usuarioCarregandoId === user.id}
                     >
-                      Convidar para Viagem
+                      {usuarioCarregandoId === user.id ? (
+                        <>
+                          <Loader2 className="animate-spin w-4 h-4" />
+                          Carregando...
+                        </>
+                      ) : (
+                        <>
+                          👋 Convidar para Viagem
+                        </>
+                      )}
                     </button>
+
                   </div>
                 ))}
               </div>
             )}
           </div>
           </>
-        )}     
-        </div>
-      </div>
-
-      {/* MODAL */}
-      {showModal && usuarioSelecionado && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-center">
-              Convidar {usuarioSelecionado.nome} para qual viagem?
-            </h2>
-            <select
-              value={viagemSelecionadaId}
-              onChange={(e) => setViagemSelecionadaId(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-            >
-              <option value="">Selecione uma viagem</option>
-              {minhasViagens.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.destino} ({v.dataInicio})
-                </option>
-              ))}
-            </select>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarConvite}
-                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm"
-              >
-                Enviar Convite
-              </button>
-            </div>
+          )}
           </div>
-        </div>
-      )}
-    </div>
+          </div>
+
+
+          {/* MODAL DE CONVITE */}
+          {showModal && usuarioSelecionado && (
+            <ConviteViagemModal
+              isOpen={showModal}
+              onClose={() => setShowModal(false)}
+              usuario={usuarioSelecionado}
+              viagens={minhasViagens}
+              viagemSelecionadaId={viagemSelecionadaId}
+              setViagemSelecionadaId={setViagemSelecionadaId}
+              carregando={carregandoConvite}
+              onConfirmar={confirmarConvite}
+            />
+          )}
+
+          {/* MODAL DE MINI PERFIL */}
+          {modalPerfilAberto && usuarioSelecionado && (
+            <MiniPerfilModal
+              usuario={usuarioSelecionado}
+              isOpen={modalPerfilAberto}
+              onClose={() => setModalPerfilAberto(false)}
+              onConvidar={() => abrirModalConvite(usuarioSelecionado)}
+            />
+          )}
+          </div>
+
   );
 };
 

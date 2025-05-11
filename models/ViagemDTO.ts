@@ -19,12 +19,12 @@ export interface ViagemDTO {
     | "TECNOLOGIA"
     | "NAO_TENHO_PREFERENCIA";
   status:
-    | "RASUNHO"
+    | "RASCUNHO"
     | "PENDENTE"
     | "CONFIRMADA"
     | "EM_ANDAMENTO"
     | "CONCLUIDA"
     | "CANCELADA";
   categoriaViagem: "NACIONAL" | "INTERNACIONAL";
-  criadorViagemId?: number; // ✅ agora opcional
+  criadorViagemId?: number;
 }
