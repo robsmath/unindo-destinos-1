@@ -1,4 +1,5 @@
-import Signin from "@/components/Auth/Signin";
+import { Suspense } from "react";
+import SigninClient from "@/components/Auth/SigninClient";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,7 +9,9 @@ export const metadata: Metadata = {
 export default function SigninPage() {
   return (
     <div className="pt-20 min-h-screen px-4">
-      <Signin />
+      <Suspense fallback={<div>Carregando login...</div>}>
+        <SigninClient />
+      </Suspense>
     </div>
   );
 }

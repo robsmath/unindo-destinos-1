@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import LoadingOverlay from "@/components/Common/LoadingOverlay";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import EnviarRoteiroModal from "@/components/Modals/EnviarRoteiroModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -19,11 +19,12 @@ import { Loader2, AlertTriangle, CheckCircle2, Pencil, Mail, Trash2 } from "luci
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 
-const CadastroRoteiro = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const viagemId = searchParams.get("viagemId");
+interface Props {
+  viagemId: string;
+}
 
+const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
+  const router = useRouter();
   const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");
   const [observacao, setObservacao] = useState("");
   const [tipoViagem, setTipoViagem] = useState<TipoViagem>("CONFORTAVEL");

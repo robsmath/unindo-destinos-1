@@ -4,23 +4,17 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
 
-
-const Signin = () => {
+export default function SigninClient() {
   const router = useRouter();
   const { login, isAuthenticated } = useAuth();
 
-  const [data, setData] = useState({
-    email: "",
-    senha: "",
-  });
-
+  const [data, setData] = useState({ email: "", senha: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -46,27 +40,23 @@ const Signin = () => {
 
     try {
       const { token, usuario } = await signIn(data.email, data.senha);
-
       login(token, {
         nome: usuario.nome,
         email: usuario.email,
         fotoPerfil: usuario.fotoPerfil,
       });
-      
-      
+
       if (!usuario.emailVerificado || !usuario.telefoneVerificado) {
         router.replace("/profile/verificar");
       } else {
         router.replace("/profile");
       }
-      
-
     } catch (err: any) {
-      if (err.response && err.response.status === 404) {
-        setError("E-mail não encontrado. Verifique os dados.");
-      } else {
-        setError("Erro ao fazer login. Verifique suas credenciais.");
-      }
+      setError(
+        err.response?.status === 404
+          ? "E-mail não encontrado. Verifique os dados."
+          : "Erro ao fazer login. Verifique suas credenciais."
+      );
       setLoading(false);
     }
   };
@@ -91,27 +81,27 @@ const Signin = () => {
           transition={{ duration: 1, delay: 0.1 }}
           className="animate_top rounded-lg bg-white px-7.5 pt-7.5 shadow-solid-8 dark:border dark:border-strokedark dark:bg-black xl:px-15 xl:pt-15"
         >
-          <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white">Entre na sua conta</h2>
+          <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white">
+            Entre na sua conta
+          </h2>
 
           <form onSubmit={handleLogin}>
             <div className="mb-8 flex flex-col gap-6">
               <input
                 type="email"
                 placeholder="E-mail"
-                name="email"
                 value={data.email}
                 onChange={(e) => setData({ ...data, email: e.target.value })}
-                className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
                 required
+                className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
               />
               <input
                 type="password"
                 placeholder="Senha"
-                name="senha"
                 value={data.senha}
                 onChange={(e) => setData({ ...data, senha: e.target.value })}
-                className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
                 required
+                className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
               />
             </div>
 
@@ -138,6 +128,4 @@ const Signin = () => {
       </div>
     </section>
   );
-};
-
-export default Signin;
+}
