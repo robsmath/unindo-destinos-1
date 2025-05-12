@@ -9,8 +9,10 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
+    <div className="pt-20 min-h-screen px-4">
     <Suspense fallback={<div className="pt-40 text-center">Carregando perfil...</div>}>
       <Profile />
     </Suspense>
+    </div>
   );
 }
