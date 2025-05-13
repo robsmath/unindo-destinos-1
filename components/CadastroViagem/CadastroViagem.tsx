@@ -28,7 +28,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [loading, setLoading] = useState(false);
   const [cidadeInternacional, setCidadeInternacional] = useState("");
   const [consultaImagem, setConsultaImagem] = useState<{ [key: number]: string }>({});
-
+  const [paisSelecionado, setPaisSelecionado] = useState("");
   const [form, setForm] = useState<Omit<ViagemDTO, "id" | "criadorViagemId">>({
     destino: "",
     dataInicio: "",
@@ -137,23 +137,22 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
               setCidade(cidadeSalva.trim());
             }
           } else if (viagem.categoriaViagem === "INTERNACIONAL") {
-            // Extrai cidade e país do destino
             const [cidadeParte, paisParte] = viagem.destino.split(" - ").map((s) => s.trim());
-  
-            // Encontra o nome original em inglês com base no nome em português
+          
             const paisIngles = Object.keys(paisesTraduzidos).find(
               (key) => paisesTraduzidos[key] === paisParte
             );
-  
+          
             setCidadeInternacional(cidadeParte || "");
-  
-            // Atualiza o form com o destino já correto (sem sobrescrever o país traduzido)
+            setPaisSelecionado(paisIngles || ""); // <-- linha nova
+          
             setForm(prev => ({
               ...prev,
               categoriaViagem: "INTERNACIONAL",
               destino: `${cidadeParte} - ${paisesTraduzidos[paisIngles || ""] || paisParte}`,
             }));
           }
+          
   
           const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
           const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
@@ -337,28 +336,29 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
 {/* País + Cidade/Estado (para internacional) */}
 {form.categoriaViagem === "INTERNACIONAL" && (
   <>
-    {/* País */}
-    <label className="block text-sm font-medium text-gray-700">País</label>
-    <select
-      name="pais"
-      value={form.destino.split(" - ").pop() || ""}
-      onChange={(e) => {
-        const pais = e.target.value;
-        const cidade = cidadeInternacional.trim();
-        const paisTraduzido = paisesTraduzidos[pais] || pais;
-        const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
-        setForm(prev => ({ ...prev, destino }));
-      }}
-      className="input mb-1"
-    >
-      <option value="">Selecione um país</option>
-      {paises.map((pais) => (
-        <option key={pais} value={pais}>
-          {paisesTraduzidos[pais] || pais}
-        </option>
-      ))}
-    </select>
-    <p className="text-xs text-gray-500 mb-4">Escolha o país de destino da viagem.</p>
+   <label className="block text-sm font-medium text-gray-700">País</label>
+<select
+  name="pais"
+  value={paisSelecionado}
+  onChange={(e) => {
+    const pais = e.target.value;
+    setPaisSelecionado(pais);
+    const cidade = cidadeInternacional.trim();
+    const paisTraduzido = paisesTraduzidos[pais] || pais;
+    const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
+    setForm(prev => ({ ...prev, destino }));
+  }}
+  className="input mb-1"
+>
+  <option value="">Selecione um país</option>
+  {paises.map((pais) => (
+    <option key={pais} value={pais}>
+      {paisesTraduzidos[pais] || pais}
+    </option>
+  ))}
+</select>
+<p className="text-xs text-gray-500 mb-4">Escolha o país de destino da viagem.</p>
+
 
     {/* Cidade/Estado digitado */}
     <label className="block text-sm font-medium text-gray-700">Cidade ou estado</label>

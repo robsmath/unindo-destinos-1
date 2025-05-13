@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
+import { toast } from "sonner";
 
 interface PreferenciasFormProps {
   preferencias: PreferenciasDTO;
@@ -7,40 +8,56 @@ interface PreferenciasFormProps {
 }
 
 const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handlePreferenceChange }) => {
-  const [idadeMinimaErro, setIdadeMinimaErro] = useState("");
-  const [idadeMaximaErro, setIdadeMaximaErro] = useState("");
+  const [idadeMinimaInput, setIdadeMinimaInput] = useState(preferencias.idadeMinima?.toString() || "");
+  const [idadeMaximaInput, setIdadeMaximaInput] = useState(preferencias.idadeMaxima?.toString() || "");
+  const [valorMedioInput, setValorMedioInput] = useState(
+    preferencias.valorMedioViagem !== null && preferencias.valorMedioViagem !== undefined
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(preferencias.valorMedioViagem)
+      : ""
+  );
+
+  // Atualiza inputs caso preferências mudem externamente
+  useEffect(() => {
+    setIdadeMinimaInput(preferencias.idadeMinima?.toString() || "");
+    setIdadeMaximaInput(preferencias.idadeMaxima?.toString() || "");
+    setValorMedioInput(
+      preferencias.valorMedioViagem !== null && preferencias.valorMedioViagem !== undefined
+        ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(preferencias.valorMedioViagem)
+        : ""
+    );
+  }, [preferencias]);
 
   const handleValidatedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const numericValue = parseInt(value);
 
-    if (name === "idadeMinima") {
-      if (numericValue < 18) {
-        setIdadeMinimaErro("A idade mínima deve ser no mínimo 18 anos.");
-        return;
-      } else if (preferencias.idadeMaxima && numericValue > preferencias.idadeMaxima) {
-        setIdadeMinimaErro("A idade mínima não pode ser maior que a idade máxima.");
-        return;
-      } else {
-        setIdadeMinimaErro("");
-      }
-    }
+    if (name === "valorMedioViagem") {
+      const raw = value.replace(/\D/g, "");
+      const valor = raw ? parseFloat(raw) / 100 : null;
+      setValorMedioInput(value);
 
-    if (name === "idadeMaxima") {
-      if (preferencias.idadeMinima && numericValue < preferencias.idadeMinima) {
-        setIdadeMaximaErro("A idade máxima não pode ser menor que a idade mínima.");
-        return;
-      } else {
-        setIdadeMaximaErro("");
-      }
+      handlePreferenceChange({
+        target: {
+          name: "valorMedioViagem",
+          value: valor === null ? "" : valor.toString(),
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+      return;
     }
 
     handlePreferenceChange(e);
   };
 
+  const atualizarIdade = (campo: "idadeMinima" | "idadeMaxima", valor: number) => {
+    handlePreferenceChange({
+      target: {
+        name: campo,
+        value: valor.toString(),
+      },
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
   return (
     <div className="mt-4 space-y-4">
-
       {/* Gênero */}
       <div>
         <select
@@ -58,31 +75,61 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <p className="text-xs text-gray-500 ml-1">Gênero dos participantes que você prefere na viagem.</p>
       </div>
 
-      {/* Faixa Etária personalizada */}
+      {/* Faixa Etária */}
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="text-sm">Idade mínima</label>
           <input
-            type="number"
+            type="text"
             name="idadeMinima"
-            min={18}
-            value={preferencias.idadeMinima || ""}
-            onChange={handleValidatedChange}
+            inputMode="numeric"
+            value={idadeMinimaInput}
+            onChange={(e) => setIdadeMinimaInput(e.target.value)}
+            onBlur={() => {
+              const min = parseInt(idadeMinimaInput || "0", 10);
+              const max = preferencias.idadeMaxima ?? 0;
+
+              if (min < 18) {
+                toast.warning("A idade mínima não pode ser menor que 18.");
+                setIdadeMinimaInput("18");
+                atualizarIdade("idadeMinima", 18);
+              } else if (max && min > max) {
+                toast.warning("A idade mínima não pode ser maior que a idade máxima.");
+                setIdadeMinimaInput(max.toString());
+                atualizarIdade("idadeMinima", max);
+              } else {
+                atualizarIdade("idadeMinima", min);
+              }
+            }}
             className="input"
           />
-          {idadeMinimaErro && <p className="text-red-500 text-xs mt-1">{idadeMinimaErro}</p>}
         </div>
         <div className="flex-1">
           <label className="text-sm">Idade máxima</label>
           <input
-            type="number"
+            type="text"
             name="idadeMaxima"
-            min={18}
-            value={preferencias.idadeMaxima || ""}
-            onChange={handleValidatedChange}
+            inputMode="numeric"
+            value={idadeMaximaInput}
+            onChange={(e) => setIdadeMaximaInput(e.target.value)}
+            onBlur={() => {
+              const max = parseInt(idadeMaximaInput || "0", 10);
+              const min = preferencias.idadeMinima ?? 0;
+
+              if (max < 18) {
+                toast.warning("A idade máxima não pode ser menor que 18.");
+                setIdadeMaximaInput("18");
+                atualizarIdade("idadeMaxima", 18);
+              } else if (min && max < min) {
+                toast.warning("A idade máxima não pode ser menor que a idade mínima.");
+                setIdadeMaximaInput(min.toString());
+                atualizarIdade("idadeMaxima", min);
+              } else {
+                atualizarIdade("idadeMaxima", max);
+              }
+            }}
             className="input"
           />
-          {idadeMaximaErro && <p className="text-red-500 text-xs mt-1">{idadeMaximaErro}</p>}
         </div>
       </div>
       <p className="text-xs text-gray-500 ml-1">Faixa etária dos viajantes que você prefere.</p>
@@ -91,12 +138,26 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
       <div>
         <label className="text-sm">Valor médio por viagem (R$)</label>
         <input
-          type="number"
+          type="text"
           name="valorMedioViagem"
-          min={0}
-          step={50}
-          value={preferencias.valorMedioViagem || ""}
-          onChange={handleValidatedChange}
+          inputMode="numeric"
+          value={valorMedioInput}
+          onChange={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+            const valor = raw ? parseFloat(raw) / 100 : "";
+            const formatado =
+              valor !== ""
+                ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)
+                : "";
+            setValorMedioInput(formatado);
+            handlePreferenceChange({
+              target: {
+                name: "valorMedioViagem",
+                value: valor.toString(),
+              },
+            } as React.ChangeEvent<HTMLInputElement>);
+          }}
+          placeholder="Ex: R$ 1000"
           className="input"
         />
         <p className="text-xs text-gray-500 ml-1">Quanto você está disposto(a) a gastar por viagem, em média.</p>
@@ -119,7 +180,8 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
                 name={item.name}
                 checked={(preferencias as any)[item.name]}
                 onChange={handleValidatedChange}
-              /> {item.label}
+              />{" "}
+              {item.label}
             </label>
             <p className="text-xs text-gray-500 ml-7">{item.desc}</p>
           </div>
@@ -168,7 +230,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         </select>
         <p className="text-xs text-gray-500 ml-1">Modo de transporte favorito para a viagem.</p>
       </div>
-
     </div>
   );
 };
