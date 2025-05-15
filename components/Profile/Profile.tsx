@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import PersonalDataForm from "@/components/Profile/PersonalDataForm";
 import MinhasPreferencias from "@/components/Profile/MinhasPreferencias";
 import MinhasViagens from "@/components/Profile/MinhasViagens";
+import MeusPets from "@/components/Profile/MeusPets";
 import { uploadFotoPerfil } from "@/services/uploadService";
 
 function classNames(...classes: string[]) {
@@ -158,10 +159,9 @@ const Profile = () => {
                 </TabPanel>
 
                 <TabPanel>
-                  <div className="text-center text-black dark:text-white font-medium">
-                    [Lista de Pets]
-                  </div>
+                  <MeusPets />
                 </TabPanel>
+
               </TabPanels>
             </TabGroup>
           </>
