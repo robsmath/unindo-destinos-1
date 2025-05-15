@@ -31,19 +31,27 @@ const VerificacaoConta = () => {
     const carregarStatus = async () => {
       try {
         const usuario = await getUsuarioLogado();
-        setEmailVerificado(!!usuario.emailVerificado);
-        setTelefoneVerificado(!!usuario.telefoneVerificado);
-
-        if (usuario.emailVerificado && usuario.telefoneVerificado) {
-          router.replace("/profile");
-        }
+        const emailOk = !!usuario.emailVerificado;
+        const telefoneOk = !!usuario.telefoneVerificado;
+  
+        setEmailVerificado(emailOk);
+        setTelefoneVerificado(telefoneOk);
+  
       } catch (err) {
         toast.error("Erro ao carregar dados do usuário.");
       }
     };
-
+  
     carregarStatus();
-  }, [router]);
+  }, []);
+  
+  useEffect(() => {
+    if (emailVerificado && telefoneVerificado) {
+      router.replace("/profile?tab=dados-pessoais");
+      router.refresh();
+    }
+  }, [emailVerificado, telefoneVerificado]);
+  
 
   const handleReenviarEmail = async () => {
     setLoadingReenviarEmail(true);

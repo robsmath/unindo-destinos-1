@@ -10,13 +10,12 @@ import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { useAuth } from "./AuthContext";
 
-
 interface PerfilContextType {
   usuario: UsuarioDTO | null;
   preferencias: PreferenciasDTO | null;
   viagens: ViagemDTO[];
   imagensViagens: { [key: number]: string };
-  carregarPerfil: () => Promise<void>;
+  carregarPerfil: (forcar?: boolean) => Promise<void>;
   atualizarViagens: () => Promise<void>;
 }
 
@@ -27,24 +26,28 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
   const [viagens, setViagens] = useState<ViagemDTO[]>([]);
   const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
+  const [carregado, setCarregado] = useState(false);
   const { atualizarFotoPerfil } = useAuth();
 
-  const carregarPerfil = async () => {
+  const carregarPerfil = async (forcar: boolean = false) => {
+    if (carregado && !forcar) return;
+
     try {
       const [usuarioRes, preferenciasRes, viagensRes] = await Promise.all([
         getUsuarioLogado(),
         getPreferenciasDoUsuario(),
         getMinhasViagens(),
       ]);
-  
+
       setUsuario(usuarioRes);
       setPreferencias(preferenciasRes);
       setViagens(viagensRes);
-  
+      setCarregado(true);
+
       if (usuarioRes.fotoPerfil) {
         atualizarFotoPerfil(usuarioRes.fotoPerfil);
       }
-  
+
       const novasImagens: { [key: number]: string } = {};
       await Promise.all(
         viagensRes.map(async (viagem) => {
@@ -58,7 +61,6 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Erro ao carregar perfil", err);
     }
   };
-  
 
   const atualizarViagens = async () => {
     try {

@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import { FaCheckCircle } from "react-icons/fa";
 import ConviteViagemModal from "@/components/EncontrePessoas/ConviteViagemModal";
+import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
 
 
 const EncontrePessoas = () => {
@@ -49,14 +50,45 @@ const EncontrePessoas = () => {
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
 
   useEffect(() => {
+    const carregarPreferenciasDiretamente = async () => {
+      try {
+        const prefs = await getPreferenciasDoUsuario();
+        if (!prefs) return;
+  
+        setFiltros({
+          genero: ["MASCULINO", "FEMININO", "OUTRO"].includes(prefs.generoPreferido)
+            ? prefs.generoPreferido as "MASCULINO" | "FEMININO" | "OUTRO"
+            : "",
+          idadeMin: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : "",
+          idadeMax: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : "",
+          valorMedioMin: typeof prefs.valorMedioViagem === "number" ? prefs.valorMedioViagem : "",
+          valorMedioMax: "",
+          petFriendly: prefs.petFriendly,
+          aceitaCriancas: prefs.aceitaCriancas,
+          aceitaFumantes: prefs.aceitaFumantes,
+          aceitaBebidasAlcoolicas: prefs.aceitaBebidasAlcoolicas,
+          acomodacaoCompartilhada: prefs.acomodacaoCompartilhada,
+          aceitaAnimaisGrandePorte: prefs.aceitaAnimaisGrandePorte,
+          tipoAcomodacao: prefs.tipoAcomodacao || "NAO_TENHO_PREFERENCIA",
+          tipoTransporte: prefs.tipoTransporte || "NAO_TENHO_PREFERENCIA",
+          apenasVerificados: true,
+        });
+      } catch (err) {
+        console.error("Erro ao buscar preferências do usuário:", err);
+      } finally {
+        setTimeout(() => setCarregandoTela(false), 300);
+      }
+    };
+  
+    if (isAuthenticated === true) {
+      carregarPreferenciasDiretamente();
+    }
+  
     if (isAuthenticated === false) {
       router.replace("/auth/signin");
-    } else {
-      setTimeout(() => {
-        setCarregandoTela(false);
-      }, 600);
     }
   }, [isAuthenticated]);
+  
 
   if (!isAuthenticated) {
     return null;
