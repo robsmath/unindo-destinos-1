@@ -29,3 +29,10 @@ export const buscarUsuarios = async (
   );
   return response.data;
 };
+
+
+export const getUsuarioById = async (id: number): Promise<UsuarioBuscaDTO> => {
+  const response = await api.get<ApiResponse<UsuarioBuscaDTO>>(`/usuarios/${id}`);
+  return response.data.data;
+};
+

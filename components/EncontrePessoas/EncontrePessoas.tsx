@@ -44,9 +44,7 @@ const EncontrePessoas = () => {
   const [showModal, setShowModal] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioBuscaDTO | null>(null);
   const [minhasViagens, setMinhasViagens] = useState<ViagemDTO[]>([]);
-  const [viagemSelecionadaId, setViagemSelecionadaId] = useState<string>("");
   const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
-  const [carregandoConvite, setCarregandoConvite] = useState(false);
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -172,38 +170,20 @@ const EncontrePessoas = () => {
   };
   
   const abrirModalConvite = async (usuario: UsuarioBuscaDTO, fecharOutroModal?: () => void) => {
-    setUsuarioCarregandoId(usuario.id);
-    try {
-      const response = await getMinhasViagens();
-      setMinhasViagens(response);
-      setUsuarioSelecionado(usuario);
-      setViagemSelecionadaId("");
-      if (fecharOutroModal) fecharOutroModal();
-      setTimeout(() => setShowModal(true), 150);
-    } catch {
-      toast.error("Erro ao carregar suas viagens");
-    } finally {
-      setUsuarioCarregandoId(null);
-    }
-  };
+  setUsuarioCarregandoId(usuario.id);
+  try {
+    const response = await getMinhasViagens();
+    setMinhasViagens(response);
+    setUsuarioSelecionado(usuario);
+    if (fecharOutroModal) fecharOutroModal();
+    setTimeout(() => setShowModal(true), 150);
+  } catch {
+    toast.error("Erro ao carregar suas viagens");
+  } finally {
+    setUsuarioCarregandoId(null);
+  }
+};
   
-
-  const confirmarConvite = async () => {
-    if (!viagemSelecionadaId) {
-      toast.error("Selecione uma viagem");
-      return;
-    } 
-    setCarregandoConvite(true);  
-    try {
-      toast.success(`Convite enviado para ${usuarioSelecionado?.nome}`);
-      setShowModal(false);
-    } catch {
-      toast.error("Erro ao enviar convite");
-    } finally {
-      setCarregandoConvite(false);
-    }
-  };  
-
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
@@ -503,7 +483,7 @@ const EncontrePessoas = () => {
                         </>
                       ) : (
                         <>
-                          👋 Convidar para Viagem
+                          Convidar para Viagem
                         </>
                       )}
                     </button>
@@ -526,10 +506,6 @@ const EncontrePessoas = () => {
               onClose={() => setShowModal(false)}
               usuario={usuarioSelecionado}
               viagens={minhasViagens}
-              viagemSelecionadaId={viagemSelecionadaId}
-              setViagemSelecionadaId={setViagemSelecionadaId}
-              carregando={carregandoConvite}
-              onConfirmar={confirmarConvite}
             />
           )}
 

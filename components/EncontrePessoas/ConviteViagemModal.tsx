@@ -1,4 +1,6 @@
-import { Fragment } from "react";
+"use client";
+
+import { Fragment, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -8,16 +10,14 @@ import {
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { enviarConvite } from "@/services/solicitacaoService";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   usuario: UsuarioBuscaDTO;
   viagens: ViagemDTO[];
-  viagemSelecionadaId: string;
-  setViagemSelecionadaId: (id: string) => void;
-  carregando: boolean;
-  onConfirmar: () => void;
 }
 
 const formatarData = (dataISO: string) => {
@@ -30,11 +30,28 @@ export default function ConviteViagemModal({
   onClose,
   usuario,
   viagens,
-  viagemSelecionadaId,
-  setViagemSelecionadaId,
-  onConfirmar,
-  carregando,
 }: Props) {
+  const [viagemSelecionadaId, setViagemSelecionadaId] = useState<string>("");
+  const [carregando, setCarregando] = useState(false);
+
+  const handleEnviarConvite = async () => {
+    if (!viagemSelecionadaId) {
+      toast.warning("Selecione uma viagem antes de enviar o convite.");
+      return;
+    }
+
+    try {
+      setCarregando(true);
+      await enviarConvite(Number(viagemSelecionadaId), usuario.id);
+      toast.success("Convite enviado com sucesso!");
+      onClose();
+    } catch (err) {
+      toast.error("Erro ao enviar convite. Tente novamente.");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -95,7 +112,7 @@ export default function ConviteViagemModal({
                     Cancelar
                   </button>
                   <button
-                    onClick={onConfirmar}
+                    onClick={handleEnviarConvite}
                     disabled={carregando}
                     className={`px-4 py-2 rounded bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold flex items-center justify-center gap-2 ${
                       carregando ? "opacity-70 cursor-not-allowed" : ""

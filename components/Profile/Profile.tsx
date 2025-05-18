@@ -11,6 +11,7 @@ import PersonalDataForm from "@/components/Profile/PersonalDataForm";
 import MinhasPreferencias from "@/components/Profile/MinhasPreferencias";
 import MinhasViagens from "@/components/Profile/MinhasViagens";
 import MeusPets from "@/components/Profile/MeusPets";
+import CentralSolicitacoes from "@/components/Solicitacoes/CentralSolicitacoes";
 import { uploadFotoPerfil } from "@/services/uploadService";
 
 function classNames(...classes: string[]) {
@@ -26,7 +27,13 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const tabs = ["Dados Pessoais", "Minhas Viagens", "Minhas Preferências", "Meus Pets"];
+  const tabs = [
+    "Dados Pessoais",
+    "Minhas Viagens",
+    "Minhas Preferências",
+    "Meus Pets",
+    "Central de Solicitações",
+  ];
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -95,7 +102,6 @@ const Profile = () => {
               Seu Perfil
             </h2>
 
-            {/* Área de foto de perfil */}
             <div className="flex flex-col items-center mb-8">
               <div className="relative">
                 <img
@@ -125,9 +131,8 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Tabs */}
             <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-              <TabList className="flex justify-center border-b border-gray-300 dark:border-strokedark">
+              <TabList className="flex justify-center border-b border-gray-300 dark:border-strokedark flex-wrap gap-4">
                 {tabs.map((tab, idx) => (
                   <Tab
                     key={idx}
@@ -149,19 +154,18 @@ const Profile = () => {
                 <TabPanel>
                   <PersonalDataForm />
                 </TabPanel>
-
                 <TabPanel>
                   <MinhasViagens />
                 </TabPanel>
-
                 <TabPanel>
                   <MinhasPreferencias />
                 </TabPanel>
-
                 <TabPanel>
                   <MeusPets />
                 </TabPanel>
-
+                <TabPanel>
+                  <CentralSolicitacoes />
+                </TabPanel>
               </TabPanels>
             </TabGroup>
           </>
