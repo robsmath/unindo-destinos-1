@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function EncontrePessoasPage() {
   return (
-    <div className="pt-40 min-h-screen px-4">
+    <div className="pt-30 min-h-screen px-4">
       <EncontrePessoas />
     </div>
   );

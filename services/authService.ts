@@ -1,7 +1,6 @@
 import api from "./api";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 
-
 interface LoginResponse {
   token: string;
   usuario: UsuarioDTO;
@@ -36,4 +35,12 @@ interface ApiResponseCadastro {
 export const cadastrarUsuario = async (dados: UsuarioDTO): Promise<UsuarioDTO> => {
   const response = await api.post<ApiResponse<UsuarioDTO>>("/usuarios", dados);
   return response.data.data;
+};
+
+export const enviarEmailRecuperacao = async (email: string): Promise<void> => {
+  await api.post<ApiResponse<null>>("/auth/recuperar-senha", { email });
+};
+
+export const redefinirSenha = async (token: string, novaSenha: string): Promise<void> => {
+  await api.post<ApiResponse<null>>("/auth/redefinir-senha", { token, novaSenha });
 };

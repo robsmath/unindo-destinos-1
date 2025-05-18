@@ -7,7 +7,7 @@ export default function EditarViagemPage() {
   const { id } = useParams();
 
   return (
-    <div className="pt-20 min-h-screen px-4">
+    <div className="pt-25 min-h-screen px-4">
       <CadastroViagem viagemId={id as string} />
     </div>
   );

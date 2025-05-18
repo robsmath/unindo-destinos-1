@@ -105,7 +105,11 @@ export default function SigninClient() {
               />
             </div>
 
-            {error && <div className="mb-4 text-center text-red-500">{error}</div>}
+            {error && <div className="mb-2 text-center text-red-500">{error}</div>}
+
+            <p className="text-right text-sm text-primary hover:underline mb-4">
+              <Link href="/auth/recuperar-senha">Esqueci minha senha</Link>
+            </p>
 
             <button
               type="submit"
