@@ -7,9 +7,12 @@ import { useParams } from "next/navigation";
 import { getParticipantesDaViagem } from "@/services/viagemService";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/app/context/AuthContext";
 
 const ParticipantesViagem = () => {
   const { id } = useParams();
+  const { usuario } = useAuth();
+
   const [participantes, setParticipantes] = useState<UsuarioBuscaDTO[]>([]);
   const [carregando, setCarregando] = useState(true);
 
@@ -27,6 +30,16 @@ const ParticipantesViagem = () => {
 
     fetchParticipantes();
   }, [id]);
+
+  // 🔥 Verificar quem é o criador da viagem
+  const criador = participantes.find((p) => p.criador);
+  const usuarioEhCriador = criador?.id === usuario?.id;
+
+  // 🔥 Ordenar colocando o criador sempre primeiro
+  const participantesOrdenados = [...participantes].sort((a, b) => {
+    if (a.criador === b.criador) return 0;
+    return a.criador ? -1 : 1;
+  });
 
   return (
     <section className="bg-[url(/images/common/beach.jpg)] bg-cover bg-center min-h-screen pt-32 pb-16 px-4">
@@ -48,11 +61,18 @@ const ParticipantesViagem = () => {
             </h1>
 
             {participantes.length === 0 ? (
-              <p className="text-center text-gray-600">Nenhum participante encontrado.</p>
+              <p className="text-center text-gray-600">
+                Nenhum participante encontrado.
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
-                {participantes.map((usuario) => (
-                  <ParticipanteCard key={usuario.id} participante={usuario} viagemId={Number(id)} />
+                {participantesOrdenados.map((usuario) => (
+                  <ParticipanteCard
+                    key={usuario.id}
+                    participante={usuario}
+                    viagemId={Number(id)}
+                    usuarioEhCriador={usuarioEhCriador}
+                  />
                 ))}
               </div>
             )}

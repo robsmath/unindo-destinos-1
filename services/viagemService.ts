@@ -1,6 +1,7 @@
 import api from "./api";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
+import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 
 interface ApiResponse<T> {
   timestamp: string;
@@ -19,8 +20,8 @@ export const editarViagem = async (id: number, dados: ViagemDTO): Promise<void> 
   await api.put(`/viagens/${id}`, dados);
 };
 
-export const getMinhasViagens = async (): Promise<ViagemDTO[]> => {
-  const response = await api.get<ApiResponse<ViagemDTO[]>>("/viagens/minhas");
+export const getMinhasViagens = async (): Promise<MinhasViagensDTO[]> => {
+  const response = await api.get<ApiResponse<MinhasViagensDTO[]>>("/viagens/minhas");
   return response.data.data;
 };
 

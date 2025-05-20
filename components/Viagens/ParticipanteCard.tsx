@@ -13,27 +13,48 @@ import {
   FaEnvelope,
   FaExclamationTriangle,
   FaTrash,
+  FaCrown,
 } from "react-icons/fa";
+import { confirm } from "@/components/ui/confirm";
 
 interface Props {
   participante: UsuarioBuscaDTO;
   viagemId: number;
+  usuarioEhCriador: boolean;
 }
 
-const ParticipanteCard = ({ participante, viagemId }: Props) => {
+// 🔥 Função para exibir apenas primeiro e último nome
+const formatarNome = (nome: string) => {
+  const partes = nome.trim().split(" ");
+  if (partes.length === 1) return partes[0];
+  return `${partes[0]} ${partes[partes.length - 1]}`;
+};
+
+const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) => {
   const { usuario } = useAuth();
   const [carregando, setCarregando] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const podeRemover = participante.criador && usuario?.id !== participante.id;
+  const ehCriador = participante.criador;
+
+  const podeRemover =
+    usuarioEhCriador && // 🔥 Só o criador da viagem pode remover
+    !ehCriador &&       // 🔥 Não pode remover o próprio criador
+    usuario?.id !== participante.id; // 🔥 E não pode se remover
 
   const handleRemover = async () => {
-    if (!confirm("Deseja remover este participante?")) return;
+    const ok = await confirm({
+      title: "Remover Participante",
+      description: `Deseja realmente remover ${formatarNome(participante.nome)} da viagem?`,
+      cancelText: "Cancelar",
+    });
+
+    if (!ok) return;
 
     try {
       setCarregando(true);
       await removerParticipanteDaViagem(viagemId, participante.id);
-      toast.success("Participante removido.");
+      toast.success("Participante removido com sucesso.");
       window.location.reload();
     } catch (err) {
       toast.error("Erro ao remover participante.");
@@ -58,7 +79,13 @@ const ParticipanteCard = ({ participante, viagemId }: Props) => {
           />
         </div>
 
-        <h2 className="font-semibold text-lg text-neutral-800">{participante.nome}</h2>
+        <h2 className="font-semibold text-lg text-neutral-800 flex items-center gap-2 justify-center">
+          {formatarNome(participante.nome)}
+          {ehCriador && (
+            <FaCrown className="text-yellow-500" title="Criador da Viagem" />
+          )}
+        </h2>
+
         <p className="text-sm text-neutral-500 uppercase">
           {participante.genero} • {participante.idade} anos
         </p>

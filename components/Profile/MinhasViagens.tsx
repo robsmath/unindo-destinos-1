@@ -8,6 +8,7 @@ import { usePerfil } from "@/app/context/PerfilContext";
 import { deletarViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
+import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 
 const MinhasViagens = () => {
   const router = useRouter();
@@ -18,7 +19,7 @@ const MinhasViagens = () => {
 
   const viagensFiltradas = useMemo(() => {
     if (filtroStatus === "TODOS") return viagens;
-    return viagens.filter((v) => v.status === filtroStatus);
+    return viagens.filter((v) => v.viagem.status === filtroStatus);
   }, [viagens, filtroStatus]);
 
   const viagensOrdenadas = useMemo(() => {
@@ -27,19 +28,19 @@ const MinhasViagens = () => {
       case "dataAsc":
         return copia.sort(
           (a, b) =>
-            new Date(a.dataInicio + "T12:00:00").getTime() -
-            new Date(b.dataInicio + "T12:00:00").getTime()
+            new Date(a.viagem.dataInicio + "T12:00:00").getTime() -
+            new Date(b.viagem.dataInicio + "T12:00:00").getTime()
         );
       case "dataDesc":
         return copia.sort(
           (a, b) =>
-            new Date(b.dataInicio + "T12:00:00").getTime() -
-            new Date(a.dataInicio + "T12:00:00").getTime()
+            new Date(b.viagem.dataInicio + "T12:00:00").getTime() -
+            new Date(a.viagem.dataInicio + "T12:00:00").getTime()
         );
       case "az":
-        return copia.sort((a, b) => a.destino.localeCompare(b.destino));
+        return copia.sort((a, b) => a.viagem.destino.localeCompare(b.viagem.destino));
       case "za":
-        return copia.sort((a, b) => b.destino.localeCompare(a.destino));
+        return copia.sort((a, b) => b.viagem.destino.localeCompare(a.viagem.destino));
       default:
         return copia;
     }
@@ -53,7 +54,6 @@ const MinhasViagens = () => {
     const confirmacao = await confirm({
       title: "Confirmar Exclusão",
       description: "Tem certeza que deseja excluir esta viagem? Essa ação não poderá ser desfeita.",
-      confirmText: "Sim, excluir",
       cancelText: "Cancelar",
     });
 
@@ -109,12 +109,14 @@ const MinhasViagens = () => {
         <div className="text-gray-500">Nenhuma viagem encontrada com esse filtro.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {viagensOrdenadas.map((viagem) => (
+          {viagensOrdenadas.map(({ viagem, criador }) => (
             <motion.div
               key={viagem.id}
               whileHover={{ scale: 1.05 }}
               className="bg-white rounded-2xl shadow-lg overflow-hidden w-80 cursor-pointer"
-              onClick={() => handleEditar(viagem.id)}
+              onClick={() => {
+                if (criador) handleEditar(viagem.id);
+              }}
             >
               <div className="relative w-full h-48">
                 <img
@@ -127,7 +129,10 @@ const MinhasViagens = () => {
               </div>
 
               <div className="p-4 flex flex-col items-center">
-                <h3 className="text-lg font-semibold text-center">{viagem.destino}</h3>
+                <h3 className="text-lg font-semibold text-center">
+                  {viagem.destino} {!criador && <span className="text-xs text-gray-500">(Participante)</span>}
+                </h3>
+
                 <span
                   className={`text-xs font-semibold px-3 py-1 rounded-full mb-2 capitalize ${
                     viagem.status === "CONFIRMADA"
@@ -145,10 +150,12 @@ const MinhasViagens = () => {
                 >
                   {viagem.status.replace("_", " ").toLowerCase()}
                 </span>
+
                 <p className="text-sm text-gray-500 text-center mb-4">
                   De {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} até{" "}
                   {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
                 </p>
+
                 <div className="flex justify-center gap-5">
                   <button
                     onClick={(e) => {
@@ -170,26 +177,30 @@ const MinhasViagens = () => {
                   >
                     👥
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditar(viagem.id);
-                    }}
-                    className="text-blue-600 hover:text-blue-800"
-                    title="Editar"
-                  >
-                    <FaEdit size={18} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletar(viagem.id);
-                    }}
-                    className="text-red-600 hover:text-red-800"
-                    title="Excluir"
-                  >
-                    <FaTrash size={18} />
-                  </button>
+                  {criador && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditar(viagem.id);
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Editar"
+                      >
+                        <FaEdit size={18} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletar(viagem.id);
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                        title="Excluir"
+                      >
+                        <FaTrash size={18} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>

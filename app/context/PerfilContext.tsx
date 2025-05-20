@@ -7,13 +7,13 @@ import { getMinhasViagens } from "@/services/viagemService";
 import { getImage } from "@/services/googleImageService";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
-import { ViagemDTO } from "@/models/ViagemDTO";
+import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 import { useAuth } from "./AuthContext";
 
 interface PerfilContextType {
   usuario: UsuarioDTO | null;
   preferencias: PreferenciasDTO | null;
-  viagens: ViagemDTO[];
+  viagens: MinhasViagensDTO[];
   imagensViagens: { [key: number]: string };
   carregarPerfil: (forcar?: boolean) => Promise<void>;
   atualizarViagens: () => Promise<void>;
@@ -24,7 +24,7 @@ const PerfilContext = createContext<PerfilContextType | undefined>(undefined);
 export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   const [usuario, setUsuario] = useState<UsuarioDTO | null>(null);
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
-  const [viagens, setViagens] = useState<ViagemDTO[]>([]);
+  const [viagens, setViagens] = useState<MinhasViagensDTO[]>([]);
   const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
   const [carregado, setCarregado] = useState(false);
 
@@ -56,7 +56,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
 
       const novasImagens: { [key: number]: string } = {};
       await Promise.all(
-        viagensRes.map(async (viagem) => {
+        viagensRes.map(async ({ viagem }) => {
           const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
           const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
@@ -75,7 +75,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
 
       const novasImagens: { [key: number]: string } = {};
       await Promise.all(
-        viagensRes.map(async (viagem) => {
+        viagensRes.map(async ({ viagem }) => {
           const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
           const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
