@@ -25,13 +25,12 @@ export const getMinhasSolicitacoes = async (): Promise<SolicitacaoParticipacaoDT
 };
 
 export const aprovarSolicitacao = async (
-  viagemId: number,
-  usuarioId: number
+  solicitacaoId: number
 ): Promise<void> => {
   await api.post<ApiResponse<any>>(
     "/solicitacoes/aprovar",
     null,
-    { params: { viagemId, usuarioId } }
+    { params: { solicitacaoId } }
   );
 };
 
@@ -44,5 +43,5 @@ export const recusarSolicitacao = async (
 export const cancelarSolicitacao = async (
   solicitacaoId: number
 ): Promise<void> => {
-  await api.delete<ApiResponse<any>>(`/solicitacoes/${solicitacaoId}/recusar`);
+  await api.delete<ApiResponse<any>>(`/solicitacoes/${solicitacaoId}`);
 };

@@ -6,7 +6,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
 
-interface User {
+interface Usuario {
+  id: number;
   nome: string;
   email: string;
   fotoPerfil?: string;
@@ -14,29 +15,33 @@ interface User {
 
 interface AuthContextType {
   token: string | null;
-  user: User | null;
+  usuario: Usuario | null;
   isAuthenticated: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string, usuario: Usuario) => void;
   logout: () => void;
   atualizarFotoPerfil: (url: string) => void;
+  atualizarUsuario: (usuario: Usuario) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const storedToken = Cookies.get("token");
+    const storedUserId = localStorage.getItem("userId");
     const storedUserName = localStorage.getItem("userName");
     const storedUserEmail = localStorage.getItem("userEmail");
     const storedFotoPerfil = localStorage.getItem("userFotoPerfil");
 
     if (storedToken) setToken(storedToken);
-    if (storedUserName && storedUserEmail) {
-      setUser({
+
+    if (storedUserId && storedUserName && storedUserEmail) {
+      setUsuario({
+        id: Number(storedUserId),
         nome: storedUserName,
         email: storedUserEmail,
         fotoPerfil: storedFotoPerfil || undefined,
@@ -49,46 +54,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const interceptor = axios.interceptors.response.use(
         (response) => response,
         (error) => {
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          if (error.response?.status === 401 || error.response?.status === 403) {
             toast.error("Sua sessão expirou. Faça login novamente.");
             logout();
           }
           return Promise.reject(error);
         }
       );
+
       return () => {
         axios.interceptors.response.eject(interceptor);
       };
     }
   }, [token]);
 
-  const login = (newToken: string, user: User) => {
+  const login = (newToken: string, usuario: Usuario) => {
     Cookies.set("token", newToken, { expires: 7 });
-    localStorage.setItem("userName", user.nome);
-    localStorage.setItem("userEmail", user.email);
-    if (user.fotoPerfil) {
-      localStorage.setItem("userFotoPerfil", user.fotoPerfil);
-    }
+    salvarUsuarioLocal(usuario);
     setToken(newToken);
-    setUser(user);
+    setUsuario(usuario);
     router.push("/profile");
+  };
+
+  const atualizarUsuario = (usuario: Usuario) => {
+    salvarUsuarioLocal(usuario);
+    setUsuario(usuario);
+  };
+
+  const salvarUsuarioLocal = (usuario: Usuario) => {
+    localStorage.setItem("userId", usuario.id.toString());
+    localStorage.setItem("userName", usuario.nome);
+    localStorage.setItem("userEmail", usuario.email);
+
+    if (usuario.fotoPerfil) {
+      localStorage.setItem("userFotoPerfil", usuario.fotoPerfil);
+    } else {
+      localStorage.removeItem("userFotoPerfil");
+    }
   };
 
   const logout = () => {
     Cookies.remove("token");
+    localStorage.removeItem("userId");
     localStorage.removeItem("userName");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userFotoPerfil");
     setToken(null);
-    setUser(null);
+    setUsuario(null);
     router.push("/auth/signin");
   };
 
   const atualizarFotoPerfil = (novaUrl: string) => {
-    if (user) {
-      const updatedUser = { ...user, fotoPerfil: novaUrl };
-      setUser(updatedUser);
-      localStorage.setItem("userFotoPerfil", novaUrl);
+    if (usuario) {
+      const atualizado = { ...usuario, fotoPerfil: novaUrl };
+      atualizarUsuario(atualizado);
     }
   };
 
@@ -96,7 +115,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, isAuthenticated, login, logout, atualizarFotoPerfil }}
+      value={{
+        token,
+        usuario,
+        isAuthenticated,
+        login,
+        logout,
+        atualizarFotoPerfil,
+        atualizarUsuario,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -106,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth deve ser usado dentro de AuthProvider");
   }
   return context;
 };

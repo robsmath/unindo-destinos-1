@@ -27,7 +27,8 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   const [viagens, setViagens] = useState<ViagemDTO[]>([]);
   const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
   const [carregado, setCarregado] = useState(false);
-  const { atualizarFotoPerfil } = useAuth();
+
+  const { atualizarUsuario, token } = useAuth();
 
   const carregarPerfil = async (forcar: boolean = false) => {
     if (carregado && !forcar) return;
@@ -44,8 +45,13 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       setViagens(viagensRes);
       setCarregado(true);
 
-      if (usuarioRes.fotoPerfil) {
-        atualizarFotoPerfil(usuarioRes.fotoPerfil);
+      if (token) {
+        atualizarUsuario({
+          id: usuarioRes.id!,
+          nome: usuarioRes.nome,
+          email: usuarioRes.email,
+          fotoPerfil: usuarioRes.fotoPerfil,
+        });
       }
 
       const novasImagens: { [key: number]: string } = {};

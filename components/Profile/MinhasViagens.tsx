@@ -163,6 +163,16 @@ const MinhasViagens = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      router.push(`/viagens/${viagem.id}/participantes`);
+                    }}
+                    className="text-green-600 hover:text-green-800"
+                    title="Ver Participantes"
+                  >
+                    👥
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       handleEditar(viagem.id);
                     }}
                     className="text-blue-600 hover:text-blue-800"

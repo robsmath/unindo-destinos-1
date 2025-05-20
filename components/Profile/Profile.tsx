@@ -19,7 +19,7 @@ function classNames(...classes: string[]) {
 }
 
 const Profile = () => {
-  const { isAuthenticated, user, atualizarFotoPerfil } = useAuth();
+  const { isAuthenticated, usuario, atualizarFotoPerfil } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -105,7 +105,7 @@ const Profile = () => {
             <div className="flex flex-col items-center mb-8">
               <div className="relative">
                 <img
-                  src={user?.fotoPerfil || "/images/user/avatar.png"}
+                  src={usuario?.fotoPerfil || "/images/user/avatar.png"}
                   alt="Foto de Perfil"
                   className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-md"
                 />

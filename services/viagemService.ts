@@ -1,5 +1,6 @@
 import api from "./api";
 import { ViagemDTO } from "@/models/ViagemDTO";
+import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 
 interface ApiResponse<T> {
   timestamp: string;
@@ -40,3 +41,20 @@ export const cancelarViagem = async (id: number) => {
   return api.put(`/viagens/${id}/status`, null, { params: { novoStatus: "CANCELADA" } });
 };
 
+export const getParticipantesDaViagem = async (
+  viagemId: number
+): Promise<UsuarioBuscaDTO[]> => {
+  const response = await api.get<ApiResponse<UsuarioBuscaDTO[]>>(
+    `/viagens/${viagemId}/participantes`
+  );
+  return response.data.data;
+};
+
+export const removerParticipanteDaViagem = async (
+  viagemId: number,
+  usuarioId: number
+): Promise<void> => {
+  await api.delete(`/viagens/${viagemId}/participantes`, {
+    params: { usuarioId },
+  });
+};

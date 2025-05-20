@@ -40,7 +40,9 @@ export default function SigninClient() {
 
     try {
       const { token, usuario } = await signIn(data.email, data.senha);
+
       login(token, {
+        id: usuario.id!,
         nome: usuario.nome,
         email: usuario.email,
         fotoPerfil: usuario.fotoPerfil,

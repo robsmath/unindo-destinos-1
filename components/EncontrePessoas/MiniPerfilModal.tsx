@@ -8,7 +8,7 @@ interface Props {
   usuario: UsuarioBuscaDTO;
   isOpen: boolean;
   onClose: () => void;
-  onConvidar: (usuarioId: number) => void;
+  onConvidar?: (usuarioId: number) => void;
 }
 
 const formatarTexto = (valor?: string | null) => {
@@ -48,7 +48,6 @@ export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                {/* Botão de fechar */}
                 <button
                   onClick={onClose}
                   className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
@@ -88,15 +87,18 @@ export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }
                     {usuario.aceitaAnimaisGrandePorte && <p>🐘 Animais Grandes</p>}
                   </div>
 
-                  <Button
-                    className="mt-6 w-full"
-                    onClick={() => {
-                      onClose();
-                      setTimeout(() => onConvidar(usuario.id!), 150);
-                    }}
-                  >
-                    Convidar para Viagem
-                  </Button>
+                  {/* ✅ Botão só aparece se `onConvidar` for passado */}
+                  {onConvidar && (
+                    <Button
+                      className="mt-6 w-full"
+                      onClick={() => {
+                        onClose();
+                        setTimeout(() => onConvidar(usuario.id), 150);
+                      }}
+                    >
+                      Convidar para Viagem
+                    </Button>
+                  )}
                 </div>
               </DialogPanel>
             </TransitionChild>

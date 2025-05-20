@@ -28,7 +28,7 @@ const EnviarRoteiroModal = ({
   const [nomesParticipantes, setNomesParticipantes] = useState<string[]>([]);
   const [carregandoParticipantes, setCarregandoParticipantes] = useState(false);
 
-  const { user } = useAuth();
+  const { usuario } = useAuth();
 
   useEffect(() => {
     const carregarParticipantes = async () => {
@@ -67,12 +67,12 @@ const EnviarRoteiroModal = ({
       }
       emailParaEnviar = emailOutro;
     } else if (destino === "CRIADOR") {
-      if (!user?.email || !isEmailValido(user.email)) {
+      if (!usuario?.email || !isEmailValido(usuario.email)) {
         toast.error("Seu e-mail não está disponível ou está inválido.");
         setLoading(false);
         return;
       }
-      emailParaEnviar = user.email;
+      emailParaEnviar = usuario.email;
     } else if (destino === "PARTICIPANTES") {
       emailParaEnviar = "TODOS";
     }
@@ -134,11 +134,11 @@ const EnviarRoteiroModal = ({
             Para outro e-mail
           </label>
 
-          {destino === "CRIADOR" && user?.email && (
+          {destino === "CRIADOR" && usuario?.email && (
             <div className="mt-2">
               <input
                 type="email"
-                value={user.email}
+                value={usuario.email}
                 disabled
                 className="border border-gray-300 bg-gray-100 text-gray-700 px-3 py-2 w-full rounded cursor-not-allowed"
               />

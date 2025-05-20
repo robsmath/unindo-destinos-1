@@ -20,7 +20,7 @@ interface CadastroViagemProps {
 }
 
 const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
-  const { user } = useAuth();
+  const { usuario } = useAuth();
   const [hasMounted, setHasMounted] = useState(false);
   const [imagemDestino, setImagemDestino] = useState<string>("/images/common/beach.jpg");
   const [showPreferences, setShowPreferences] = useState(false);
@@ -225,7 +225,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       return;
     }
 
-    if (!user) {
+    if (!usuario) {
       toast.error("Usuário não autenticado. Faça login novamente.", { position: "top-center" });
       return;
     }

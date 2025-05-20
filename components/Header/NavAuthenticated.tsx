@@ -12,7 +12,7 @@ interface TokenPayload {
 }
 
 const NavAuthenticated = () => {
-  const { token, user, logout } = useAuth();
+  const { token, usuario, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
 
@@ -21,8 +21,8 @@ const NavAuthenticated = () => {
   };
 
   useEffect(() => {
-    if (user?.nome) {
-      const nome = user.nome.split(" ")[0];
+    if (usuario?.nome) {
+      const nome = usuario.nome.split(" ")[0];
       setFirstName(nome);
       return;
     }
@@ -39,7 +39,7 @@ const NavAuthenticated = () => {
         console.error("Erro ao decodificar o token:", error);
       }
     }
-  }, [token, user]);
+  }, [token, usuario]);
 
   return (
     <div className="relative flex items-center gap-4">
@@ -54,7 +54,7 @@ const NavAuthenticated = () => {
         className="flex items-center focus:outline-none"
       >
         <Image
-          src={user?.fotoPerfil?.startsWith("http") ? user.fotoPerfil : "/images/user/avatar.png"}
+          src={usuario?.fotoPerfil?.startsWith("http") ? usuario.fotoPerfil : "/images/user/avatar.png"}
           alt="Avatar"
           width={40}
           height={40}

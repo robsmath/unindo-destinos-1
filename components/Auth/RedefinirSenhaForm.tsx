@@ -1,13 +1,13 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
 import { redefinirSenha } from "@/services/authService";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-export default function RedefinirSenhaForm() {
-  const searchParams = useSearchParams();
+function FormWithSearchParams() {
+  const searchParams = require("next/navigation").useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
 
@@ -35,6 +35,45 @@ export default function RedefinirSenhaForm() {
   };
 
   return (
+    <form
+      onSubmit={handleSubmit}
+      className="z-10 max-w-md w-full bg-white rounded-lg p-8 shadow-md dark:bg-black dark:border dark:border-strokedark"
+    >
+      <h1 className="text-2xl font-bold text-center text-black dark:text-white mb-6">Redefinir Senha</h1>
+
+      <input
+        type="password"
+        placeholder="Nova senha"
+        value={novaSenha}
+        onChange={(e) => setNovaSenha(e.target.value)}
+        required
+        className="w-full border border-stroke bg-transparent p-2 rounded mb-4 focus:border-primary focus:outline-none dark:border-strokedark dark:text-white"
+      />
+
+      <input
+        type="password"
+        placeholder="Confirmar senha"
+        value={confirmarSenha}
+        onChange={(e) => setConfirmarSenha(e.target.value)}
+        required
+        className="w-full border border-stroke bg-transparent p-2 rounded mb-4 focus:border-primary focus:outline-none dark:border-strokedark dark:text-white"
+      />
+
+      <button
+        type="submit"
+        disabled={salvando}
+        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded transition"
+      >
+        {salvando ? "Salvando..." : "Redefinir Senha"}
+      </button>
+    </form>
+  );
+}
+
+export default function RedefinirSenhaForm() {
+  const [salvando, setSalvando] = useState(false);
+
+  return (
     <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen flex items-center justify-center px-4 relative">
       {salvando && (
         <div className="absolute inset-0 bg-white bg-opacity-70 z-50 flex items-center justify-center">
@@ -42,38 +81,13 @@ export default function RedefinirSenhaForm() {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="z-10 max-w-md w-full bg-white rounded-lg p-8 shadow-md dark:bg-black dark:border dark:border-strokedark"
-      >
-        <h1 className="text-2xl font-bold text-center text-black dark:text-white mb-6">Redefinir Senha</h1>
-
-        <input
-          type="password"
-          placeholder="Nova senha"
-          value={novaSenha}
-          onChange={(e) => setNovaSenha(e.target.value)}
-          required
-          className="w-full border border-stroke bg-transparent p-2 rounded mb-4 focus:border-primary focus:outline-none dark:border-strokedark dark:text-white"
-        />
-
-        <input
-          type="password"
-          placeholder="Confirmar senha"
-          value={confirmarSenha}
-          onChange={(e) => setConfirmarSenha(e.target.value)}
-          required
-          className="w-full border border-stroke bg-transparent p-2 rounded mb-4 focus:border-primary focus:outline-none dark:border-strokedark dark:text-white"
-        />
-
-        <button
-          type="submit"
-          disabled={salvando}
-          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded transition"
-        >
-          {salvando ? "Salvando..." : "Redefinir Senha"}
-        </button>
-      </form>
+      <Suspense fallback={
+        <div className="z-10 max-w-md w-full bg-white rounded-lg p-8 shadow-md text-center dark:bg-black dark:border dark:border-strokedark">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+        </div>
+      }>
+        <FormWithSearchParams />
+      </Suspense>
     </section>
   );
 }

@@ -15,4 +15,5 @@ export interface UsuarioBuscaDTO {
   aceitaBebidasAlcoolicas?: boolean;
   acomodacaoCompartilhada?: boolean;
   aceitaAnimaisGrandePorte?: boolean;
+  criador?: boolean;
 }
