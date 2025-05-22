@@ -3,17 +3,19 @@
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
-import { removerParticipanteDaViagem } from "@/services/viagemService";
+import { removerParticipanteDaViagem, sairDaViagem } from "@/services/viagemService";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   FaUser,
   FaEnvelope,
   FaExclamationTriangle,
   FaTrash,
   FaCrown,
+  FaDoorOpen,
 } from "react-icons/fa";
 import { confirm } from "@/components/ui/confirm";
 
@@ -23,7 +25,6 @@ interface Props {
   usuarioEhCriador: boolean;
 }
 
-// 🔥 Função para exibir apenas primeiro e último nome
 const formatarNome = (nome: string) => {
   const partes = nome.trim().split(" ");
   if (partes.length === 1) return partes[0];
@@ -32,15 +33,19 @@ const formatarNome = (nome: string) => {
 
 const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) => {
   const { usuario } = useAuth();
+  const router = useRouter();
   const [carregando, setCarregando] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
 
   const ehCriador = participante.criador;
 
   const podeRemover =
-    usuarioEhCriador && // 🔥 Só o criador da viagem pode remover
-    !ehCriador &&       // 🔥 Não pode remover o próprio criador
-    usuario?.id !== participante.id; // 🔥 E não pode se remover
+    usuarioEhCriador &&
+    !ehCriador &&
+    usuario?.id !== participante.id;
+
+  const podeSair =
+    usuario?.id === participante.id && !ehCriador;
 
   const handleRemover = async () => {
     const ok = await confirm({
@@ -58,6 +63,27 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) =
       window.location.reload();
     } catch (err) {
       toast.error("Erro ao remover participante.");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const handleSairDaViagem = async () => {
+    const ok = await confirm({
+      title: "Sair da Viagem",
+      description: `Deseja realmente sair desta viagem?`,
+      cancelText: "Cancelar",
+    });
+
+    if (!ok) return;
+
+    try {
+      setCarregando(true);
+      await sairDaViagem(viagemId);
+      toast.success("Você saiu da viagem.");
+      router.push("/profile?tab=viagens"); // 🔥 Redireciona para perfil na aba Viagens
+    } catch (err) {
+      toast.error("Erro ao sair da viagem.");
     } finally {
       setCarregando(false);
     }
@@ -117,7 +143,7 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) =
 
           {podeRemover && (
             <button
-              title="Remover"
+              title="Remover Participante"
               onClick={handleRemover}
               disabled={carregando}
               className="hover:text-red-500 transition"
@@ -126,6 +152,21 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) =
                 <Loader2 className="animate-spin w-4 h-4" />
               ) : (
                 <FaTrash />
+              )}
+            </button>
+          )}
+
+          {podeSair && (
+            <button
+              title="Sair da Viagem"
+              onClick={handleSairDaViagem}
+              disabled={carregando}
+              className="hover:text-red-500 transition"
+            >
+              {carregando ? (
+                <Loader2 className="animate-spin w-4 h-4" />
+              ) : (
+                <FaDoorOpen />
               )}
             </button>
           )}

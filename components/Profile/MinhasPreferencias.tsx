@@ -10,7 +10,6 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-// Objeto padrão para preenchimento inicial
 const PREFERENCIAS_INICIAIS: PreferenciasDTO = {
   generoPreferido: "NAO_TENHO_PREFERENCIA",
   idadeMinima: 18,
@@ -26,11 +25,11 @@ const PREFERENCIAS_INICIAIS: PreferenciasDTO = {
 
   estiloViagem: "NAO_TENHO_PREFERENCIA",
   tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
-  tipoTransporte: "NAO_TENHO_PREFERENCIA"
+  tipoTransporte: "NAO_TENHO_PREFERENCIA",
 };
 
 const MinhasPreferencias = () => {
-  const { preferencias } = usePerfil();
+  const { preferencias, carregarPerfil } = usePerfil();
   const [preferenciasEditaveis, setPreferenciasEditaveis] = useState<PreferenciasDTO | null | undefined>(undefined);
   const [salvando, setSalvando] = useState(false);
 
@@ -41,7 +40,7 @@ const MinhasPreferencias = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    const checked = type === "checkbox" && "checked" in e.target ? (e.target as HTMLInputElement).checked : undefined;
+    const checked = type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
 
     setPreferenciasEditaveis((prev) =>
       prev
@@ -60,6 +59,7 @@ const MinhasPreferencias = () => {
     try {
       const metodo = preferencias ? atualizarPreferenciasDoUsuario : salvarPreferenciasDoUsuario;
       await metodo(preferenciasEditaveis);
+      await carregarPerfil(true);
       toast.success("Preferências salvas com sucesso!");
     } catch (error) {
       toast.error("Erro ao salvar preferências.");

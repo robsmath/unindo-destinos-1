@@ -59,3 +59,8 @@ export const removerParticipanteDaViagem = async (
     params: { usuarioId },
   });
 };
+
+export const sairDaViagem = async (viagemId: number) => {
+  return await api.delete<ApiResponse<any>>(`/viagens/${viagemId}/sair`);
+};
+

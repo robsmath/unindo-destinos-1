@@ -12,10 +12,10 @@ import {
   gerarRoteiroComIa,
   getRoteiroByViagemId,
   baixarRoteiroPdf,
-  enviarRoteiroPorEmail,
 } from "@/services/roteiroService";
 
 import { Loader2, AlertTriangle, CheckCircle2, Pencil, Mail, Trash2 } from "lucide-react";
+import { usePerfil } from "@/app/context/PerfilContext";
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 
@@ -25,6 +25,11 @@ interface Props {
 
 const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   const router = useRouter();
+  const { viagens } = usePerfil();
+
+  const viagem = viagens.find((v) => v.viagem.id === Number(viagemId));
+  const souCriador = viagem?.criador === true;
+
   const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");
   const [observacao, setObservacao] = useState("");
   const [tipoViagem, setTipoViagem] = useState<TipoViagem>("CONFORTAVEL");
@@ -39,7 +44,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   const [roteiroId, setRoteiroId] = useState<number | null>(null);
   const [roteiroInexistente, setRoteiroInexistente] = useState(false);
   const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
-
   useEffect(() => {
     const carregarRoteiro = async () => {
       if (!viagemId) {
@@ -62,7 +66,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                   currency: "BRL",
                 }).format(roteiro.valorEstimado)
               : "R$ 0,00"
-          );          
+          );
           const resultado = parseDescricaoComObservacoes(roteiro.descricao || "");
           setDiasRoteiro(resultado.dias);
           setObservacoesFinais(resultado.observacoesFinais);
@@ -132,7 +136,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       observacoesFinais: observacoesFinais.trim(),
     };
   };
-
   const montarDescricaoFromDias = () => {
     const blocosDias = diasRoteiro
       .map((dia) => `#### ${dia.titulo}\n${dia.descricao}`)
@@ -160,10 +163,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
     novosDias[index][field] = value;
     setDiasRoteiro(novosDias);
   };
-
   const salvarRoteiroManual = async () => {
     if (!roteiroId) {
-      toast.error("ID do roteiro não encontrado. Recarregue a página.");
+      toast.error("ID do roteiro não encontrado.");
       return;
     }
 
@@ -207,9 +209,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
               }).format(roteiroGerado.valorEstimado)
             : "R$ 0,00"
         );
-        
         setTipoViagem(roteiroGerado.tipoViagem || "CONFORTAVEL");
-
         const resultado = parseDescricaoComObservacoes(roteiroGerado.descricao || "");
         setDiasRoteiro(resultado.dias);
         setObservacoesFinais(resultado.observacoesFinais);
@@ -228,6 +228,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           const roteiro = await getRoteiroByViagemId(Number(viagemId));
           const tentativas = roteiro?.tentativasGeracaoRoteiro ?? 0;
           const restantes = Math.max(0, 3 - tentativas);
+
           const toastId = crypto.randomUUID();
 
           toast.custom((id) => (
@@ -288,9 +289,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       toast.error("ID do roteiro não encontrado.");
       return;
     }
-  
+
     setLoadingPdf(true);
-  
+
     try {
       const blob = await baixarRoteiroPdf(roteiroId);
       const url = URL.createObjectURL(blob);
@@ -304,32 +305,10 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       setLoadingPdf(false);
     }
   };
-  
-  const handleEnviarPorEmail = async () => {
-    if (!roteiroId) return;
-  
-    const email = prompt("Digite o e-mail de destino:");
-    if (!email || !email.includes("@")) {
-      toast.error("E-mail inválido");
-      return;
-    }
-  
-    setLoadingEmail(true);
-  
-    try {
-      await enviarRoteiroPorEmail(roteiroId, email);
-      toast.success("E-mail enviado com sucesso!");
-    } catch {
-      toast.error("Erro ao enviar e-mail");
-    } finally {
-      setLoadingEmail(false);
-    }
-  };
-
   return (
     <>
       {loading && <LoadingOverlay />}
-  
+
       <section
         className={`min-h-screen bg-cover bg-center flex justify-center ${
           modoCriacao === "MANUAL" ? "pt-36 items-start" : "items-center"
@@ -363,39 +342,50 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                   Roteiro <span className="text-2xl">🗺️</span>
                 </h2>
               </div>
-              {roteiroInexistente && (
+
+              {!souCriador && (
                 <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-6 border border-yellow-300 text-center">
-                  Nenhum roteiro foi cadastrado ainda para esta viagem. Você pode criá-lo abaixo!
+                  Você é participante desta viagem. O roteiro está disponível apenas para visualização, exportação e envio por e-mail.
                 </div>
               )}
-  
+
               <div className="mb-6">
                 <label className="block font-semibold mb-2">Modo de Criação:</label>
-                <select value={modoCriacao}
+                <select
+                  value={modoCriacao}
                   onChange={(e) => setModoCriacao(e.target.value as "MANUAL" | "IA")}
-                  className="input w-full">
+                  className="input w-full"
+                  disabled={!souCriador}
+                >
                   <option value="MANUAL">Manual</option>
                   <option value="IA">Gerar com IA</option>
                 </select>
               </div>
-  
+
               <div className="mb-6">
                 <label className="block font-semibold mb-2">Observação:</label>
-                <textarea className="input w-full" value={observacao}
-                  onChange={(e) => setObservacao(e.target.value)} />
+                <textarea
+                  className="input w-full"
+                  value={observacao}
+                  onChange={(e) => setObservacao(e.target.value)}
+                  disabled={!souCriador}
+                />
               </div>
-  
+
               <div className="mb-6">
                 <label className="block font-semibold mb-2">Tipo de Viagem:</label>
-                <select className="input w-full"
+                <select
+                  className="input w-full"
                   value={tipoViagem}
-                  onChange={(e) => setTipoViagem(e.target.value as TipoViagem)}>
+                  onChange={(e) => setTipoViagem(e.target.value as TipoViagem)}
+                  disabled={!souCriador}
+                >
                   <option value="ECONOMICA">Econômica</option>
                   <option value="CONFORTAVEL">Confortável</option>
                   <option value="LUXO">Luxo</option>
                 </select>
               </div>
-  
+
               {modoCriacao === "MANUAL" && (
                 <>
                   <div className="mb-6">
@@ -412,47 +402,65 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                         }).format(parseFloat(raw) / 100 || 0);
                         setValorEstimado(formatted);
                       }}
+                      disabled={!souCriador}
                     />
                   </div>
+
                   <h3 className="text-2xl font-semibold mb-2">Dias do Roteiro:</h3>
+
                   <p className="text-sm text-gray-600 italic mb-4">
                     Todas as atividades abaixo são apenas sugestões e podem ser alteradas conforme sua preferência.
                   </p>
-  
+
                   <AnimatePresence>
                     {diasRoteiro.map((dia, index) => (
-                      <motion.div key={index}
+                      <motion.div
+                        key={index}
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.3 }}
-                        className="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm mb-4 relative">
+                        className="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm mb-4 relative"
+                      >
                         <h4 className="text-lg font-bold text-gray-700 mb-2">📅 Dia {index + 1}</h4>
-                        <input className="w-full border border-gray-300 rounded-md p-2 mb-3"
+                        <input
+                          className="w-full border border-gray-300 rounded-md p-2 mb-3"
                           placeholder="Título do dia"
                           value={dia.titulo}
-                          onChange={(e) => atualizarDia(index, "titulo", e.target.value)} />
-                        <textarea className="w-full border border-gray-300 rounded-md p-2 resize-none"
+                          onChange={(e) => atualizarDia(index, "titulo", e.target.value)}
+                          disabled={!souCriador}
+                        />
+                        <textarea
+                          className="w-full border border-gray-300 rounded-md p-2 resize-none"
                           placeholder="Descrição das atividades"
                           rows={4}
                           value={dia.descricao}
-                          onChange={(e) => atualizarDia(index, "descricao", e.target.value)} />
-                        <button
-                          type="button"
-                          onClick={() => removerDia(index)}
-                          className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                          title="Remover dia"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                          onChange={(e) => atualizarDia(index, "descricao", e.target.value)}
+                          disabled={!souCriador}
+                        />
+                        {souCriador && (
+                          <button
+                            type="button"
+                            onClick={() => removerDia(index)}
+                            className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                            title="Remover dia"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
                       </motion.div>
                     ))}
                   </AnimatePresence>
-  
-                  <button onClick={adicionarDia}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4 flex items-center gap-2">
-                    📅 Adicionar dia
-                  </button>
+
+                  {souCriador && (
+                    <button
+                      onClick={adicionarDia}
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4 flex items-center gap-2"
+                    >
+                      📅 Adicionar dia
+                    </button>
+                  )}
+
                   <div className="mt-10">
                     <h3 className="text-2xl font-semibold mb-2">Observações Finais:</h3>
                     <textarea
@@ -461,12 +469,15 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                       placeholder="Insira observações complementares do roteiro..."
                       value={observacoesFinais}
                       onChange={(e) => setObservacoesFinais(e.target.value)}
+                      disabled={!souCriador}
                     />
                   </div>
                 </>
               )}
-              {modoCriacao === "MANUAL" ? (
-                <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8 justify-center">
+
+              {/* Botões */}
+              <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8 justify-center">
+                {souCriador && modoCriacao === "MANUAL" && (
                   <button
                     onClick={salvarRoteiroManual}
                     disabled={loadingSalvar}
@@ -479,35 +490,35 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     )}
                     Salvar Roteiro
                   </button>
-  
-                  <button
-                    onClick={handleExportarPdf}
-                    disabled={loadingPdf}
-                    className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                  >
-                    {loadingPdf ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Pencil className="h-5 w-5" />
-                    )}
-                    Exportar como PDF
-                  </button>
-  
-                  <button
-                    onClick={() => setMostrarModalEmail(true)}
-                    disabled={loadingEmail}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                  >
-                    {loadingEmail ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Mail className="h-5 w-5" />
-                    )}
-                    Enviar por E-mail
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-8">
+                )}
+
+                <button
+                  onClick={handleExportarPdf}
+                  disabled={loadingPdf}
+                  className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                >
+                  {loadingPdf ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Pencil className="h-5 w-5" />
+                  )}
+                  Exportar como PDF
+                </button>
+
+                <button
+                  onClick={() => setMostrarModalEmail(true)}
+                  disabled={loadingEmail}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
+                >
+                  {loadingEmail ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Mail className="h-5 w-5" />
+                  )}
+                  Enviar por E-mail
+                </button>
+
+                {souCriador && modoCriacao === "IA" && (
                   <button
                     onClick={gerarRoteiro}
                     disabled={loading}
@@ -516,13 +527,13 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     {loading && <Loader2 className="h-5 w-5 animate-spin" />}
                     {loading ? "Gerando..." : "Gerar Roteiro com IA"}
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </motion.div>
           )}
         </div>
       </section>
-  
+
       {mostrarModalEmail && roteiroId && (
         <EnviarRoteiroModal
           aberto={mostrarModalEmail}
@@ -533,7 +544,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       )}
     </>
   );
-  
 };
 
 export default CadastroRoteiro;

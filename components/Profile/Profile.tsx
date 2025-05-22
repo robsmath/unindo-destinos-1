@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { usePerfil } from "@/app/context/PerfilContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
 import { FaCamera } from "react-icons/fa";
@@ -20,6 +21,7 @@ function classNames(...classes: string[]) {
 
 const Profile = () => {
   const { isAuthenticated, usuario, atualizarFotoPerfil } = useAuth();
+  const { carregarPerfil } = usePerfil();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -28,11 +30,11 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const tabs = [
-    "Dados Pessoais",
-    "Minhas Viagens",
-    "Minhas Preferências",
-    "Meus Pets",
-    "Central de Solicitações",
+    { label: "Dados Pessoais", param: "dados" },
+    { label: "Minhas Viagens", param: "viagens" },
+    { label: "Minhas Preferências", param: "preferencias" },
+    { label: "Meus Pets", param: "pets" },
+    { label: "Central de Solicitações", param: "solicitacoes" },
   ];
 
   useEffect(() => {
@@ -41,21 +43,29 @@ const Profile = () => {
     } else {
       setTimeout(() => {
         setLoadingPage(false);
-      }, 800);
+      }, 500);
     }
   }, [isAuthenticated, router]);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam) {
-      const tabIndex = tabs.findIndex(tab =>
-        tab.toLowerCase().replace(/\s/g, "-") === tabParam.toLowerCase()
-      );
+      const tabIndex = tabs.findIndex(tab => tab.param === tabParam.toLowerCase());
       if (tabIndex !== -1) {
         setSelectedIndex(tabIndex);
       }
     }
   }, [searchParams]);
+
+  const handleTabChange = async (index: number) => {
+    setSelectedIndex(index);
+    const tab = tabs[index];
+    const newUrl = `/profile?tab=${tab.param}`;
+    router.push(newUrl);
+
+    // 🔥 Sempre atualiza o perfil ao trocar de aba
+    await carregarPerfil(true);
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -86,7 +96,7 @@ const Profile = () => {
   return (
     <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-32 pb-16 px-4">
       <motion.div
-        className="relative z-10 mx-auto max-w-5xl px-6 py-8 bg-white rounded-lg shadow-lg dark:bg-black dark:border dark:border-strokedark"
+        className="relative z-10 mx-auto max-w-5xl px-6 py-8 bg-white rounded-lg shadow-lg"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
@@ -98,7 +108,7 @@ const Profile = () => {
 
         {!loadingPage && (
           <>
-            <h2 className="mb-6 text-center text-3xl font-semibold text-black dark:text-white">
+            <h2 className="mb-6 text-center text-3xl font-semibold text-black">
               Seu Perfil
             </h2>
 
@@ -131,8 +141,8 @@ const Profile = () => {
               </div>
             </div>
 
-            <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-              <TabList className="flex justify-center border-b border-gray-300 dark:border-strokedark flex-wrap gap-4">
+            <TabGroup selectedIndex={selectedIndex} onChange={handleTabChange}>
+              <TabList className="flex justify-center border-b border-gray-300 flex-wrap gap-4">
                 {tabs.map((tab, idx) => (
                   <Tab
                     key={idx}
@@ -145,7 +155,7 @@ const Profile = () => {
                       )
                     }
                   >
-                    {tab}
+                    {tab.label}
                   </Tab>
                 ))}
               </TabList>

@@ -1,13 +1,11 @@
-import { Metadata } from "next";
 import EditarPetClient from "./EditarPetClient";
 
-export const metadata: Metadata = {
-  title: "Editar pet - Unindo Destinos",
-  description: "Atualize as informações do seu pet",
-};
+interface Props {
+  params: { id: string };
+}
 
-export default function Page(props: any) {
-  const petId = parseInt(props?.params?.id ?? "0");
+export default async function Page({ params }: Props) {
+  const petId = parseInt(params.id);
 
   return <EditarPetClient petId={petId} />;
 }

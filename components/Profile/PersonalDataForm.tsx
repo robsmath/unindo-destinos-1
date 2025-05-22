@@ -18,7 +18,7 @@ import "react-phone-input-2/lib/style.css";
 
 const PersonalDataForm = () => {
   const router = useRouter();
-  const { usuario } = usePerfil();
+  const { usuario, carregarPerfil } = usePerfil();
 
   const [userData, setUserData] = useState<UsuarioDTO | null>(null);
   const [saving, setSaving] = useState(false);
@@ -54,21 +54,21 @@ const PersonalDataForm = () => {
           },
         }));
       }
-    } catch (error) {
+    } catch {
       toast.error("Erro ao buscar endereço.");
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     if (userData) {
-      const { name, value } = e.target;
       setUserData({ ...userData, [name]: value });
     }
-  };  
+  };
 
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     if (userData) {
-      const { name, value } = e.target;
       setUserData({
         ...userData,
         endereco: {
@@ -105,11 +105,10 @@ const PersonalDataForm = () => {
             cep: userData.endereco?.cep?.replace(/\D/g, "") ?? "",
           },
         });
-        router.refresh();
+        await carregarPerfil(true); // 🔥 Atualiza os dados no perfil após salvar
         toast.success("Seus dados foram atualizados com sucesso!", { position: "top-center" });
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Erro ao atualizar os dados. Tente novamente.", { position: "top-center" });
     } finally {
       setSaving(false);
@@ -146,6 +145,7 @@ const PersonalDataForm = () => {
       animate={{ opacity: 1 }}
     >
       <h2 className="text-2xl font-bold text-center mb-6">Dados Pessoais</h2>
+
       <div>
         <label className="font-semibold">Descrição</label>
         <textarea
@@ -157,30 +157,15 @@ const PersonalDataForm = () => {
           placeholder="Fale um pouco sobre você, seus interesses, hobbies, etc."
         />
       </div>
+
       <div>
         <label className="font-semibold">Nome <span className="text-red-500">*</span></label>
         <Input name="nome" value={userData.nome} onChange={handleChange} />
       </div>
 
       <div>
-        <label className="font-semibold">
-          Email <span className="text-red-500">*</span>
-        </label>
+        <label className="font-semibold">Email <span className="text-red-500">*</span></label>
         <Input type="email" name="email" value={userData.email} onChange={handleChange} />
-        {userData.emailVerificado ? (
-          <p className="mt-1 text-green-600 text-sm">✅ E-mail verificado</p>
-        ) : (
-          <p className="mt-1 text-red-600 text-sm">
-            ❌ E-mail não verificado –{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/profile/verificar")}
-              className="underline text-blue-600"
-            >
-              Verificar agora
-            </button>
-          </p>
-        )}
       </div>
 
       <div>
@@ -193,20 +178,6 @@ const PersonalDataForm = () => {
           inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
           placeholder="Ex: +55 (31) 98765-4321"
         />
-        {userData.telefoneVerificado ? (
-          <p className="mt-1 text-green-600 text-sm">✅ Telefone verificado</p>
-        ) : (
-          <p className="mt-1 text-red-600 text-sm">
-            ❌ Telefone não verificado –{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/profile/verificar")}
-              className="underline text-blue-600"
-            >
-              Verificar agora
-            </button>
-          </p>
-        )}
       </div>
 
       <div>

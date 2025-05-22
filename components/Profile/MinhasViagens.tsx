@@ -2,13 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FaEdit, FaTrash, FaMapMarkedAlt } from "react-icons/fa";
+import { FaEdit, FaTrash, FaMapMarkedAlt, FaDoorOpen } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { usePerfil } from "@/app/context/PerfilContext";
-import { deletarViagem } from "@/services/viagemService";
+import { deletarViagem, sairDaViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
-import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 
 const MinhasViagens = () => {
   const router = useRouter();
@@ -16,11 +15,18 @@ const MinhasViagens = () => {
 
   const [ordenacao, setOrdenacao] = useState<"dataDesc" | "dataAsc" | "az" | "za">("dataDesc");
   const [filtroStatus, setFiltroStatus] = useState<string>("TODOS");
+  const [filtroTipo, setFiltroTipo] = useState<"TODOS" | "CRIADOR" | "PARTICIPANTE">("TODOS");
 
   const viagensFiltradas = useMemo(() => {
-    if (filtroStatus === "TODOS") return viagens;
-    return viagens.filter((v) => v.viagem.status === filtroStatus);
-  }, [viagens, filtroStatus]);
+    return viagens.filter((v) => {
+      const statusOk = filtroStatus === "TODOS" || v.viagem.status === filtroStatus;
+      const tipoOk =
+        filtroTipo === "TODOS" ||
+        (filtroTipo === "CRIADOR" && v.criador) ||
+        (filtroTipo === "PARTICIPANTE" && !v.criador);
+      return statusOk && tipoOk;
+    });
+  }, [viagens, filtroStatus, filtroTipo]);
 
   const viagensOrdenadas = useMemo(() => {
     const copia = [...viagensFiltradas];
@@ -61,11 +67,28 @@ const MinhasViagens = () => {
 
     try {
       await deletarViagem(id);
-      toast.success("Viagem deletada com sucesso!", { position: "top-center" });
+      toast.success("Viagem deletada com sucesso!");
       await atualizarViagens();
     } catch (error) {
-      console.error("Erro ao deletar viagem", error);
-      toast.error("Erro ao deletar viagem. Tente novamente.", { position: "top-center" });
+      toast.error("Erro ao deletar viagem. Tente novamente.");
+    }
+  };
+
+  const handleSairDaViagem = async (id: number) => {
+    const confirmacao = await confirm({
+      title: "Sair da Viagem",
+      description: "Tem certeza que deseja sair desta viagem?",
+      cancelText: "Cancelar",
+    });
+
+    if (!confirmacao) return;
+
+    try {
+      await sairDaViagem(id);
+      toast.success("Você saiu da viagem.");
+      router.push("/profile?tab=viagens"); // 🔥 Redireciona para aba de viagens no perfil
+    } catch (error) {
+      toast.error("Erro ao sair da viagem. Tente novamente.");
     }
   };
 
@@ -78,7 +101,7 @@ const MinhasViagens = () => {
     >
       <h2 className="text-2xl font-bold mb-6">Minhas Viagens</h2>
 
-      <div className="mb-6 -mt-4 flex justify-between w-full max-w-5xl z-10 relative gap-4">
+      <div className="mb-6 -mt-4 flex flex-wrap justify-between w-full max-w-5xl z-10 relative gap-4">
         <select
           value={filtroStatus}
           onChange={(e) => setFiltroStatus(e.target.value)}
@@ -91,6 +114,16 @@ const MinhasViagens = () => {
           <option value="EM_ANDAMENTO">🛫 Em andamento</option>
           <option value="CONCLUIDA">🏁 Concluída</option>
           <option value="CANCELADA">❌ Cancelada</option>
+        </select>
+
+        <select
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value as any)}
+          className="border border-gray-300 rounded px-3 py-2"
+        >
+          <option value="TODOS">👥 Todos</option>
+          <option value="CRIADOR">🧑‍✈️ Onde sou criador</option>
+          <option value="PARTICIPANTE">🧳 Onde sou participante</option>
         </select>
 
         <select
@@ -177,7 +210,7 @@ const MinhasViagens = () => {
                   >
                     👥
                   </button>
-                  {criador && (
+                  {criador ? (
                     <>
                       <button
                         onClick={(e) => {
@@ -200,6 +233,17 @@ const MinhasViagens = () => {
                         <FaTrash size={18} />
                       </button>
                     </>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSairDaViagem(viagem.id);
+                      }}
+                      className="text-red-600 hover:text-red-800"
+                      title="Sair da Viagem"
+                    >
+                      <FaDoorOpen size={18} />
+                    </button>
                   )}
                 </div>
               </div>

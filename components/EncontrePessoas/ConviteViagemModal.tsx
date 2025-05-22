@@ -1,13 +1,13 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useMemo } from "react";
 import {
   Dialog,
   DialogPanel,
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { ViagemDTO } from "@/models/ViagemDTO";
+import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,12 +17,13 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   usuario: UsuarioBuscaDTO;
-  viagens: ViagemDTO[];
+  viagens: MinhasViagensDTO[];
 }
 
 const formatarData = (dataISO: string) => {
+  if (!dataISO) return "Data inválida";
   const data = new Date(dataISO);
-  return data.toLocaleDateString("pt-BR");
+  return !isNaN(data.getTime()) ? data.toLocaleDateString("pt-BR") : "Data inválida";
 };
 
 export default function ConviteViagemModal({
@@ -33,6 +34,16 @@ export default function ConviteViagemModal({
 }: Props) {
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<string>("");
   const [carregando, setCarregando] = useState(false);
+
+  const viagensFiltradas = useMemo(
+    () =>
+      viagens.filter(
+        (v) =>
+          v.criador && // 🔥 Só as que você é criador
+          ["RASCUNHO", "PENDENTE", "CONFIRMADA"].includes(v.viagem.status) // 🔥 E com status permitido
+      ),
+    [viagens]
+  );
 
   const handleEnviarConvite = async () => {
     if (!viagemSelecionadaId) {
@@ -45,8 +56,10 @@ export default function ConviteViagemModal({
       await enviarConvite(Number(viagemSelecionadaId), usuario.id);
       toast.success("Convite enviado com sucesso!");
       onClose();
-    } catch (err) {
-      toast.error("Erro ao enviar convite. Tente novamente.");
+    } catch (err: any) {
+      const mensagemErro =
+        err?.response?.data?.message || "Erro ao enviar convite. Tente novamente.";
+      toast.error(mensagemErro);
     } finally {
       setCarregando(false);
     }
@@ -96,9 +109,14 @@ export default function ConviteViagemModal({
                   className="border border-gray-300 rounded px-3 py-2 w-full mb-4 mt-2"
                 >
                   <option value="">Selecione uma viagem</option>
-                  {viagens.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.destino} (de {formatarData(v.dataInicio)} até {formatarData(v.dataFim)})
+                  {viagensFiltradas.length === 0 && (
+                    <option disabled value="">
+                      Nenhuma viagem disponível
+                    </option>
+                  )}
+                  {viagensFiltradas.map((v) => (
+                    <option key={v.viagem.id} value={v.viagem.id}>
+                      {v.viagem.destino} (de {formatarData(v.viagem.dataInicio)} até {formatarData(v.viagem.dataFim)})
                     </option>
                   ))}
                 </select>

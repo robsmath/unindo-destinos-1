@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { AuthProvider } from "../context/AuthContext";
+import { PerfilProvider } from "../context/PerfilContext";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,12 +23,14 @@ export default function RootLayout({
       <body className={`dark:bg-black ${inter.className}`}>
         <ThemeProvider enableSystem={false} attribute="class" defaultTheme="light">
           <AuthProvider>
-            <Lines />
-            <Header />
-            <Toaster richColors position="top-center" />
-            {children}
-            <Footer />
-            <ScrollToTop />
+            <PerfilProvider> {/* 🔥 Adiciona o PerfilProvider aqui */}
+              <Lines />
+              <Header />
+              <Toaster richColors position="top-center" />
+              {children}
+              <Footer />
+              <ScrollToTop />
+            </PerfilProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

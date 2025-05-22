@@ -30,6 +30,22 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { atualizarUsuario, token } = useAuth();
 
+  const carregarImagens = async (viagensLista: MinhasViagensDTO[]) => {
+    const novasImagens: { [key: number]: string } = {};
+    await Promise.all(
+      viagensLista.map(async ({ viagem }) => {
+        try {
+          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
+          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
+          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
+        } catch {
+          novasImagens[viagem.id] = "/images/common/beach.jpg";
+        }
+      })
+    );
+    setImagensViagens(novasImagens);
+  };
+
   const carregarPerfil = async (forcar: boolean = false) => {
     if (carregado && !forcar) return;
 
@@ -54,15 +70,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
 
-      const novasImagens: { [key: number]: string } = {};
-      await Promise.all(
-        viagensRes.map(async ({ viagem }) => {
-          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
-        })
-      );
-      setImagensViagens(novasImagens);
+      await carregarImagens(viagensRes);
     } catch (err) {
       console.error("Erro ao carregar perfil", err);
     }
@@ -72,16 +80,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const viagensRes = await getMinhasViagens();
       setViagens(viagensRes);
-
-      const novasImagens: { [key: number]: string } = {};
-      await Promise.all(
-        viagensRes.map(async ({ viagem }) => {
-          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
-        })
-      );
-      setImagensViagens(novasImagens);
+      await carregarImagens(viagensRes);
     } catch (err) {
       console.error("Erro ao atualizar viagens", err);
     }
