@@ -10,48 +10,49 @@ import {
 } from "@/services/verificacaoService";
 import { toast } from "sonner";
 import { getUsuarioLogado } from "@/services/userService";
+import { Loader2 } from "lucide-react";
 
 const VerificacaoConta = () => {
   const router = useRouter();
+
   const [codigoEmail, setCodigoEmail] = useState("");
   const [codigoTelefone, setCodigoTelefone] = useState("");
 
   const [emailCodigoEnviado, setEmailCodigoEnviado] = useState(false);
   const [telefoneCodigoEnviado, setTelefoneCodigoEnviado] = useState(false);
 
-  const [emailVerificado, setEmailVerificado] = useState<boolean | null>(null);
-  const [telefoneVerificado, setTelefoneVerificado] = useState<boolean | null>(null);
+  const [emailVerificado, setEmailVerificado] = useState<boolean>(false);
+  const [telefoneVerificado, setTelefoneVerificado] = useState<boolean>(false);
 
   const [loadingReenviarEmail, setLoadingReenviarEmail] = useState(false);
   const [loadingConfirmarEmail, setLoadingConfirmarEmail] = useState(false);
   const [loadingReenviarSms, setLoadingReenviarSms] = useState(false);
   const [loadingConfirmarTelefone, setLoadingConfirmarTelefone] = useState(false);
 
-  useEffect(() => {
-    const carregarStatus = async () => {
-      try {
-        const usuario = await getUsuarioLogado();
-        const emailOk = !!usuario.emailVerificado;
-        const telefoneOk = !!usuario.telefoneVerificado;
-  
-        setEmailVerificado(emailOk);
-        setTelefoneVerificado(telefoneOk);
-  
-      } catch (err) {
-        toast.error("Erro ao carregar dados do usuário.");
+  const [carregando, setCarregando] = useState(true);
+
+  const verificarStatus = async () => {
+    try {
+      const usuario = await getUsuarioLogado();
+      const emailOk = !!usuario.emailVerificado;
+      const telefoneOk = !!usuario.telefoneVerificado;
+
+      setEmailVerificado(emailOk);
+      setTelefoneVerificado(telefoneOk);
+
+      if (emailOk && telefoneOk) {
+        router.replace("/profile?tab=dados-pessoais");
       }
-    };
-  
-    carregarStatus();
-  }, []);
-  
-  useEffect(() => {
-    if (emailVerificado && telefoneVerificado) {
-      router.replace("/profile?tab=dados-pessoais");
-      router.refresh();
+    } catch {
+      toast.error("Erro ao carregar dados do usuário.");
+    } finally {
+      setCarregando(false);
     }
-  }, [emailVerificado, telefoneVerificado]);
-  
+  };
+
+  useEffect(() => {
+    verificarStatus();
+  }, []);
 
   const handleReenviarEmail = async () => {
     setLoadingReenviarEmail(true);
@@ -73,6 +74,10 @@ const VerificacaoConta = () => {
       toast.success("E-mail confirmado com sucesso!");
       setEmailVerificado(true);
       setCodigoEmail("");
+
+      if (telefoneVerificado) {
+        router.replace("/profile?tab=dados-pessoais");
+      }
     } catch {
       toast.error("Erro ao confirmar e-mail.");
     } finally {
@@ -100,6 +105,10 @@ const VerificacaoConta = () => {
       toast.success("Telefone confirmado com sucesso!");
       setTelefoneVerificado(true);
       setCodigoTelefone("");
+
+      if (emailVerificado) {
+        router.replace("/profile?tab=dados-pessoais");
+      }
     } catch {
       toast.error("Erro ao confirmar telefone.");
     } finally {
@@ -110,6 +119,14 @@ const VerificacaoConta = () => {
   const handlePular = () => {
     router.push("/profile");
   };
+
+  if (carregando) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <section className="flex flex-col items-center justify-center min-h-screen p-4 bg-[url(/images/common/beach.jpg)] bg-cover">

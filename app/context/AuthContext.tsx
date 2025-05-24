@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import Cookies from "js-cookie";
-import { toast } from "sonner";
+import { getUsuarioLogado } from "@/services/userService";
 
 interface Usuario {
   id: number;
@@ -18,7 +17,7 @@ interface AuthContextType {
   usuario: Usuario | null;
   isAuthenticated: boolean;
   login: (token: string, usuario: Usuario) => void;
-  logout: () => void;
+  logout: (redirectToLogin?: boolean) => void;
   atualizarFotoPerfil: (url: string) => void;
   atualizarUsuario: (usuario: Usuario) => void;
 }
@@ -28,80 +27,56 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [carregando, setCarregando] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const storedToken = Cookies.get("token");
-    const storedUserId = localStorage.getItem("userId");
-    const storedUserName = localStorage.getItem("userName");
-    const storedUserEmail = localStorage.getItem("userEmail");
-    const storedFotoPerfil = localStorage.getItem("userFotoPerfil");
+    const verificarAuth = async () => {
+      const storedToken = Cookies.get("token");
+      if (storedToken) {
+        try {
+          const user = await getUsuarioLogado();
+          setToken(storedToken);
+          setUsuario({
+            id: user.id!,
+            nome: user.nome,
+            email: user.email,
+            fotoPerfil: user.fotoPerfil,
+          });
+        } catch {
+          limparSessao(false, false);
+        }
+      }
+      setCarregando(false);
+    };
 
-    if (storedToken) setToken(storedToken);
-
-    if (storedUserId && storedUserName && storedUserEmail) {
-      setUsuario({
-        id: Number(storedUserId),
-        nome: storedUserName,
-        email: storedUserEmail,
-        fotoPerfil: storedFotoPerfil || undefined,
-      });
-    }
+    verificarAuth();
   }, []);
 
-  useEffect(() => {
-    if (token) {
-      const interceptor = axios.interceptors.response.use(
-        (response) => response,
-        (error) => {
-          if (error.response?.status === 401 || error.response?.status === 403) {
-            toast.error("Sua sessão expirou. Faça login novamente.");
-            logout();
-          }
-          return Promise.reject(error);
-        }
-      );
-
-      return () => {
-        axios.interceptors.response.eject(interceptor);
-      };
-    }
-  }, [token]);
-
   const login = (newToken: string, usuario: Usuario) => {
-    Cookies.set("token", newToken, { expires: 7 });
-    salvarUsuarioLocal(usuario);
+    Cookies.set("token", newToken, { expires: 7, sameSite: "Lax" });
     setToken(newToken);
     setUsuario(usuario);
     router.push("/profile");
   };
 
   const atualizarUsuario = (usuario: Usuario) => {
-    salvarUsuarioLocal(usuario);
     setUsuario(usuario);
   };
 
-  const salvarUsuarioLocal = (usuario: Usuario) => {
-    localStorage.setItem("userId", usuario.id.toString());
-    localStorage.setItem("userName", usuario.nome);
-    localStorage.setItem("userEmail", usuario.email);
-
-    if (usuario.fotoPerfil) {
-      localStorage.setItem("userFotoPerfil", usuario.fotoPerfil);
-    } else {
-      localStorage.removeItem("userFotoPerfil");
-    }
+  const logout = (redirectToLogin: boolean = true) => {
+    limparSessao(false, redirectToLogin);
   };
 
-  const logout = () => {
+  const limparSessao = (mostrarToast = false, redirect = true) => {
     Cookies.remove("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userFotoPerfil");
     setToken(null);
     setUsuario(null);
-    router.push("/auth/signin");
+    if (mostrarToast) {
+    }
+    if (redirect) {
+      router.push("/auth/signin");
+    }
   };
 
   const atualizarFotoPerfil = (novaUrl: string) => {
@@ -111,7 +86,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const isAuthenticated = Boolean(token);
+  const isAuthenticated = !!token && !!usuario;
+
+  if (carregando) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider

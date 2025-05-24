@@ -14,6 +14,7 @@ import { InputMask } from "@react-input/mask";
 import PhoneInput from "react-phone-input-2";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import "react-phone-input-2/lib/style.css";
 
 const PersonalDataForm = () => {
@@ -105,7 +106,7 @@ const PersonalDataForm = () => {
             cep: userData.endereco?.cep?.replace(/\D/g, "") ?? "",
           },
         });
-        await carregarPerfil(true); // 🔥 Atualiza os dados no perfil após salvar
+        await carregarPerfil(true);
         toast.success("Seus dados foram atualizados com sucesso!", { position: "top-center" });
       }
     } catch {
@@ -166,6 +167,16 @@ const PersonalDataForm = () => {
       <div>
         <label className="font-semibold">Email <span className="text-red-500">*</span></label>
         <Input type="email" name="email" value={userData.email} onChange={handleChange} />
+        <p className={`mt-1 text-sm ${usuario?.emailVerificado ? 'text-green-600' : 'text-red-600'}`}>
+          {usuario?.emailVerificado ? "✅ E-mail verificado" : (
+            <>
+              ❌ E-mail não verificado.{" "}
+              <Link href="/profile/verificar" className="underline text-primary">
+                Clique aqui para verificar
+              </Link>
+            </>
+          )}
+        </p>
       </div>
 
       <div>
@@ -178,6 +189,16 @@ const PersonalDataForm = () => {
           inputStyle={{ borderRadius: "0.375rem", fontSize: "1rem" }}
           placeholder="Ex: +55 (31) 98765-4321"
         />
+        <p className={`mt-1 text-sm ${usuario?.telefoneVerificado ? 'text-green-600' : 'text-red-600'}`}>
+          {usuario?.telefoneVerificado ? "✅ Telefone verificado" : (
+            <>
+              ❌ Telefone não verificado.{" "}
+              <Link href="/profile/verificar" className="underline text-primary">
+                Clique aqui para verificar
+              </Link>
+            </>
+          )}
+        </p>
       </div>
 
       <div>

@@ -28,7 +28,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
   const [carregado, setCarregado] = useState(false);
 
-  const { atualizarUsuario, token } = useAuth();
+  const { atualizarUsuario, token, isAuthenticated, logout } = useAuth();
 
   const carregarImagens = async (viagensLista: MinhasViagensDTO[]) => {
     const novasImagens: { [key: number]: string } = {};
@@ -47,6 +47,11 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const carregarPerfil = async (forcar: boolean = false) => {
+    if (!isAuthenticated) {
+      console.warn("Usuário não autenticado. Não é possível carregar perfil.");
+      return;
+    }
+
     if (carregado && !forcar) return;
 
     try {
@@ -61,18 +66,20 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       setViagens(viagensRes);
       setCarregado(true);
 
-      if (token) {
-        atualizarUsuario({
-          id: usuarioRes.id!,
-          nome: usuarioRes.nome,
-          email: usuarioRes.email,
-          fotoPerfil: usuarioRes.fotoPerfil,
-        });
-      }
+      atualizarUsuario({
+        id: usuarioRes.id!,
+        nome: usuarioRes.nome,
+        email: usuarioRes.email,
+        fotoPerfil: usuarioRes.fotoPerfil,
+      });
 
       await carregarImagens(viagensRes);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao carregar perfil", err);
+      // Se erro for 401 ou 403 → força logout
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        logout();
+      }
     }
   };
 
@@ -88,7 +95,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     carregarPerfil();
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <PerfilContext.Provider

@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 export default function SigninClient() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth();
+  const { login, usuario } = useAuth();
 
   const [data, setData] = useState({ email: "", senha: "" });
   const [loading, setLoading] = useState(false);
@@ -20,11 +20,12 @@ export default function SigninClient() {
 
   const searchParams = useSearchParams();
 
+  // 🔥 Redirecionamento automático se já estiver logado
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/profile");
+    if (usuario) {
+      router.push("/profile");
     }
-  }, [isAuthenticated, router]);
+  }, [usuario, router]);
 
   useEffect(() => {
     const erro = searchParams.get("erro");
@@ -48,15 +49,31 @@ export default function SigninClient() {
         fotoPerfil: usuario.fotoPerfil,
       });
 
-      if (!usuario.emailVerificado || !usuario.telefoneVerificado) {
-        router.replace("/profile/verificar");
+      const emailNaoVerificado = usuario.emailVerificado === false;
+      const telefoneNaoVerificado = usuario.telefoneVerificado === false;
+
+      if (emailNaoVerificado || telefoneNaoVerificado) {
+        let mensagem = "⚠️ Você precisa confirmar ";
+
+        if (emailNaoVerificado && telefoneNaoVerificado) {
+          mensagem += "seu e-mail e seu telefone.";
+        } else if (emailNaoVerificado) {
+          mensagem += "seu e-mail.";
+        } else if (telefoneNaoVerificado) {
+          mensagem += "seu telefone.";
+        }
+
+        toast.info(mensagem);
+        router.push("/profile/verificar");
       } else {
-        router.replace("/profile");
+        router.push("/profile");
       }
     } catch (err: any) {
       setError(
         err.response?.status === 404
           ? "E-mail não encontrado. Verifique os dados."
+          : err.response?.status === 401
+          ? "E-mail ou senha incorretos."
           : "Erro ao fazer login. Verifique suas credenciais."
       );
       setLoading(false);
@@ -107,7 +124,9 @@ export default function SigninClient() {
               />
             </div>
 
-            {error && <div className="mb-2 text-center text-red-500">{error}</div>}
+            {error && (
+              <div className="mb-2 text-center text-red-500 font-medium">{error}</div>
+            )}
 
             <p className="text-right text-sm text-primary hover:underline mb-4">
               <Link href="/auth/recuperar-senha">Esqueci minha senha</Link>

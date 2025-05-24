@@ -14,27 +14,19 @@ interface ApiResponse<T> {
   data: T;
 }
 
+const extractData = <T>(response: { data: ApiResponse<T> }) => response.data.data;
+
 export const signIn = async (email: string, senha: string): Promise<LoginResponse> => {
   const response = await api.post<ApiResponse<LoginResponse>>("/auth/login", {
     email,
     senha,
   });
-  return response.data.data;
+  return extractData(response);
 };
-
-interface ApiResponseCadastro {
-  timestamp: string;
-  status: number;
-  message: string;
-  data: {
-    emailVerificado: boolean;
-    telefoneVerificado: boolean;
-  };
-}
 
 export const cadastrarUsuario = async (dados: UsuarioDTO): Promise<UsuarioDTO> => {
   const response = await api.post<ApiResponse<UsuarioDTO>>("/usuarios", dados);
-  return response.data.data;
+  return extractData(response);
 };
 
 export const enviarEmailRecuperacao = async (email: string): Promise<void> => {

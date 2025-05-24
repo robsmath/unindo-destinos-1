@@ -255,7 +255,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       await salvarPreferenciasViagem(viagemId, preferencias);
       toast.success("Preferências salvas com sucesso!", { position: "top-center" });
 
-      router.push("/profile?tab=minhas-viagens");
+      router.push("/profile?tab=viagens");
     } catch (error) {
       console.error(error);
       toast.error("Erro ao salvar viagem ou preferências. Tente novamente.", { position: "top-center" });
