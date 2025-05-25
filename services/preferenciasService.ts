@@ -9,7 +9,6 @@ interface ApiResponse<T> {
   data: T;
 }
 
-// 🔹 Preferência da Viagem
 export const getPreferenciaByViagemId = async (viagemId: number): Promise<PreferenciasDTO | null> => {
   try {
     const response = await api.get<ApiResponse<PreferenciasDTO>>(`/preferencias/viagem/${viagemId}`);
@@ -32,7 +31,6 @@ export const salvarPreferenciasViagem = async (viagemId: number, preferencias: P
   }
 };
 
-// 🔹 Preferência do Usuário (com @AuthenticationPrincipal)
 export const getPreferenciasDoUsuario = async (): Promise<PreferenciasDTO | null> => {
   try {
     const response = await api.get<ApiResponse<PreferenciasDTO>>(`/preferencias/usuario`);

@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment } from "react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { Dialog, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
@@ -21,6 +23,20 @@ const formatarTexto = (valor?: string | null) => {
 };
 
 export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }: Props) {
+  const semPreferencias =
+    !usuario.tipoAcomodacao &&
+    !usuario.tipoTransporte &&
+    !usuario.petFriendly &&
+    !usuario.aceitaCriancas &&
+    !usuario.aceitaFumantes &&
+    !usuario.aceitaBebidasAlcoolicas &&
+    !usuario.acomodacaoCompartilhada &&
+    !usuario.aceitaAnimaisGrandePorte;
+
+  const semDescricao = !usuario.descricao || usuario.descricao.trim() === "";
+
+  const deveExibirAviso = semPreferencias && semDescricao;
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -87,7 +103,12 @@ export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }
                     {usuario.aceitaAnimaisGrandePorte && <p>🐘 Animais Grandes</p>}
                   </div>
 
-                  {/* ✅ Botão só aparece se `onConvidar` for passado */}
+                  {deveExibirAviso && (
+                    <div className="mt-4 p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs">
+                      ⚠️ Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
+                    </div>
+                  )}
+
                   {onConvidar && (
                     <Button
                       className="mt-6 w-full"

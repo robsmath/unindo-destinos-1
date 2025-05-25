@@ -36,6 +36,20 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
     }
   }, [usuarioId, isOpen]);
 
+  const semPreferencias =
+    !usuario?.tipoAcomodacao &&
+    !usuario?.tipoTransporte &&
+    !usuario?.petFriendly &&
+    !usuario?.aceitaCriancas &&
+    !usuario?.aceitaFumantes &&
+    !usuario?.aceitaBebidasAlcoolicas &&
+    !usuario?.acomodacaoCompartilhada &&
+    !usuario?.aceitaAnimaisGrandePorte;
+
+  const semDescricao = !usuario?.descricao || usuario?.descricao.trim() === "";
+
+  const deveExibirAviso = semPreferencias && semDescricao;
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -63,7 +77,6 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                {/* Botão de fechar */}
                 <button
                   onClick={onClose}
                   className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
@@ -114,6 +127,12 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
                         <p>🐘 Animais de Grande Porte</p>
                       )}
                     </div>
+
+                    {deveExibirAviso && (
+                      <div className="mt-4 p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs">
+                        ⚠️ Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <p className="text-center text-gray-500 py-10">Usuário não encontrado.</p>

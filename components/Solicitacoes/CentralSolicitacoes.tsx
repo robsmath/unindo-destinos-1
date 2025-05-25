@@ -26,7 +26,7 @@ const CentralSolicitacoes = () => {
 
   const [perfilAbertoId, setPerfilAbertoId] = useState<number | null>(null);
   const [viagemAbertaId, setViagemAbertaId] = useState<number | null>(null);
-  const [carregandoViagem, setCarregandoViagem] = useState(false);
+  const [carregandoViagemId, setCarregandoViagemId] = useState<number | null>(null);
 
   useEffect(() => {
     carregar();
@@ -82,13 +82,8 @@ const CentralSolicitacoes = () => {
     }
   };
 
-  const getPrimeiroUltimoNome = (nome: string) => {
-    const partes = nome.trim().split(" ");
-    return partes.length > 1 ? `${partes[0]} ${partes[partes.length - 1]}` : partes[0];
-  };
-
   const renderMensagem = (s: SolicitacaoParticipacaoDTO) => {
-    const nome = getPrimeiroUltimoNome(s.outroUsuarioNome);
+    const nome = s.outroUsuarioNome.split(" ").slice(0, 2).join(" ");
     const dataInicio = new Date(s.dataInicio).toLocaleDateString();
     const dataFim = new Date(s.dataFim).toLocaleDateString();
 
@@ -118,7 +113,7 @@ const CentralSolicitacoes = () => {
       }`}
     >
       <div className="text-sm">
-        <p className="font-semibold">{getPrimeiroUltimoNome(s.outroUsuarioNome)}</p>
+        <p className="font-semibold">{s.outroUsuarioNome}</p>
         <p className="text-gray-600 text-xs">{s.outroUsuarioEmail}</p>
         <p className="mt-1">{renderMensagem(s)}</p>
 
@@ -131,12 +126,19 @@ const CentralSolicitacoes = () => {
           </button>
           <button
             onClick={() => {
-              setCarregandoViagem(true);
-              setViagemAbertaId(s.viagemId);
+              setCarregandoViagemId(s.viagemId);
+              setTimeout(() => {
+                setViagemAbertaId(s.viagemId);
+                setCarregandoViagemId(null);
+              }, 200);
             }}
-            className="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-sm text-gray-700 font-medium transition"
+            className="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-sm text-gray-700 font-medium transition flex items-center gap-1"
           >
-            Ver viagem
+            {carregandoViagemId === s.viagemId ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              "Ver viagem"
+            )}
           </button>
         </div>
       </div>
@@ -249,8 +251,9 @@ const CentralSolicitacoes = () => {
           open={!!viagemAbertaId}
           onClose={() => {
             setViagemAbertaId(null);
-            setCarregandoViagem(false);
+            setCarregandoViagemId(null);
           }}
+          exibirAvisoConvite // 🔥 Aqui a mensagem do convite é exibida
         />
       )}
     </div>
