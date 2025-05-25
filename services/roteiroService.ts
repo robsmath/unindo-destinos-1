@@ -1,13 +1,13 @@
 import api from "./api";
 
-interface RoteiroRequestManual {
+export interface RoteiroRequestManual {
   observacao: string;
   valorEstimado?: number;
   tipoViagem: "ECONOMICA" | "CONFORTAVEL" | "LUXO";
   descricao?: string;
 }
 
-interface RoteiroRequestIA {
+export interface RoteiroRequestIA {
   observacao: string;
   tipoViagem: "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 }
@@ -23,18 +23,30 @@ export interface RoteiroResponseDTO {
   tentativasGeracaoRoteiro?: number;
 }
 
+interface ApiResponse<T> {
+  timestamp: string;
+  status: number;
+  error: string | null;
+  message: string;
+  data: T;
+}
+
 export const gerarRoteiroComIa = async (
   viagemId: number,
   data: RoteiroRequestIA
-) => {
-  return await api.post(`/roteiros/gerar/${viagemId}`, data);
+): Promise<RoteiroResponseDTO> => {
+  const response = await api.post<ApiResponse<RoteiroResponseDTO>>(
+    `/roteiros/gerar/${viagemId}`,
+    data
+  );
+  return response.data.data;
 };
 
 export const getRoteiroByViagemId = async (
   viagemId: number
 ): Promise<RoteiroResponseDTO | null> => {
   try {
-    const response = await api.get<{ data: RoteiroResponseDTO }>(
+    const response = await api.get<ApiResponse<RoteiroResponseDTO>>(
       `/roteiros/viagem/${viagemId}`
     );
     return response.data.data;
@@ -42,20 +54,36 @@ export const getRoteiroByViagemId = async (
     if (error.response?.status === 404) {
       return null;
     }
-    console.error("Erro inesperado ao buscar roteiro:", error);
-    return null;
+    throw error;
   }
+};
+
+export const getRoteiroById = async (
+  roteiroId: number
+): Promise<RoteiroResponseDTO> => {
+  const response = await api.get<ApiResponse<RoteiroResponseDTO>>(
+    `/roteiros/${roteiroId}`
+  );
+  return response.data.data;
 };
 
 export const atualizarRoteiro = async (
   roteiroId: number,
   data: RoteiroRequestManual
-) => {
-  return await api.put(`/roteiros/${roteiroId}`, data);
+): Promise<RoteiroResponseDTO> => {
+  const response = await api.put<ApiResponse<RoteiroResponseDTO>>(
+    `/roteiros/${roteiroId}`,
+    data
+  );
+  return response.data.data;
 };
 
-export const deletarRoteiroByViagemId = async (viagemId: number) => {
-  return await api.delete(`/roteiros/viagem/${viagemId}`);
+export const deletarRoteiroByViagemId = async (viagemId: number): Promise<void> => {
+  await api.delete(`/roteiros/viagem/${viagemId}`);
+};
+
+export const deletarRoteiroById = async (roteiroId: number): Promise<void> => {
+  await api.delete(`/roteiros/${roteiroId}`);
 };
 
 export const baixarRoteiroPdf = async (roteiroId: number): Promise<Blob> => {
@@ -65,18 +93,20 @@ export const baixarRoteiroPdf = async (roteiroId: number): Promise<Blob> => {
   return response.data;
 };
 
-export const getNomesParticipantes = async (viagemId: number): Promise<string[]> => {
-  const response = await api.get<string[]>(`/viagens/${viagemId}/participantes/nomes`);
-  return response.data;
-};
-
-
-
 export const enviarRoteiroPorEmail = async (
   roteiroId: number,
   email: string
-) => {
-  return await api.post(`/roteiros/${roteiroId}/enviar-email`, null, {
+): Promise<void> => {
+  await api.post(`/roteiros/${roteiroId}/enviar-email`, null, {
     params: { email },
   });
+};
+
+export const getNomesParticipantes = async (
+  viagemId: number
+): Promise<string[]> => {
+  const response = await api.get<ApiResponse<string[]>>(
+    `/viagens/${viagemId}/participantes/nomes`
+  );
+  return response.data.data;
 };

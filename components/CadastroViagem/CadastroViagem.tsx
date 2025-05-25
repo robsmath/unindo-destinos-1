@@ -45,7 +45,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     aceitaFumantes: false,
     aceitaBebidasAlcoolicas: false,
     acomodacaoCompartilhada: false,
-    aceitaAnimaisGrandePorte: false,
     estiloViagem: "AVENTURA",
     tipoAcomodacao: "HOTEL",
     tipoTransporte: "AVIAO",

@@ -253,7 +253,7 @@ const CentralSolicitacoes = () => {
             setViagemAbertaId(null);
             setCarregandoViagemId(null);
           }}
-          exibirAvisoConvite // 🔥 Aqui a mensagem do convite é exibida
+          exibirAvisoConvite
         />
       )}
     </div>

@@ -21,8 +21,6 @@ const PREFERENCIAS_INICIAIS: PreferenciasDTO = {
   aceitaFumantes: false,
   aceitaBebidasAlcoolicas: false,
   acomodacaoCompartilhada: false,
-  aceitaAnimaisGrandePorte: false,
-
   estiloViagem: "NAO_TENHO_PREFERENCIA",
   tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
   tipoTransporte: "NAO_TENHO_PREFERENCIA",

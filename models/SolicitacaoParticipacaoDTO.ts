@@ -10,7 +10,10 @@ export interface SolicitacaoParticipacaoDTO {
   outroUsuarioEmail: string;
 
   tipo: "CONVITE_ENVIADO" | "CONVITE_RECEBIDO" | "SOLICITACAO_ENVIADA" | "SOLICITACAO_RECEBIDA";
-  usuarioLogadoId: number;
 
   status: "PENDENTE" | "APROVADA" | "RECUSADA";
+
+  mensagem?: string;
+
+  usuarioLogadoId: number;
 }

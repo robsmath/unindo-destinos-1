@@ -7,13 +7,15 @@ export interface UsuarioBuscaDTO {
   emailVerificado?: boolean;
   telefoneVerificado?: boolean;
   descricao?: string;
+  
   tipoAcomodacao?: string;
   tipoTransporte?: string;
+
   petFriendly?: boolean;
   aceitaCriancas?: boolean;
   aceitaFumantes?: boolean;
   aceitaBebidasAlcoolicas?: boolean;
   acomodacaoCompartilhada?: boolean;
-  aceitaAnimaisGrandePorte?: boolean;
+
   criador?: boolean;
 }

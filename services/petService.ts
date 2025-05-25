@@ -1,5 +1,6 @@
 import api from "./api";
 import { PetDTO } from "@/models/PetDTO";
+
 interface ApiResponse<T> {
   timestamp: string;
   status: number;
@@ -13,8 +14,9 @@ export const cadastrarPet = async (dados: PetDTO): Promise<PetDTO> => {
   return response.data.data;
 };
 
-export const editarPet = async (id: number, dados: PetDTO): Promise<void> => {
-  await api.put(`/pets/${id}`, dados);
+export const editarPet = async (id: number, dados: PetDTO): Promise<PetDTO> => {
+  const response = await api.put<ApiResponse<PetDTO>>(`/pets/${id}`, dados);
+  return response.data.data;
 };
 
 export const getMeusPets = async (): Promise<PetDTO[]> => {

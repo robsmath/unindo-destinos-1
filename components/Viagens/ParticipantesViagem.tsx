@@ -31,11 +31,9 @@ const ParticipantesViagem = () => {
     fetchParticipantes();
   }, [id]);
 
-  // 🔥 Verificar quem é o criador da viagem
   const criador = participantes.find((p) => p.criador);
   const usuarioEhCriador = criador?.id === usuario?.id;
 
-  // 🔥 Ordenar colocando o criador sempre primeiro
   const participantesOrdenados = [...participantes].sort((a, b) => {
     if (a.criador === b.criador) return 0;
     return a.criador ? -1 : 1;

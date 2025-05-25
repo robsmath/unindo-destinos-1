@@ -30,8 +30,7 @@ export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }
     !usuario.aceitaCriancas &&
     !usuario.aceitaFumantes &&
     !usuario.aceitaBebidasAlcoolicas &&
-    !usuario.acomodacaoCompartilhada &&
-    !usuario.aceitaAnimaisGrandePorte;
+    !usuario.acomodacaoCompartilhada;
 
   const semDescricao = !usuario.descricao || usuario.descricao.trim() === "";
 
@@ -100,7 +99,6 @@ export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }
                     {usuario.aceitaFumantes && <p>🚬 Aceita Fumantes</p>}
                     {usuario.aceitaBebidasAlcoolicas && <p>🍷 Aceita Bebidas</p>}
                     {usuario.acomodacaoCompartilhada && <p>🛏️ Acomodação Compartilhada</p>}
-                    {usuario.aceitaAnimaisGrandePorte && <p>🐘 Animais Grandes</p>}
                   </div>
 
                   {deveExibirAviso && (

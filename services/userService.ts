@@ -12,27 +12,30 @@ interface ApiResponse<T> {
 }
 
 export const getUsuarioLogado = async (): Promise<UsuarioDTO> => {
-  const response = await api.get<ApiResponse<UsuarioDTO>>(`/usuarios/me`);
+  const response = await api.get<ApiResponse<UsuarioDTO>>("/usuarios/me");
   return response.data.data;
 };
 
-export const updateUsuarioLogado = async (userData: UsuarioDTO): Promise<void> => {
-  await api.put(`/usuarios/me`, userData);
+export const updateUsuarioLogado = async (userData: UsuarioDTO): Promise<UsuarioDTO> => {
+  const response = await api.put<ApiResponse<UsuarioDTO>>("/usuarios/me", userData);
+  return response.data.data;
+};
+
+export const deletarUsuarioLogado = async (): Promise<void> => {
+  await api.delete("/usuarios/me");
 };
 
 export const buscarUsuarios = async (
   filtros: UsuarioFiltroDTO
-): Promise<ApiResponse<UsuarioBuscaDTO[]>> => {
+): Promise<UsuarioBuscaDTO[]> => {
   const response = await api.post<ApiResponse<UsuarioBuscaDTO[]>>(
     "/usuarios/encontrar",
     filtros
   );
-  return response.data;
+  return response.data.data;
 };
-
 
 export const getUsuarioById = async (id: number): Promise<UsuarioBuscaDTO> => {
   const response = await api.get<ApiResponse<UsuarioBuscaDTO>>(`/usuarios/${id}`);
   return response.data.data;
 };
-

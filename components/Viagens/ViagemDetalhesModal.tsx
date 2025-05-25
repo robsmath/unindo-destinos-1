@@ -23,7 +23,7 @@ interface Props {
   viagemId: number;
   open: boolean;
   onClose: () => void;
-  exibirAvisoConvite?: boolean; // 🔥 Adicionado
+  exibirAvisoConvite?: boolean;
 }
 
 const emojiTransporte: Record<TipoTransporte, string> = {
@@ -72,7 +72,7 @@ export default function ViagemDetalhesModal({
   viagemId,
   open,
   onClose,
-  exibirAvisoConvite = false, // 🔥 Valor padrão false
+  exibirAvisoConvite = false, 
 }: Props) {
   const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
@@ -222,9 +222,7 @@ export default function ViagemDetalhesModal({
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            {preferencias.aceitaAnimaisGrandePorte ? "🐴" : "🚫🐴"} <span>{preferencias.aceitaAnimaisGrandePorte ? "Aceita animais de grande porte" : "Não aceita animais de grande porte"}</span>
-                          </div>
+
                         </div>
 
                         {exibirAvisoConvite && (

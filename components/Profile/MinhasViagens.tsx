@@ -20,8 +20,8 @@ const MinhasViagens = () => {
   const [filtroTipo, setFiltroTipo] = useState<"TODOS" | "CRIADOR" | "PARTICIPANTE">("TODOS");
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<number | null>(null);
 
-  const [loadingBotao, setLoadingBotao] = useState<number | null>(null); // ✅ loading de botões individuais
-  const [loadingCard, setLoadingCard] = useState<number | null>(null); // ✅ loading do clique no card
+  const [loadingBotao, setLoadingBotao] = useState<number | null>(null);
+  const [loadingCard, setLoadingCard] = useState<number | null>(null);
   const [loadingCadastrar, setLoadingCadastrar] = useState(false);
 
   const viagensFiltradas = useMemo(() => {

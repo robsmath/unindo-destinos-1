@@ -171,7 +171,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
           { name: "aceitaFumantes", label: "Aceita Fumantes", desc: "Aceita fumantes entre os participantes." },
           { name: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas Alcoólicas", desc: "Aceita consumo de bebidas alcoólicas na viagem." },
           { name: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", desc: "Disponível para dividir hospedagem." },
-          { name: "aceitaAnimaisGrandePorte", label: "Aceita Animais de Grande Porte", desc: "Aceita cães ou animais de grande porte." },
         ].map((item) => (
           <div key={item.name}>
             <label>

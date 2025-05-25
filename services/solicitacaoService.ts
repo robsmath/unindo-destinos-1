@@ -10,34 +10,46 @@ interface ApiResponse<T> {
 
 export const enviarConvite = async (
   viagemId: number,
-  usuarioId: number
-): Promise<void> => {
-  await api.post<ApiResponse<any>>(
+  usuarioId: number,
+  mensagem?: string
+): Promise<SolicitacaoParticipacaoDTO> => {
+  const response = await api.post<ApiResponse<SolicitacaoParticipacaoDTO>>(
     "/solicitacoes/convites/enviar",
     null,
-    { params: { viagemId, usuarioId } }
+    { params: { viagemId, usuarioId, mensagem } }
   );
+  return response.data.data;
+};
+
+export const solicitarParticipacao = async (
+  viagemId: number,
+  mensagem?: string
+): Promise<SolicitacaoParticipacaoDTO> => {
+  const response = await api.post<ApiResponse<SolicitacaoParticipacaoDTO>>(
+    `/solicitacoes/participar/${viagemId}`,
+    null,
+    { params: { mensagem } }
+  );
+  return response.data.data;
 };
 
 export const getMinhasSolicitacoes = async (): Promise<SolicitacaoParticipacaoDTO[]> => {
-  const response = await api.get<ApiResponse<SolicitacaoParticipacaoDTO[]>>("/solicitacoes/me");
+  const response = await api.get<ApiResponse<SolicitacaoParticipacaoDTO[]>>(
+    "/solicitacoes/me"
+  );
   return response.data.data;
 };
 
 export const aprovarSolicitacao = async (
   solicitacaoId: number
 ): Promise<void> => {
-  await api.post<ApiResponse<any>>(
-    "/solicitacoes/aprovar",
-    null,
-    { params: { solicitacaoId } }
-  );
+  await api.post<ApiResponse<any>>(`/solicitacoes/${solicitacaoId}/aprovar`);
 };
 
 export const recusarSolicitacao = async (
   solicitacaoId: number
 ): Promise<void> => {
-  await api.delete<ApiResponse<any>>(`/solicitacoes/${solicitacaoId}/recusar`);
+  await api.post<ApiResponse<any>>(`/solicitacoes/${solicitacaoId}/recusar`);
 };
 
 export const cancelarSolicitacao = async (

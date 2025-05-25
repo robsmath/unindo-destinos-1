@@ -43,9 +43,7 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
     !usuario?.aceitaCriancas &&
     !usuario?.aceitaFumantes &&
     !usuario?.aceitaBebidasAlcoolicas &&
-    !usuario?.acomodacaoCompartilhada &&
-    !usuario?.aceitaAnimaisGrandePorte;
-
+    !usuario?.acomodacaoCompartilhada;
   const semDescricao = !usuario?.descricao || usuario?.descricao.trim() === "";
 
   const deveExibirAviso = semPreferencias && semDescricao;
@@ -123,9 +121,6 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
                       {usuario.aceitaFumantes && <p>🚬 Aceita Fumantes</p>}
                       {usuario.aceitaBebidasAlcoolicas && <p>🍷 Aceita Bebidas</p>}
                       {usuario.acomodacaoCompartilhada && <p>🛏️ Acomodação Compartilhada</p>}
-                      {usuario.aceitaAnimaisGrandePorte && (
-                        <p>🐘 Animais de Grande Porte</p>
-                      )}
                     </div>
 
                     {deveExibirAviso && (

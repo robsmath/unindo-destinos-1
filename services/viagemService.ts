@@ -35,11 +35,13 @@ export const getViagemById = async (id: number): Promise<ViagemDTO> => {
 };
 
 export const confirmarViagem = async (id: number) => {
-  return api.put(`/viagens/${id}/status`, null, { params: { novoStatus: "CONFIRMADA" } });
+  const response = await api.post<ApiResponse<ViagemDTO>>(`/viagens/${id}/confirmar`);
+  return response.data.data;
 };
 
 export const cancelarViagem = async (id: number) => {
-  return api.put(`/viagens/${id}/status`, null, { params: { novoStatus: "CANCELADA" } });
+  const response = await api.post<ApiResponse<ViagemDTO>>(`/viagens/${id}/cancelar`);
+  return response.data.data;
 };
 
 export const getParticipantesDaViagem = async (
@@ -60,7 +62,6 @@ export const removerParticipanteDaViagem = async (
   });
 };
 
-export const sairDaViagem = async (viagemId: number) => {
-  return await api.delete<ApiResponse<any>>(`/viagens/${viagemId}/sair`);
+export const sairDaViagem = async (viagemId: number): Promise<void> => {
+  await api.delete(`/viagens/${viagemId}/sair`);
 };
-
