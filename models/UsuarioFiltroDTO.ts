@@ -1,5 +1,8 @@
 export interface UsuarioFiltroDTO {
-  genero?: "MASCULINO" | "FEMININO" | "NAO_BINARIO" | "OUTRO" | "" | undefined;
+  nome?: string;
+  email?: string;
+
+  genero?: "MASCULINO" | "FEMININO" | "NAO_BINARIO" | "OUTRO" | "";
 
   idadeMin?: number | "";
   idadeMax?: number | "";

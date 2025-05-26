@@ -14,7 +14,7 @@ export const enviarConvite = async (
   mensagem?: string
 ): Promise<SolicitacaoParticipacaoDTO> => {
   const response = await api.post<ApiResponse<SolicitacaoParticipacaoDTO>>(
-    "/solicitacoes/convites/enviar",
+    "/solicitacoes/convites", 
     null,
     { params: { viagemId, usuarioId, mensagem } }
   );
@@ -35,7 +35,7 @@ export const solicitarParticipacao = async (
 
 export const getMinhasSolicitacoes = async (): Promise<SolicitacaoParticipacaoDTO[]> => {
   const response = await api.get<ApiResponse<SolicitacaoParticipacaoDTO[]>>(
-    "/solicitacoes/me"
+    "/solicitacoes/minhas" 
   );
   return response.data.data;
 };

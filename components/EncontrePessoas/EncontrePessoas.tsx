@@ -10,11 +10,12 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 import { getMinhasViagens } from "@/services/viagemService";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal } from "lucide-react";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import { FaCheckCircle } from "react-icons/fa";
 import ConviteViagemModal from "@/components/EncontrePessoas/ConviteViagemModal";
 import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
+import { AnimatePresence, motion } from "framer-motion";
 
 const EncontrePessoas = () => {
   const { isAuthenticated } = useAuth();
@@ -34,8 +35,11 @@ const EncontrePessoas = () => {
     tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
     tipoTransporte: "NAO_TENHO_PREFERENCIA",
     apenasVerificados: false,
+    nome: "",
+    email: ""
   });
 
+  const [buscarPor, setBuscarPor] = useState<"nome" | "email">("nome");
   const [usuarios, setUsuarios] = useState<UsuarioBuscaDTO[]>([]);
   const [minhasViagens, setMinhasViagens] = useState<MinhasViagensDTO[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,6 +48,22 @@ const EncontrePessoas = () => {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioBuscaDTO | null>(null);
   const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [idadeMinimaInput, setIdadeMinimaInput] = useState(filtros.idadeMin?.toString() || "");
+  const [idadeMaximaInput, setIdadeMaximaInput] = useState(filtros.idadeMax?.toString() || "");
+
+  const [valorMedioMinInput, setValorMedioMinInput] = useState(
+    filtros.valorMedioMin !== null && filtros.valorMedioMin !== undefined
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(filtros.valorMedioMin as number)
+      : ""
+  );
+
+  const [valorMedioMaxInput, setValorMedioMaxInput] = useState(
+    filtros.valorMedioMax !== null && filtros.valorMedioMax !== undefined
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(filtros.valorMedioMax as number)
+      : ""
+  );
+
 
   useEffect(() => {
     const carregarPreferenciasDiretamente = async () => {
@@ -51,9 +71,10 @@ const EncontrePessoas = () => {
         const prefs = await getPreferenciasDoUsuario();
         if (!prefs) return;
 
-        setFiltros({
+        setFiltros((prev) => ({
+          ...prev,
           genero: ["MASCULINO", "FEMININO", "OUTRO", "NAO_BINARIO"].includes(prefs.generoPreferido)
-            ? prefs.generoPreferido as UsuarioFiltroDTO["genero"]
+            ? (prefs.generoPreferido as UsuarioFiltroDTO["genero"])
             : "",
           idadeMin: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : "",
           idadeMax: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : "",
@@ -67,7 +88,7 @@ const EncontrePessoas = () => {
           tipoAcomodacao: prefs.tipoAcomodacao || "NAO_TENHO_PREFERENCIA",
           tipoTransporte: prefs.tipoTransporte || "NAO_TENHO_PREFERENCIA",
           apenasVerificados: true,
-        });
+        }));
       } catch (err) {
         console.error("Erro ao buscar preferências do usuário:", err);
       } finally {
@@ -84,36 +105,49 @@ const EncontrePessoas = () => {
     }
   }, [isAuthenticated]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const target = e.target;
-    setFiltros((prev) => ({
-      ...prev,
-      [target.name]: target.type === "checkbox"
-        ? (target as HTMLInputElement).checked
-        : target.value,
-    }));
+  const handleChange = (e: React.ChangeEvent<any>) => {
+  const { name, value, type, checked } = e.target;
+
+  setFiltros((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+};
+
+  const handleInputBusca = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    if (buscarPor === "nome") {
+      setFiltros((prev) => ({ ...prev, nome: valor, email: "" }));
+    } else {
+      setFiltros((prev) => ({ ...prev, email: valor, nome: "" }));
+    }
   };
 
-  const buscar = async () => {
+  const formatarTexto = (valor: string | null | undefined) => {
+    if (!valor || valor === "NAO_TENHO_PREFERENCIA") return "Não tenho preferência";
+    return valor.replaceAll("_", " ").replace(/\b\w/g, (c) =>
+      c.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    );
+  };
+
+  const extrairPrimeiroEUltimoNome = (nome: string) => {
+    const partes = nome.trim().split(" ");
+    if (partes.length <= 2) return nome;
+    return `${partes[0]} ${partes[partes.length - 1]}`;
+  };
+
+    const buscar = async () => {
     const idadeMin = filtros.idadeMin;
     const idadeMax = filtros.idadeMax;
     const valorMin = filtros.valorMedioMin;
     const valorMax = filtros.valorMedioMax;
 
-    if (
-      idadeMin !== "" &&
-      idadeMax !== "" &&
-      Number(idadeMin) > Number(idadeMax)
-    ) {
+    if (idadeMin !== "" && idadeMax !== "" && Number(idadeMin) > Number(idadeMax)) {
       toast.warning("A idade mínima não pode ser maior que a idade máxima.");
       return;
     }
 
-    if (
-      valorMin !== "" &&
-      valorMax !== "" &&
-      Number(valorMin) > Number(valorMax)
-    ) {
+    if (valorMin !== "" && valorMax !== "" && Number(valorMin) > Number(valorMax)) {
       toast.warning("O valor mínimo não pode ser maior que o valor máximo.");
       return;
     }
@@ -128,6 +162,8 @@ const EncontrePessoas = () => {
         valorMedioMax: filtros.valorMedioMax || null,
         tipoAcomodacao: filtros.tipoAcomodacao,
         tipoTransporte: filtros.tipoTransporte,
+        nome: filtros.nome || null,
+        email: filtros.email || null,
       };
 
       if (filtros.petFriendly) filtrosLimpos.petFriendly = true;
@@ -145,8 +181,33 @@ const EncontrePessoas = () => {
       setLoading(false);
     }
   };
+
+  const limparFiltros = () => {
+    setFiltros({
+      genero: "",
+      idadeMin: "",
+      idadeMax: "",
+      valorMedioMin: "",
+      valorMedioMax: "",
+      petFriendly: undefined,
+      aceitaCriancas: undefined,
+      aceitaFumantes: undefined,
+      aceitaBebidasAlcoolicas: undefined,
+      acomodacaoCompartilhada: undefined,
+      tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
+      tipoTransporte: "NAO_TENHO_PREFERENCIA",
+      apenasVerificados: false,
+      nome: "",
+      email: ""
+    });
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const abrirModalConvite = async (usuario: UsuarioBuscaDTO, fecharOutroModal?: () => void) => {
-    setUsuarioCarregandoId(usuario.id);
+  setUsuarioCarregandoId(usuario.id);
     try {
       const response = await getMinhasViagens();
       setMinhasViagens(response);
@@ -160,26 +221,41 @@ const EncontrePessoas = () => {
     }
   };
 
-  const formatarTexto = (valor: string | null | undefined) => {
-    if (!valor || valor === "NAO_TENHO_PREFERENCIA") return "Não tenho preferência";
-    return valor.replaceAll("_", " ").replace(/\b\w/g, (c) =>
-      c.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    );
+  const atualizarIdade = (campo: "idadeMin" | "idadeMax", valor: number) => {
+    setFiltros((prev) => ({
+      ...prev,
+      [campo]: valor,
+    }));
   };
 
-  const extrairPrimeiroEUltimoNome = (nome: string) => {
-    const partes = nome.trim().split(" ");
-    if (partes.length <= 2) return nome;
-    return `${partes[0]} ${partes[partes.length - 1]}`;
+  const handleValorMedioChange = (
+  campo: "valorMedioMin" | "valorMedioMax",
+  e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    const valor = raw ? parseFloat(raw) / 100 : "";
+
+    const formatado =
+      valor !== ""
+        ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)
+        : "";
+
+    if (campo === "valorMedioMin") {
+      setValorMedioMinInput(formatado);
+    } else {
+      setValorMedioMaxInput(formatado);
+    }
+
+    setFiltros((prev) => ({
+      ...prev,
+      [campo]: valor === "" ? "" : Number(valor),
+    }));
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      className="min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url('/images/common/beach.jpg')` }}
     >
       <div className="max-w-7xl mx-auto px-4 py-8 pt-28">
@@ -195,132 +271,259 @@ const EncontrePessoas = () => {
                 Encontre sua companhia de viagem! 🌍✈️
               </h1>
 
-              {/* Renderização dos filtros */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                {[
-                  { label: "Gênero", name: "genero", options: ["", "MASCULINO", "FEMININO", "OUTRO", "NAO_BINARIO"] },
-                  { label: "Idade Mínima", name: "idadeMin", type: "number" },
-                  { label: "Idade Máxima", name: "idadeMax", type: "number" },
-                  {
-                    label: "Tipo de Acomodação",
-                    name: "tipoAcomodacao",
-                    options: [
-                      "NAO_TENHO_PREFERENCIA", "HOTEL", "HOSTEL", "AIRBNB",
-                      "POUSADA", "CAMPING", "RESORT", "FAZENDA", "CASA_DE_AMIGOS"
-                    ]
-                  },
-                  {
-                    label: "Tipo de Transporte",
-                    name: "tipoTransporte",
-                    options: [
-                      "NAO_TENHO_PREFERENCIA", "AVIAO", "CARRO", "ONIBUS",
-                      "TREM", "NAVIO", "MOTO", "BICICLETA", "VAN", "MOTORHOME"
-                    ]
-                  }
-                ].map((field, idx) => (
-                  <div key={idx}>
-                    <label className="text-sm text-gray-600 block mb-1">{field.label}</label>
-                    {field.options ? (
-                      <select
-                        name={field.name}
-                        value={filtros[field.name as keyof UsuarioFiltroDTO] as string}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        {field.options.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {formatarTexto(opt)}
-                          </option>
+              <div className="flex flex-col gap-1 mb-4">
+  <div className="flex flex-col md:flex-row items-center gap-4">
+    <div className="flex flex-1 items-center border border-gray-300 rounded px-4 py-2">
+      <Search className="text-gray-500 mr-2" />
+      <input
+        type="text"
+        placeholder={
+          buscarPor === "nome" ? "Buscar por nome..." : "Buscar por e-mail..."
+        }
+        value={buscarPor === "nome" ? filtros.nome : filtros.email}
+        onChange={handleInputBusca}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            buscar();
+          }
+        }}
+        className="w-full outline-none"
+      />
+    </div>
+
+    <button
+      onClick={() => setBuscarPor(buscarPor === "nome" ? "email" : "nome")}
+      className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 whitespace-nowrap"
+    >
+      {buscarPor === "nome" ? "🔁 Buscar por E-mail" : "🔁 Buscar por Nome"}
+    </button>
+
+    <button
+      onClick={() => setMostrarFiltros(!mostrarFiltros)}
+      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 whitespace-nowrap"
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+      Filtros
+    </button>
+  </div>
+
+  <p className="text-xs text-gray-500 ml-1">
+    Digite {buscarPor === "nome" ? "o nome" : "o e-mail"} e pressione{" "}
+    <span className="font-semibold">Enter</span> para buscar.
+  </p>
+</div>
+
+
+              {/* 🎛️ Dropdown de Filtros */}
+              <AnimatePresence>
+                {mostrarFiltros && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="overflow-hidden bg-gray-50 rounded-lg p-4 border mb-6"
+                  >
+                    {/* 🔹 Linha 1: Gênero + Tipo de Acomodação + Tipo de Transporte */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+  {/* Gênero */}
+  <div>
+    <label className="text-sm text-gray-600 block mb-1">Gênero</label>
+    <select
+      name="genero"
+      value={filtros.genero}
+      onChange={handleChange}
+      className="border border-gray-300 rounded px-3 py-2 w-full"
+    >
+      <option value="">Todos</option>
+      <option value="MASCULINO">Masculino</option>
+      <option value="FEMININO">Feminino</option>
+      <option value="OUTRO">Outro</option>
+      <option value="NAO_BINARIO">Não Binário</option>
+    </select>
+  </div>
+
+  {/* Tipo de Acomodação */}
+  <div>
+    <label className="text-sm text-gray-600 block mb-1">
+      Tipo de Acomodação
+    </label>
+    <select
+      name="tipoAcomodacao"
+      value={filtros.tipoAcomodacao}
+      onChange={handleChange}
+      className="border border-gray-300 rounded px-3 py-2 w-full"
+    >
+      {[
+        "NAO_TENHO_PREFERENCIA",
+        "HOTEL",
+        "HOSTEL",
+        "AIRBNB",
+        "POUSADA",
+        "CAMPING",
+        "RESORT",
+        "FAZENDA",
+        "CASA_DE_AMIGOS",
+      ].map((op) => (
+        <option key={op} value={op}>
+          {formatarTexto(op)}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* Tipo de Transporte */}
+  <div>
+    <label className="text-sm text-gray-600 block mb-1">
+      Tipo de Transporte
+    </label>
+    <select
+      name="tipoTransporte"
+      value={filtros.tipoTransporte}
+      onChange={handleChange}
+      className="border border-gray-300 rounded px-3 py-2 w-full"
+    >
+      {[
+        "NAO_TENHO_PREFERENCIA",
+        "AVIAO",
+        "CARRO",
+        "ONIBUS",
+        "TREM",
+        "NAVIO",
+        "MOTO",
+        "BICICLETA",
+        "VAN",
+        "MOTORHOME",
+      ].map((op) => (
+        <option key={op} value={op}>
+          {formatarTexto(op)}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
+{/* 🔹 Linha 2: Idades + Valor Médio */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+  {/* Idade Mínima */}
+  <div>
+    <label className="text-sm text-gray-600 block mb-1">Idade Mínima</label>
+    <input
+      type="number"
+      name="idadeMin"
+      min={18}
+      value={filtros.idadeMin}
+      onChange={handleChange}
+      className="border border-gray-300 rounded px-3 py-2 w-full"
+    />
+  </div>
+
+  {/* Idade Máxima */}
+  <div>
+    <label className="text-sm text-gray-600 block mb-1">Idade Máxima</label>
+    <input
+      type="number"
+      name="idadeMax"
+      min={18}
+      value={filtros.idadeMax}
+      onChange={handleChange}
+      className="border border-gray-300 rounded px-3 py-2 w-full"
+    />
+  </div>
+
+  {/* Valor Médio */}
+  <div>
+    <label className="text-sm text-gray-600 block mb-1">
+      Valor Médio (Mín. - Máx.) (R$)
+    </label>
+    <div className="flex gap-2">
+      <input
+        type="text"
+        name="valorMedioMin"
+        placeholder="Mín."
+        value={valorMedioMinInput}
+        onChange={(e) => handleValorMedioChange("valorMedioMin", e)}
+        className="border border-gray-300 rounded px-3 py-2 w-full"
+      />
+      <input
+        type="text"
+        name="valorMedioMax"
+        placeholder="Máx."
+        value={valorMedioMaxInput}
+        onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
+        className="border border-gray-300 rounded px-3 py-2 w-full"
+      />
+    </div>
+  </div>
+</div>
+
+
+
+                      {/* Checkboxes */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+                        {[
+                          { nome: "petFriendly", label: "🐶 Pet Friendly" },
+                          { nome: "aceitaCriancas", label: "👶 Aceita Crianças" },
+                          { nome: "aceitaFumantes", label: "🚬 Aceita Fumantes" },
+                          { nome: "aceitaBebidasAlcoolicas", label: "🍷 Aceita Bebidas" },
+                          { nome: "acomodacaoCompartilhada", label: "🛏️ Acomodação Compartilhada" },
+                        ].map(({ nome, label }) => (
+                          <label key={nome} className="flex items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              name={nome}
+                              checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
+                              onChange={handleChange}
+                              className="accent-blue-600"
+                            />
+                            {label}
+                          </label>
                         ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="number"
-                        name={field.name}
-                        min={18}
-                        value={filtros[field.name as keyof UsuarioFiltroDTO] as string | number}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
 
-              {/* Filtros booleanos */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-6">
-                {[
-                  { nome: "petFriendly", label: "🐶 Pet Friendly" },
-                  { nome: "aceitaCriancas", label: "👶 Aceita Crianças" },
-                  { nome: "aceitaFumantes", label: "🚬 Aceita Fumantes" },
-                  { nome: "aceitaBebidasAlcoolicas", label: "🍷 Aceita Bebidas" },
-                  { nome: "acomodacaoCompartilhada", label: "🛏️ Acomodação Compartilhada" }
-                ].map(({ nome, label }) => (
-                  <label key={nome} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      name={nome}
-                      checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
-                      onChange={handleChange}
-                      className="accent-blue-600"
-                    />
-                    {label}
-                  </label>
-                ))}
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="apenasVerificados"
-                    checked={!!filtros.apenasVerificados}
-                    onChange={handleChange}
-                    className="accent-blue-600"
-                  />
-                  ✅ Apenas perfis verificados
-                </label>
-              </div>
-              {/* Botões */}
-              <div className="flex gap-4 mb-6">
-                <button
-                  onClick={buscar}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 shadow w-full"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Buscando...
-                    </span>
-                  ) : (
-                    <>🔍 Buscar Pessoas</>
-                  )}
-                </button>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            name="apenasVerificados"
+                            checked={!!filtros.apenasVerificados}
+                            onChange={handleChange}
+                            className="accent-blue-600"
+                          />
+                          ✅ Apenas perfis verificados
+                        </label>
+                      </div>
 
-                <button
-                  onClick={() =>
-                    setFiltros({
-                      genero: "",
-                      idadeMin: "",
-                      idadeMax: "",
-                      valorMedioMin: "",
-                      valorMedioMax: "",
-                      petFriendly: undefined,
-                      aceitaCriancas: undefined,
-                      aceitaFumantes: undefined,
-                      aceitaBebidasAlcoolicas: undefined,
-                      acomodacaoCompartilhada: undefined,
-                      tipoAcomodacao: "NAO_TENHO_PREFERENCIA",
-                      tipoTransporte: "NAO_TENHO_PREFERENCIA",
-                      apenasVerificados: false,
-                    })
-                  }
-                  className="text-sm text-gray-600 hover:underline"
-                >
-                  🔄 Limpar filtros
-                </button>
-              </div>
+                      {/* Botões */}
+                      <div className="flex gap-4 mt-6">
+                        <button
+                          onClick={buscar}
+                          className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 shadow w-full"
+                          disabled={loading}
+                        >
+                          {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Buscando...
+                            </span>
+                          ) : (
+                            <>🔍 Buscar Pessoas</>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={limparFiltros}
+                          className="text-sm text-gray-600 hover:underline"
+                        >
+                          🔄 Limpar filtros
+                        </button>
+                      </div>
+
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Lista de usuários */}
-              <div className="mt-6">
+              <div className="mt-8">
                 {usuarios.length === 0 && !loading ? (
                   <p className="text-center text-gray-500">
                     Nenhum resultado encontrado.
@@ -332,9 +535,7 @@ const EncontrePessoas = () => {
                         key={user.id}
                         className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 text-center min-h-[520px] flex flex-col justify-between cursor-pointer"
                         onClick={(e) => {
-                          const clicouNoBotao = (e.target as HTMLElement).closest(
-                            "button"
-                          );
+                          const clicouNoBotao = (e.target as HTMLElement).closest("button");
                           if (!clicouNoBotao) {
                             setUsuarioSelecionado(user);
                             setModalPerfilAberto(true);
@@ -369,12 +570,8 @@ const EncontrePessoas = () => {
                             {user.petFriendly && <li>🐶 Pet Friendly</li>}
                             {user.aceitaCriancas && <li>👶 Aceita Crianças</li>}
                             {user.aceitaFumantes && <li>🚬 Aceita Fumantes</li>}
-                            {user.aceitaBebidasAlcoolicas && (
-                              <li>🍷 Aceita Bebidas</li>
-                            )}
-                            {user.acomodacaoCompartilhada && (
-                              <li>🛏️ Acomodação Compartilhada</li>
-                            )}
+                            {user.aceitaBebidasAlcoolicas && <li>🍷 Aceita Bebidas</li>}
+                            {user.acomodacaoCompartilhada && <li>🛏️ Acomodação Compartilhada</li>}
                             {!user.petFriendly &&
                               !user.aceitaCriancas &&
                               !user.aceitaFumantes &&
