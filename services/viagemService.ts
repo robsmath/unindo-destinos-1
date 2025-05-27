@@ -1,5 +1,7 @@
 import api from "./api";
 import { ViagemDTO } from "@/models/ViagemDTO";
+import { ViagemBuscaDTO } from "@/models/ViagemBuscaDTO";
+import { ViagemFiltroDTO } from "@/models/ViagemFiltroDTO";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 
@@ -64,4 +66,14 @@ export const removerParticipanteDaViagem = async (
 
 export const sairDaViagem = async (viagemId: number): Promise<void> => {
   await api.delete(`/viagens/${viagemId}/sair`);
+};
+
+export const buscarViagens = async (
+  filtros: ViagemFiltroDTO
+): Promise<ViagemBuscaDTO[]> => {
+  const response = await api.post<ApiResponse<ViagemBuscaDTO[]>>(
+    "/viagens/encontrar",
+    filtros
+  );
+  return response.data.data;
 };

@@ -21,9 +21,9 @@ const menuData: Menu[] = [
   },
   {
     id: 4,
-    title: "Depoimentos",
+    title: "Encontre viagens",
     newTab: false,
-    path: "#",
+    path: "/encontrar/viagens",
   },
   {
     id: 5,
