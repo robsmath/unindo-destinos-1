@@ -17,6 +17,9 @@ interface PerfilContextType {
   imagensViagens: { [key: number]: string };
   carregarPerfil: (forcar?: boolean) => Promise<void>;
   atualizarViagens: () => Promise<void>;
+  recarregarViagens: () => Promise<void>;
+  carregarUsuario: () => Promise<void>;
+  carregarPreferencias: () => Promise<void>;
 }
 
 const PerfilContext = createContext<PerfilContextType | undefined>(undefined);
@@ -76,14 +79,11 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       await carregarImagens(viagensRes);
     } catch (err: any) {
       console.error("Erro ao carregar perfil", err);
-      // Se erro for 401 ou 403 → força logout
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         logout();
       }
     }
-  };
-
-  const atualizarViagens = async () => {
+  };  const atualizarViagens = async () => {
     try {
       const viagensRes = await getMinhasViagens();
       setViagens(viagensRes);
@@ -93,12 +93,63 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const recarregarViagens = async () => {
+    return atualizarViagens();
+  };
+
+  const carregarUsuario = async () => {
+    if (!isAuthenticated) {
+      console.warn("Usuário não autenticado. Não é possível carregar dados do usuário.");
+      return;
+    }
+
+    try {
+      const usuarioRes = await getUsuarioLogado();
+      setUsuario(usuarioRes);
+      
+      atualizarUsuario({
+        id: usuarioRes.id!,
+        nome: usuarioRes.nome,
+        email: usuarioRes.email,
+        fotoPerfil: usuarioRes.fotoPerfil,
+      });
+    } catch (err: any) {
+      console.error("Erro ao carregar dados do usuário", err);
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        logout();
+      }
+    }
+  };
+
+  const carregarPreferencias = async () => {
+    if (!isAuthenticated) {
+      console.warn("Usuário não autenticado. Não é possível carregar preferências.");
+      return;
+    }
+
+    try {
+      const preferenciasRes = await getPreferenciasDoUsuario();
+      setPreferencias(preferenciasRes);
+    } catch (err: any) {
+      console.error("Erro ao carregar preferências", err);
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        logout();
+      }
+    }
+  };
   useEffect(() => {
-    carregarPerfil();
+    if (isAuthenticated) {
+      carregarPerfil();
+    } else {
+      setUsuario(null);
+      setPreferencias(null);
+      setViagens([]);
+      setImagensViagens({});
+      setCarregado(false);
+    }
   }, [isAuthenticated]);
 
-  return (
-    <PerfilContext.Provider
+  return (    <PerfilContext.Provider
       value={{
         usuario,
         preferencias,
@@ -106,6 +157,9 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
         imagensViagens,
         carregarPerfil,
         atualizarViagens,
+        recarregarViagens,
+        carregarUsuario,
+        carregarPreferencias,
       }}
     >
       {children}

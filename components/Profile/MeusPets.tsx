@@ -8,27 +8,22 @@ import { PetDTO } from "@/models/PetDTO";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { FaPaw } from "react-icons/fa";
+import { useTabData } from "./hooks/useTabData";
 
 const MeusPets = () => {
   const router = useRouter();
-
-  const [pets, setPets] = useState<PetDTO[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: pets, loading, loadData } = useTabData<PetDTO[]>(async () => {
+    try {
+      return await getMeusPets();
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao carregar seus pets.");
+      throw err;
+    }
+  }, 'pets'); // Adicionando cache key
 
   useEffect(() => {
-    const fetchPets = async () => {
-      try {
-        const resultado = await getMeusPets();
-        setPets(resultado);
-      } catch (err) {
-        console.error(err);
-        toast.error("Erro ao carregar seus pets.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPets();
+    loadData();
   }, []);
 
   const handleCadastrarPet = () => {
@@ -46,11 +41,9 @@ const MeusPets = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-      <h2 className="text-2xl font-bold mb-6">Meus Pets</h2>
-
-      {loading ? (
+      <h2 className="text-2xl font-bold mb-6">Meus Pets</h2>      {loading ? (
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      ) : pets.length === 0 ? (
+      ) : !pets || pets.length === 0 ? (
         <div className="text-gray-500 mb-6">Você ainda não cadastrou nenhum pet.</div>
       ) : (
         <div className="flex flex-wrap justify-center gap-8">

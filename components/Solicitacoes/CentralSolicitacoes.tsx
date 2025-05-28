@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
 import PerfilUsuarioModal from "@/components/EncontrePessoas/PerfilUsuarioModal";
+import { useTabData } from "@/components/Profile/hooks/useTabData";
+import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
 
 type AcaoResposta = {
   id: number;
@@ -19,9 +21,17 @@ type AcaoResposta = {
 };
 
 const CentralSolicitacoes = () => {
-  const [solicitacoes, setSolicitacoes] = useState<SolicitacaoParticipacaoDTO[]>([]);
+  const { invalidateCache } = useCacheInvalidation();
+  const { data: solicitacoes, loading: carregando, loadData: carregar, refreshData } = useTabData<SolicitacaoParticipacaoDTO[]>(async () => {
+    try {
+      return await getMinhasSolicitacoes();
+    } catch {
+      toast.error("Erro ao carregar solicitações");
+      throw new Error("Erro ao carregar solicitações");
+    }
+  }, 'solicitacoes');
+  
   const [resposta, setResposta] = useState<AcaoResposta | null>(null);
-  const [carregando, setCarregando] = useState(true);
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
 
   const [perfilAbertoId, setPerfilAbertoId] = useState<number | null>(null);
@@ -30,25 +40,13 @@ const CentralSolicitacoes = () => {
 
   useEffect(() => {
     carregar();
-  }, []);
-
-  const carregar = async () => {
-    try {
-      const resultado = await getMinhasSolicitacoes();
-      setSolicitacoes(resultado);
-    } catch {
-      toast.error("Erro ao carregar solicitações");
-    } finally {
-      setCarregando(false);
-    }
-  };
-
-  const aceitar = async (s: SolicitacaoParticipacaoDTO) => {
+  }, []);  const aceitar = async (s: SolicitacaoParticipacaoDTO) => {
     setResposta({ id: s.id, tipo: "ACEITAR" });
     try {
       await aprovarSolicitacao(s.id);
       toast.success("Solicitação aprovada!");
-      carregar();
+      refreshData();
+      invalidateCache(['viagens']);
     } catch {
       toast.error("Erro ao aprovar solicitação");
     } finally {
@@ -61,7 +59,7 @@ const CentralSolicitacoes = () => {
     try {
       await recusarSolicitacao(s.id);
       toast.success("Solicitação recusada.");
-      carregar();
+      refreshData();
     } catch {
       toast.error("Erro ao recusar solicitação");
     } finally {
@@ -74,7 +72,7 @@ const CentralSolicitacoes = () => {
     try {
       await cancelarSolicitacao(s.id);
       toast.success("Solicitação cancelada.");
-      carregar();
+      refreshData();
     } catch {
       toast.error("Erro ao cancelar solicitação");
     } finally {
@@ -196,9 +194,8 @@ const CentralSolicitacoes = () => {
       </div>
     </li>
   );
-
-  const pendentes = solicitacoes.filter((s) => s.status === "PENDENTE");
-  const historico = solicitacoes.filter((s) => s.status === "APROVADA" || s.status === "RECUSADA");
+  const pendentes = (solicitacoes || []).filter((s) => s.status === "PENDENTE");
+  const historico = (solicitacoes || []).filter((s) => s.status === "APROVADA" || s.status === "RECUSADA");
 
   return (
     <div className="bg-white p-6 rounded-xl shadow">

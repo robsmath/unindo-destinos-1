@@ -1,28 +1,49 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaEdit, FaTrash, FaMapMarkedAlt, FaDoorOpen } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { usePerfil } from "@/app/context/PerfilContext";
 import { deletarViagem, sairDaViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
 import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
-import { Loader2 } from "lucide-react";
+import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
+import { 
+  Loader2, 
+  Edit, 
+  Trash2, 
+  MapPin, 
+  LogOut, 
+  Users, 
+  Plane
+} from "lucide-react";
 
 const MinhasViagens = () => {
   const router = useRouter();
-  const { viagens, imagensViagens, atualizarViagens } = usePerfil();
+  const { viagens, imagensViagens, recarregarViagens } = usePerfil();
+  const { registerInvalidationCallback, unregisterInvalidationCallback } = useCacheInvalidation();
 
   const [ordenacao, setOrdenacao] = useState<"dataDesc" | "dataAsc" | "az" | "za">("dataDesc");
   const [filtroStatus, setFiltroStatus] = useState<string>("TODOS");
   const [filtroTipo, setFiltroTipo] = useState<"TODOS" | "CRIADOR" | "PARTICIPANTE">("TODOS");
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<number | null>(null);
 
-  const [loadingBotao, setLoadingBotao] = useState<number | null>(null);
-  const [loadingCard, setLoadingCard] = useState<number | null>(null);
   const [loadingCadastrar, setLoadingCadastrar] = useState(false);
+  const [loadingActions, setLoadingActions] = useState<{[key: string]: boolean}>({});
+
+  // Registra callback para invalidação do cache
+  useEffect(() => {
+    const invalidateCallback = () => {
+      recarregarViagens();
+    };
+    
+    registerInvalidationCallback('viagens', invalidateCallback);
+    
+    return () => {
+      unregisterInvalidationCallback('viagens');
+    };
+  }, [registerInvalidationCallback, unregisterInvalidationCallback, recarregarViagens]);
 
   const viagensFiltradas = useMemo(() => {
     return viagens.filter((v) => {
@@ -58,9 +79,10 @@ const MinhasViagens = () => {
         return copia;
     }
   }, [viagensFiltradas, ordenacao]);
-
   const handleDeletar = async (id: number) => {
-    setLoadingBotao(id);
+    const actionKey = `delete-${id}`;
+    setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
+    
     const confirmacao = await confirm({
       title: "Confirmar Exclusão",
       description: "Tem certeza que deseja excluir esta viagem? Essa ação não poderá ser desfeita.",
@@ -68,23 +90,23 @@ const MinhasViagens = () => {
     });
 
     if (!confirmacao) {
-      setLoadingBotao(null);
+      setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
       return;
-    }
-
-    try {
+    }    try {
       await deletarViagem(id);
       toast.success("Viagem deletada com sucesso!");
-      await atualizarViagens();
+      await recarregarViagens();
     } catch (error) {
       toast.error("Erro ao deletar viagem. Tente novamente.");
     } finally {
-      setLoadingBotao(null);
+      setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
     }
   };
 
   const handleSairDaViagem = async (id: number) => {
-    setLoadingBotao(id);
+    const actionKey = `leave-${id}`;
+    setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
+    
     const confirmacao = await confirm({
       title: "Sair da Viagem",
       description: "Tem certeza que deseja sair desta viagem?",
@@ -92,7 +114,7 @@ const MinhasViagens = () => {
     });
 
     if (!confirmacao) {
-      setLoadingBotao(null);
+      setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
       return;
     }
 
@@ -103,7 +125,7 @@ const MinhasViagens = () => {
     } catch (error) {
       toast.error("Erro ao sair da viagem. Tente novamente.");
     } finally {
-      setLoadingBotao(null);
+      setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
     }
   };
 
@@ -115,21 +137,19 @@ const MinhasViagens = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="text-2xl font-bold mb-6">Minhas Viagens</h2>
-
-        <div className="mb-6 -mt-4 flex flex-wrap justify-between w-full max-w-5xl z-10 relative gap-4">
+        <h2 className="text-2xl font-bold mb-6">Minhas Viagens</h2>        <div className="mb-6 -mt-4 flex flex-wrap justify-between w-full max-w-5xl z-10 relative gap-4">
           <select
             value={filtroStatus}
             onChange={(e) => setFiltroStatus(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="border border-gray-300 rounded px-3 py-2 flex items-center gap-2"
           >
-            <option value="TODOS">🧭 Todos os Status</option>
-            <option value="RASCUNHO">📌 Rascunho</option>
-            <option value="PENDENTE">⏳ Pendente</option>
-            <option value="CONFIRMADA">✅ Confirmada</option>
-            <option value="EM_ANDAMENTO">🛫 Em andamento</option>
-            <option value="CONCLUIDA">🏁 Concluída</option>
-            <option value="CANCELADA">❌ Cancelada</option>
+            <option value="TODOS">Todos os Status</option>
+            <option value="RASCUNHO">Rascunho</option>
+            <option value="PENDENTE">Pendente</option>
+            <option value="CONFIRMADA">Confirmada</option>
+            <option value="EM_ANDAMENTO">Em andamento</option>
+            <option value="CONCLUIDA">Concluída</option>
+            <option value="CANCELADA">Cancelada</option>
           </select>
 
           <select
@@ -137,9 +157,9 @@ const MinhasViagens = () => {
             onChange={(e) => setFiltroTipo(e.target.value as any)}
             className="border border-gray-300 rounded px-3 py-2"
           >
-            <option value="TODOS">👥 Todos</option>
-            <option value="CRIADOR">🧑‍✈️ Onde sou criador</option>
-            <option value="PARTICIPANTE">🧳 Onde sou participante</option>
+            <option value="TODOS">Todos</option>
+            <option value="CRIADOR">Onde sou criador</option>
+            <option value="PARTICIPANTE">Onde sou participante</option>
           </select>
 
           <select
@@ -147,10 +167,10 @@ const MinhasViagens = () => {
             onChange={(e) => setOrdenacao(e.target.value as any)}
             className="border border-gray-300 rounded px-3 py-2"
           >
-            <option value="dataDesc">📅 Mais recentes</option>
-            <option value="dataAsc">📅 Mais antigas</option>
-            <option value="az">🔤 A-Z</option>
-            <option value="za">🔤 Z-A</option>
+            <option value="dataDesc">Mais recentes</option>
+            <option value="dataAsc">Mais antigas</option>
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
           </select>
         </div>
 
@@ -158,31 +178,22 @@ const MinhasViagens = () => {
           <div className="text-gray-500">Nenhuma viagem encontrada com esse filtro.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {viagensOrdenadas.map(({ viagem, criador }) => (
-              <motion.div
+            {viagensOrdenadas.map(({ viagem, criador }) => (              <motion.div
                 key={viagem.id}
                 whileHover={{ scale: 1.05 }}
                 className="bg-white rounded-2xl shadow-lg overflow-hidden w-80 cursor-pointer"
                 onClick={() => {
-                  setLoadingCard(viagem.id);
-                  setTimeout(() => {
-                    setViagemSelecionadaId(viagem.id);
-                    setLoadingCard(null);
-                  }, 200);
+                  setViagemSelecionadaId(viagem.id);
                 }}
               >
                 <div className="relative w-full h-48">
-                  {loadingCard === viagem.id ? (
-                    <div className="w-full h-48 bg-gray-200 animate-pulse" />
-                  ) : (
-                    <img
-                      src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
-                      alt={viagem.destino}
-                      className={`object-cover w-full h-48 rounded-t-2xl transition-all duration-500 ease-in-out ${
-                        ["CONCLUIDA", "CANCELADA"].includes(viagem.status) ? "grayscale" : ""
-                      }`}
-                    />
-                  )}
+                  <img
+                    src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
+                    alt={viagem.destino}
+                    className={`object-cover w-full h-48 rounded-t-2xl transition-all duration-300 ease-in-out ${
+                      ["CONCLUIDA", "CANCELADA"].includes(viagem.status) ? "grayscale" : ""
+                    }`}
+                  />
                 </div>
 
                 <div className="p-4 flex flex-col items-center">
@@ -211,43 +222,44 @@ const MinhasViagens = () => {
                   <p className="text-sm text-gray-500 text-center mb-4">
                     De {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} até{" "}
                     {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
-                  </p>
-
-                  <div className="flex justify-center gap-5">
+                  </p>                  <div className="flex justify-center gap-5">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setLoadingBotao(viagem.id);
+                        const actionKey = `roteiro-${viagem.id}`;
+                        setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
                         router.push(`/viagens/cadastrarRoteiro?viagemId=${viagem.id}`);
                       }}
                       className="text-purple-600 hover:text-purple-800"
                       title="Ver Roteiro"
                     >
-                      {loadingBotao === viagem.id ? <Loader2 className="animate-spin w-4 h-4" /> : <FaMapMarkedAlt size={18} />}
+                      {loadingActions[`roteiro-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <MapPin size={18} />}
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setLoadingBotao(viagem.id);
+                        const actionKey = `participantes-${viagem.id}`;
+                        setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
                         router.push(`/viagens/${viagem.id}/participantes`);
                       }}
                       className="text-green-600 hover:text-green-800"
                       title="Ver Participantes"
                     >
-                      {loadingBotao === viagem.id ? <Loader2 className="animate-spin w-4 h-4" /> : "👥"}
+                      {loadingActions[`participantes-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Users size={18} />}
                     </button>
                     {criador ? (
                       <>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setLoadingBotao(viagem.id);
+                            const actionKey = `edit-${viagem.id}`;
+                            setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
                             router.push(`/viagens/editar/${viagem.id}`);
                           }}
                           className="text-blue-600 hover:text-blue-800"
                           title="Editar"
                         >
-                          {loadingBotao === viagem.id ? <Loader2 className="animate-spin w-4 h-4" /> : <FaEdit size={18} />}
+                          {loadingActions[`edit-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Edit size={18} />}
                         </button>
                         <button
                           onClick={(e) => {
@@ -257,7 +269,7 @@ const MinhasViagens = () => {
                           className="text-red-600 hover:text-red-800"
                           title="Excluir"
                         >
-                          {loadingBotao === viagem.id ? <Loader2 className="animate-spin w-4 h-4" /> : <FaTrash size={18} />}
+                          {loadingActions[`delete-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={18} />}
                         </button>
                       </>
                     ) : (
@@ -269,7 +281,7 @@ const MinhasViagens = () => {
                         className="text-red-600 hover:text-red-800"
                         title="Sair da Viagem"
                       >
-                        {loadingBotao === viagem.id ? <Loader2 className="animate-spin w-4 h-4" /> : <FaDoorOpen size={18} />}
+                        {loadingActions[`leave-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <LogOut size={18} />}
                       </button>
                     )}
                   </div>
@@ -277,9 +289,7 @@ const MinhasViagens = () => {
               </motion.div>
             ))}
           </div>
-        )}
-
-        <motion.button
+        )}        <motion.button
           whileHover={{ scale: 1.05 }}
           onClick={() => {
             setLoadingCadastrar(true);
@@ -287,17 +297,16 @@ const MinhasViagens = () => {
           }}
           className="mt-8 flex items-center gap-2 bg-orange-500 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-orange-600"
         >
-          {loadingCadastrar ? <Loader2 className="animate-spin w-5 h-5" /> : <span>✈️</span>}
+          {loadingCadastrar ? <Loader2 className="animate-spin w-5 h-5" /> : <Plane className="w-5 h-5" />}
           Cadastrar Viagem
         </motion.button>
-      </motion.div>
-
-      {/* Modal de detalhes da viagem */}
+      </motion.div>      {/* Modal de detalhes da viagem */}
       {viagemSelecionadaId && (
         <ViagemDetalhesModal
           viagemId={viagemSelecionadaId}
           open={viagemSelecionadaId !== null}
           onClose={() => setViagemSelecionadaId(null)}
+          imagemViagem={imagensViagens[viagemSelecionadaId]}
         />
       )}
     </>

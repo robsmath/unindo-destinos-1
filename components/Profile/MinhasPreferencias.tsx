@@ -27,7 +27,7 @@ const PREFERENCIAS_INICIAIS: PreferenciasDTO = {
 };
 
 const MinhasPreferencias = () => {
-  const { preferencias, carregarPerfil } = usePerfil();
+  const { preferencias, carregarPreferencias } = usePerfil();
   const [preferenciasEditaveis, setPreferenciasEditaveis] = useState<PreferenciasDTO | null | undefined>(undefined);
   const [salvando, setSalvando] = useState(false);
 
@@ -53,11 +53,10 @@ const MinhasPreferencias = () => {
   const handleSubmit = async () => {
     if (!preferenciasEditaveis) return;
 
-    setSalvando(true);
-    try {
+    setSalvando(true);    try {
       const metodo = preferencias ? atualizarPreferenciasDoUsuario : salvarPreferenciasDoUsuario;
       await metodo(preferenciasEditaveis);
-      await carregarPerfil(true);
+      await carregarPreferencias();
       toast.success("Preferências salvas com sucesso!");
     } catch (error) {
       toast.error("Erro ao salvar preferências.");

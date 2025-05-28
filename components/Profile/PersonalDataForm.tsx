@@ -15,11 +15,13 @@ import PhoneInput from "react-phone-input-2";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
 import "react-phone-input-2/lib/style.css";
 
 const PersonalDataForm = () => {
   const router = useRouter();
-  const { usuario, carregarPerfil } = usePerfil();
+  const { usuario, carregarUsuario } = usePerfil();
+  const { invalidateCache } = useCacheInvalidation();
 
   const [userData, setUserData] = useState<UsuarioDTO | null>(null);
   const [saving, setSaving] = useState(false);
@@ -97,8 +99,7 @@ const PersonalDataForm = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      if (userData) {
-        await updateUsuarioLogado({
+      if (userData) {        await updateUsuarioLogado({
           ...userData,
           cpf: userData.cpf.replace(/\D/g, ""),
           endereco: {
@@ -106,7 +107,7 @@ const PersonalDataForm = () => {
             cep: userData.endereco?.cep?.replace(/\D/g, "") ?? "",
           },
         });
-        await carregarPerfil(true);
+        await carregarUsuario();
         toast.success("Seus dados foram atualizados com sucesso!", { position: "top-center" });
       }
     } catch {

@@ -15,7 +15,28 @@ import { getViagemById } from "@/services/viagemService";
 import LoadingOverlay from "@/components/Common/LoadingOverlay";
 import EnviarRoteiroModal from "@/components/Modals/EnviarRoteiroModal";
 import { usePerfil } from "@/app/context/PerfilContext";
-import { Loader2, CheckCircle2, Pencil, Mail, Trash2, AlertTriangle } from "lucide-react";
+import { 
+  Loader2, 
+  CheckCircle2, 
+  Pencil, 
+  Mail, 
+  Trash2, 
+  AlertTriangle,
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  DollarSign,
+  Sparkles,
+  Settings,
+  Plus,
+  Download,
+  Send,
+  Save,
+  Wand2,
+  Clock,
+  FileText,
+  Target
+} from "lucide-react";
 import { ViagemDTO } from "@/models/ViagemDTO";
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
@@ -325,251 +346,409 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
     } finally {
       setLoadingPdf(false);
     }
-  };
-  return (
+  };  return (
     <>
       {loading && <LoadingOverlay />}
 
-      <section
-        className={`min-h-screen bg-cover bg-center flex justify-center ${
-          modoCriacao === "MANUAL" ? "pt-36 items-start" : "items-center"
-        }`}
-        style={{ backgroundImage: "url('/images/common/beach.jpg')" }}
-      >
-        <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 m-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        {/* Header moderno */}
+        <div className="bg-white shadow-sm border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200"
+                  title="Voltar"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                    <MapPin className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Roteiro de Viagem</h1>
+                    <p className="text-sm text-gray-500">Planeje sua aventura perfeita</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Status badge */}
+              {!roteiroInexistente && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Roteiro Criado
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
           {loadingTela ? (
-            <div className="flex justify-center items-center h-[300px]">
-              <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
+            <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-2xl shadow-sm">
+              <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
+              <p className="text-gray-600 font-medium">Carregando roteiro...</p>
             </div>
           ) : (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="space-y-8"
             >
-              <div className="relative mb-8">
-                <button
-                  onClick={() => router.back()}
-                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow hover:scale-105 transition"
-                  title="Voltar"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-orange-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                <h2 className="text-3xl font-bold text-center flex justify-center items-center gap-2">
-                  Roteiro <span className="text-2xl">🗺️</span>
-                </h2>
-              </div>
-
+              {/* Alert cards */}
               {roteiroInexistente ? (
-                <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-6 border border-yellow-300 text-center">
-                  Nenhum roteiro foi cadastrado para esta viagem ainda. Preencha as informações abaixo para criar o seu roteiro personalizado!
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <Sparkles className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-amber-900 mb-1">Pronto para começar?</h3>
+                      <p className="text-amber-700">
+                        Nenhum roteiro foi cadastrado para esta viagem ainda. Crie o seu roteiro personalizado agora!
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 !souCriador && (
-                  <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-6 border border-yellow-300 text-center">
-                    Você é participante desta viagem. O roteiro está disponível apenas para visualização, exportação e envio por e-mail.
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <FileText className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-blue-900 mb-1">Modo Visualização</h3>
+                        <p className="text-blue-700">
+                          Você é participante desta viagem. O roteiro está disponível para visualização, exportação e envio por e-mail.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )
               )}
 
+              {/* Main content grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Configurações principais */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Card de configurações */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Settings className="w-5 h-5 text-white" />
+                        <h2 className="text-lg font-semibold text-white">Configurações do Roteiro</h2>
+                      </div>
+                    </div>
 
-              {/* 🔥 Formulário de edição */}
-              <div className="mb-6">
-                <label className="block font-semibold mb-2">Modo de Criação:</label>
-                <select
-                  value={modoCriacao}
-                  onChange={(e) => setModoCriacao(e.target.value as "MANUAL" | "IA")}
-                  className="input w-full"
-                  disabled={!souCriador || roteiroInexistente}
-                >
-                  <option value="MANUAL">Manual</option>
-                  <option value="IA">Gerar com IA</option>
-                </select>
-              </div>
-
-              <div className="mb-6">
-                <label className="block font-semibold mb-2">Observação:</label>
-                <textarea
-                  className="input w-full"
-                  value={observacao}
-                  onChange={(e) => setObservacao(e.target.value)}
-                  disabled={!souCriador || roteiroInexistente}
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block font-semibold mb-2">Tipo de Viagem:</label>
-                <select
-                  className="input w-full"
-                  value={tipoViagem}
-                  onChange={(e) => setTipoViagem(e.target.value as TipoViagem)}
-                  disabled={!souCriador || roteiroInexistente}
-                >
-                  <option value="ECONOMICA">Econômica</option>
-                  <option value="CONFORTAVEL">Confortável</option>
-                  <option value="LUXO">Luxo</option>
-                </select>
-              </div>
-              {modoCriacao === "MANUAL" && (
-                <>
-                  <div className="mb-6">
-                    <label className="block font-semibold mb-2">Valor Estimado:</label>
-                    <input
-                      type="text"
-                      className="input w-full"
-                      value={valorEstimado}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/\D/g, "");
-                        const formatted = new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(parseFloat(raw) / 100 || 0);
-                        setValorEstimado(formatted);
-                      }}
-                      disabled={!souCriador || roteiroInexistente}
-                    />
-                  </div>
-
-                  <h3 className="text-2xl font-semibold mb-2">Dias do Roteiro:</h3>
-
-                  <p className="text-sm text-gray-600 italic mb-4">
-                    Todas as atividades abaixo são apenas sugestões e podem ser alteradas conforme sua preferência.
-                  </p>
-
-                  <AnimatePresence>
-                    {diasRoteiro.map((dia, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                        className="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm mb-4 relative"
-                      >
-                        <h4 className="text-lg font-bold text-gray-700 mb-2">📅 Dia {index + 1}</h4>
-                        <input
-                          className="w-full border border-gray-300 rounded-md p-2 mb-3"
-                          placeholder="Título do dia"
-                          value={dia.titulo}
-                          onChange={(e) => atualizarDia(index, "titulo", e.target.value)}
-                          disabled={!souCriador || roteiroInexistente}
-                        />
-                        <textarea
-                          className="w-full border border-gray-300 rounded-md p-2 resize-none"
-                          placeholder="Descrição das atividades"
-                          rows={4}
-                          value={dia.descricao}
-                          onChange={(e) => atualizarDia(index, "descricao", e.target.value)}
-                          disabled={!souCriador || roteiroInexistente}
-                        />
-                        {souCriador && !roteiroInexistente && (
+                    <div className="p-6 space-y-6">
+                      {/* Modo de criação */}
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                          <Wand2 className="w-4 h-4" />
+                          Modo de Criação
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
                           <button
-                            type="button"
-                            onClick={() => removerDia(index)}
-                            className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                            title="Remover dia"
+                            onClick={() => setModoCriacao("MANUAL")}
+                            disabled={!souCriador || roteiroInexistente}
+                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                              modoCriacao === "MANUAL"
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                            }`}
                           >
-                            <Trash2 className="w-5 h-5" />
+                            <div className="flex flex-col items-center gap-2">
+                              <Pencil className="w-5 h-5" />
+                              <span className="font-medium">Manual</span>
+                            </div>
                           </button>
-                        )}
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                          <button
+                            onClick={() => setModoCriacao("IA")}
+                            disabled={!souCriador || roteiroInexistente}
+                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                              modoCriacao === "IA"
+                                ? "border-purple-500 bg-purple-50 text-purple-700"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                            }`}
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <Sparkles className="w-5 h-5" />
+                              <span className="font-medium">IA</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
 
-                  {souCriador && !roteiroInexistente && (
-                    <button
-                      onClick={adicionarDia}
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-2 mt-4 flex items-center gap-2"
-                    >
-                      📅 Adicionar dia
-                    </button>
-                  )}
+                      {/* Observação */}
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                          <FileText className="w-4 h-4" />
+                          Observações
+                        </label>
+                        <textarea
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
+                          placeholder="Descreva suas preferências para o roteiro..."
+                          value={observacao}
+                          onChange={(e) => setObservacao(e.target.value)}
+                          disabled={!souCriador || roteiroInexistente}
+                          rows={3}
+                        />
+                      </div>
 
-                  <div className="mt-10">
-                    <h3 className="text-2xl font-semibold mb-2">Observações Finais:</h3>
-                    <textarea
-                      className="w-full border border-gray-300 rounded-md p-4 whitespace-pre-line"
-                      rows={6}
-                      placeholder="Insira observações complementares do roteiro..."
-                      value={observacoesFinais}
-                      onChange={(e) => setObservacoesFinais(e.target.value)}
-                      disabled={!souCriador || roteiroInexistente}
-                    />
+                      {/* Tipo de viagem */}
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                          <Target className="w-4 h-4" />
+                          Estilo de Viagem
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { valor: "ECONOMICA", label: "Econômica", cor: "green" },
+                            { valor: "CONFORTAVEL", label: "Confortável", cor: "blue" },
+                            { valor: "LUXO", label: "Luxo", cor: "purple" }
+                          ].map(({ valor, label, cor }) => (
+                            <button
+                              key={valor}
+                              onClick={() => setTipoViagem(valor as TipoViagem)}
+                              disabled={!souCriador || roteiroInexistente}
+                              className={`p-3 rounded-xl border-2 transition-all duration-200 ${
+                                tipoViagem === valor
+                                  ? `border-${cor}-500 bg-${cor}-50 text-${cor}-700`
+                                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                              }`}
+                            >
+                              <span className="font-medium text-sm">{label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {modoCriacao === "MANUAL" && (
+                        <div className="space-y-3">
+                          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <DollarSign className="w-4 h-4" />
+                            Valor Estimado
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            placeholder="R$ 0,00"
+                            value={valorEstimado}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\D/g, "");
+                              const formatted = new Intl.NumberFormat("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                              }).format(parseFloat(raw) / 100 || 0);
+                              setValorEstimado(formatted);
+                            }}
+                            disabled={!souCriador || roteiroInexistente}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </>
-              )}
-              {/* 🔥 Botões de ação */}
-              <div className="flex flex-col md:flex-row flex-wrap gap-4 mt-8 justify-center">
-                {souCriador && modoCriacao === "MANUAL" && !roteiroInexistente && (
-                  <button
-                    onClick={salvarRoteiroManual}
-                    disabled={loadingSalvar}
-                    className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                  >
-                    {loadingSalvar ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="h-5 w-5" />
-                    )}
-                    Salvar Roteiro
-                  </button>
-                )}
 
-                {(!roteiroInexistente || (roteiroInexistente && !souCriador)) && (
-                  <button
-                    onClick={handleExportarPdf}
-                    disabled={loadingPdf}
-                    className="bg-gray-700 hover:bg-gray-800 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                  >
-                    {loadingPdf ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Pencil className="h-5 w-5" />
-                    )}
-                    Exportar como PDF
-                  </button>
-                )}
+                  {/* Dias do roteiro - apenas no modo manual */}
+                  {modoCriacao === "MANUAL" && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-5 h-5 text-white" />
+                            <h2 className="text-lg font-semibold text-white">Planejamento Diário</h2>
+                          </div>
+                          {souCriador && !roteiroInexistente && (
+                            <button
+                              onClick={adicionarDia}
+                              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white font-medium transition-colors duration-200"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Adicionar Dia
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
-                {(!roteiroInexistente || (roteiroInexistente && !souCriador)) && (
-                  <button
-                    onClick={() => setMostrarModalEmail(true)}
-                    disabled={loadingEmail}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                  >
-                    {loadingEmail ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Mail className="h-5 w-5" />
-                    )}
-                    Enviar por E-mail
-                  </button>
-                )}
+                      <div className="p-6">
+                        <p className="text-sm text-gray-500 mb-6 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Todas as atividades são sugestões e podem ser personalizadas
+                        </p>
 
-                {souCriador && modoCriacao === "IA" && (
-                  <button
-                    onClick={gerarRoteiro}
-                    disabled={loading}
-                    className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6 py-3 flex items-center justify-center gap-2"
-                  >
-                    {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                    {loading ? "Gerando..." : "Gerar Roteiro com IA"}
-                  </button>
-                )}
+                        <div className="space-y-4">
+                          <AnimatePresence>
+                            {diasRoteiro.map((dia, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3 }}
+                                className="relative bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200 rounded-xl p-6"
+                              >
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                      {index + 1}
+                                    </div>
+                                    <h4 className="text-lg font-semibold text-gray-800">Dia {index + 1}</h4>
+                                  </div>
+                                  {souCriador && !roteiroInexistente && (
+                                    <button
+                                      onClick={() => removerDia(index)}
+                                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                      title="Remover dia"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-4">
+                                  <input
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
+                                    placeholder="Título do dia (ex: Chegada e Check-in)"
+                                    value={dia.titulo}
+                                    onChange={(e) => atualizarDia(index, "titulo", e.target.value)}
+                                    disabled={!souCriador || roteiroInexistente}
+                                  />
+                                  <textarea
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 bg-white"
+                                    placeholder="Descreva as atividades do dia..."
+                                    rows={4}
+                                    value={dia.descricao}
+                                    onChange={(e) => atualizarDia(index, "descricao", e.target.value)}
+                                    disabled={!souCriador || roteiroInexistente}
+                                  />
+                                </div>
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Observações finais */}
+                        <div className="mt-8 space-y-3">
+                          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <FileText className="w-4 h-4" />
+                            Observações Finais
+                          </label>
+                          <textarea
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
+                            rows={4}
+                            placeholder="Informações adicionais importantes para o roteiro..."
+                            value={observacoesFinais}
+                            onChange={(e) => setObservacoesFinais(e.target.value)}
+                            disabled={!souCriador || roteiroInexistente}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sidebar de ações */}
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Target className="w-5 h-5" />
+                      Ações Disponíveis
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      {souCriador && modoCriacao === "MANUAL" && !roteiroInexistente && (
+                        <button
+                          onClick={salvarRoteiroManual}
+                          disabled={loadingSalvar}
+                          className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl px-4 py-3 font-medium transition-all duration-200 shadow-sm"
+                        >
+                          {loadingSalvar ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <Save className="h-5 w-5" />
+                          )}
+                          {loadingSalvar ? "Salvando..." : "Salvar Roteiro"}
+                        </button>
+                      )}
+
+                      {souCriador && modoCriacao === "IA" && (
+                        <button
+                          onClick={gerarRoteiro}
+                          disabled={loading}
+                          className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white rounded-xl px-4 py-3 font-medium transition-all duration-200 shadow-sm"
+                        >
+                          {loading ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <Wand2 className="h-5 w-5" />
+                          )}
+                          {loading ? "Gerando..." : "Gerar com IA"}
+                        </button>
+                      )}
+
+                      {(!roteiroInexistente || (roteiroInexistente && !souCriador)) && (
+                        <>
+                          <button
+                            onClick={handleExportarPdf}
+                            disabled={loadingPdf}
+                            className="w-full flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-800 text-white rounded-xl px-4 py-3 font-medium transition-all duration-200"
+                          >
+                            {loadingPdf ? (
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <Download className="h-5 w-5" />
+                            )}
+                            {loadingPdf ? "Exportando..." : "Baixar PDF"}
+                          </button>
+
+                          <button
+                            onClick={() => setMostrarModalEmail(true)}
+                            disabled={loadingEmail}
+                            className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 font-medium transition-all duration-200"
+                          >
+                            {loadingEmail ? (
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <Send className="h-5 w-5" />
+                            )}
+                            {loadingEmail ? "Enviando..." : "Enviar por Email"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card de informações */}
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-100 p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-blue-600" />
+                      Dicas
+                    </h3>
+                    <div className="space-y-3 text-sm text-gray-600">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Use a IA para gerar um roteiro base e depois edite manualmente</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Inclua horários e locais específicos nas descrições</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p>Compartilhe o PDF com todos os participantes</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
         </div>
-      </section>
+      </div>
 
       {mostrarModalEmail && roteiroId && (
         <EnviarRoteiroModal

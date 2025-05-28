@@ -10,7 +10,35 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
 import { getMinhasViagens } from "@/services/viagemService";
-import { Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { 
+  Loader2, 
+  Search, 
+  SlidersHorizontal, 
+  Heart, 
+  Baby, 
+  Cigarette, 
+  Wine, 
+  Bed, 
+  Plane, 
+  Car, 
+  Bus, 
+  Train, 
+  Ship, 
+  Bike, 
+  Home, 
+  Building, 
+  Mountain, 
+  Trees, 
+  Tent, 
+  Hotel, 
+  Users, 
+  RotateCcw, 
+  Mail, 
+  User, 
+  RefreshCw, 
+  Filter, 
+  MapPin 
+} from "lucide-react";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import { FaCheckCircle } from "react-icons/fa";
 import ConviteViagemModal from "@/components/EncontrePessoas/ConviteViagemModal";
@@ -129,11 +157,40 @@ const EncontrePessoas = () => {
       c.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     );
   };
-
   const extrairPrimeiroEUltimoNome = (nome: string) => {
     const partes = nome.trim().split(" ");
     if (partes.length <= 2) return nome;
     return `${partes[0]} ${partes[partes.length - 1]}`;
+  };
+  const getIconeAcomodacao = (tipo: string | undefined) => {
+    if (!tipo) return Home;
+    const iconMap: { [key: string]: any } = {
+      HOTEL: Hotel,
+      HOSTEL: Building,
+      AIRBNB: Home,
+      POUSADA: Home,
+      CAMPING: Tent,
+      RESORT: Building,
+      FAZENDA: Trees,
+      CASA_DE_AMIGOS: Home,
+    };
+    return iconMap[tipo] || Home;
+  };
+
+  const getIconeTransporte = (tipo: string | undefined) => {
+    if (!tipo) return Car;
+    const iconMap: { [key: string]: any } = {
+      AVIAO: Plane,
+      CARRO: Car,
+      ONIBUS: Bus,
+      TREM: Train,
+      NAVIO: Ship,
+      MOTO: Bike,
+      BICICLETA: Bike,
+      VAN: Bus,
+      MOTORHOME: Car,
+    };
+    return iconMap[tipo] || Car;
   };
 
     const buscar = async () => {
@@ -266,9 +323,8 @@ const EncontrePessoas = () => {
               <span className="text-gray-600">Carregando...</span>
             </div>
           ) : (
-            <>
-              <h1 className="text-3xl font-bold text-center text-gray-900 mb-6">
-                Encontre sua companhia de viagem! 🌍✈️
+            <>              <h1 className="text-3xl font-bold text-center text-gray-900 mb-6">
+                Encontre sua companhia de viagem
               </h1>
 
               <div className="flex flex-col gap-1 mb-4">
@@ -290,13 +346,12 @@ const EncontrePessoas = () => {
         }}
         className="w-full outline-none"
       />
-    </div>
-
-    <button
+    </div>    <button
       onClick={() => setBuscarPor(buscarPor === "nome" ? "email" : "nome")}
-      className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 whitespace-nowrap"
+      className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 whitespace-nowrap"
     >
-      {buscarPor === "nome" ? "🔁 Buscar por E-mail" : "🔁 Buscar por Nome"}
+      <RefreshCw className="w-4 h-4" />
+      {buscarPor === "nome" ? "Buscar por E-mail" : "Buscar por Nome"}
     </button>
 
     <button
@@ -312,10 +367,7 @@ const EncontrePessoas = () => {
     Digite {buscarPor === "nome" ? "o nome" : "o e-mail"} e pressione{" "}
     <span className="font-semibold">Enter</span> para buscar.
   </p>
-</div>
-
-
-              {/* 🎛️ Dropdown de Filtros */}
+</div>              {/* Dropdown de Filtros */}
               <AnimatePresence>
                 {mostrarFiltros && (
                   <motion.div
@@ -323,9 +375,9 @@ const EncontrePessoas = () => {
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="overflow-hidden bg-gray-50 rounded-lg p-4 border mb-6"
+                    className="overflow-hidden bg-gray-50 rounded-lg p-6 border mb-6 shadow-sm"
                   >
-                    {/* 🔹 Linha 1: Gênero + Tipo de Acomodação + Tipo de Transporte */}
+                    {/* Linha 1: Gênero + Tipo de Acomodação + Tipo de Transporte */}
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
   {/* Gênero */}
   <div>
@@ -404,7 +456,7 @@ const EncontrePessoas = () => {
   </div>
 </div>
 
-{/* 🔹 Linha 2: Idades + Valor Médio */}
+{/* Linha 2: Idades + Valor Médio */}
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
   {/* Idade Mínima */}
   <div>
@@ -456,19 +508,15 @@ const EncontrePessoas = () => {
       />
     </div>
   </div>
-</div>
-
-
-
-                      {/* Checkboxes */}
+</div>                      {/* Checkboxes */}
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
                         {[
-                          { nome: "petFriendly", label: "🐶 Pet Friendly" },
-                          { nome: "aceitaCriancas", label: "👶 Aceita Crianças" },
-                          { nome: "aceitaFumantes", label: "🚬 Aceita Fumantes" },
-                          { nome: "aceitaBebidasAlcoolicas", label: "🍷 Aceita Bebidas" },
-                          { nome: "acomodacaoCompartilhada", label: "🛏️ Acomodação Compartilhada" },
-                        ].map(({ nome, label }) => (
+                          { nome: "petFriendly", label: "Pet Friendly", icon: Heart },
+                          { nome: "aceitaCriancas", label: "Aceita Crianças", icon: Baby },
+                          { nome: "aceitaFumantes", label: "Aceita Fumantes", icon: Cigarette },
+                          { nome: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas", icon: Wine },
+                          { nome: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", icon: Bed },
+                        ].map(({ nome, label, icon: Icon }) => (
                           <label key={nome} className="flex items-center gap-2 text-sm">
                             <input
                               type="checkbox"
@@ -477,6 +525,7 @@ const EncontrePessoas = () => {
                               onChange={handleChange}
                               className="accent-blue-600"
                             />
+                            <Icon className="w-4 h-4 text-gray-600" />
                             {label}
                           </label>
                         ))}
@@ -489,32 +538,35 @@ const EncontrePessoas = () => {
                             onChange={handleChange}
                             className="accent-blue-600"
                           />
-                          ✅ Apenas perfis verificados
+                          <FaCheckCircle className="w-4 h-4 text-green-600" />
+                          Apenas perfis verificados
                         </label>
-                      </div>
-
-                      {/* Botões */}
-                      <div className="flex gap-4 mt-6">
+                      </div>                      {/* Botões */}
+                      <div className="flex flex-col sm:flex-row gap-3 mt-6">
                         <button
                           onClick={buscar}
-                          className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 shadow w-full"
+                          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-md transition-colors duration-200 font-medium flex-1"
                           disabled={loading}
                         >
                           {loading ? (
-                            <span className="flex items-center justify-center gap-2">
+                            <>
                               <Loader2 className="w-4 h-4 animate-spin" />
                               Buscando...
-                            </span>
+                            </>
                           ) : (
-                            <>🔍 Buscar Pessoas</>
+                            <>
+                              <Search className="w-4 h-4" />
+                              Buscar Pessoas
+                            </>
                           )}
                         </button>
 
                         <button
                           onClick={limparFiltros}
-                          className="text-sm text-gray-600 hover:underline"
+                          className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
                         >
-                          🔄 Limpar filtros
+                          <RotateCcw className="w-4 h-4" />
+                          Limpar filtros
                         </button>
                       </div>
 
@@ -562,16 +614,41 @@ const EncontrePessoas = () => {
                                 className="text-green-600"
                               />
                             )}
-                          </h2>
-                          <p className="text-gray-600">
+                          </h2>                          <p className="text-gray-600 flex items-center justify-center gap-1">
+                            <User className="w-4 h-4" />
                             {user.genero} • {user.idade} anos
                           </p>
-                          <ul className="text-sm text-left mt-3 space-y-1">
-                            {user.petFriendly && <li>🐶 Pet Friendly</li>}
-                            {user.aceitaCriancas && <li>👶 Aceita Crianças</li>}
-                            {user.aceitaFumantes && <li>🚬 Aceita Fumantes</li>}
-                            {user.aceitaBebidasAlcoolicas && <li>🍷 Aceita Bebidas</li>}
-                            {user.acomodacaoCompartilhada && <li>🛏️ Acomodação Compartilhada</li>}
+                          <ul className="text-sm text-left mt-3 space-y-2">
+                            {user.petFriendly && (
+                              <li className="flex items-center gap-2">
+                                <Heart className="w-4 h-4 text-red-500" />
+                                Pet Friendly
+                              </li>
+                            )}
+                            {user.aceitaCriancas && (
+                              <li className="flex items-center gap-2">
+                                <Baby className="w-4 h-4 text-blue-500" />
+                                Aceita Crianças
+                              </li>
+                            )}
+                            {user.aceitaFumantes && (
+                              <li className="flex items-center gap-2">
+                                <Cigarette className="w-4 h-4 text-gray-500" />
+                                Aceita Fumantes
+                              </li>
+                            )}
+                            {user.aceitaBebidasAlcoolicas && (
+                              <li className="flex items-center gap-2">
+                                <Wine className="w-4 h-4 text-purple-500" />
+                                Aceita Bebidas
+                              </li>
+                            )}
+                            {user.acomodacaoCompartilhada && (
+                              <li className="flex items-center gap-2">
+                                <Bed className="w-4 h-4 text-orange-500" />
+                                Acomodação Compartilhada
+                              </li>
+                            )}
                             {!user.petFriendly &&
                               !user.aceitaCriancas &&
                               !user.aceitaFumantes &&
@@ -581,13 +658,27 @@ const EncontrePessoas = () => {
                                   Preferências de viagem não informadas.
                                 </li>
                               )}
-                            <li>🏨 {formatarTexto(user.tipoAcomodacao)}</li>
-                            <li>🚗 {formatarTexto(user.tipoTransporte)}</li>
+                            {(() => {
+                              const IconeAcomodacao = getIconeAcomodacao(user.tipoAcomodacao);
+                              return (
+                                <li className="flex items-center gap-2">
+                                  <IconeAcomodacao className="w-4 h-4 text-green-600" />
+                                  {formatarTexto(user.tipoAcomodacao)}
+                                </li>
+                              );
+                            })()}
+                            {(() => {
+                              const IconeTransporte = getIconeTransporte(user.tipoTransporte);
+                              return (
+                                <li className="flex items-center gap-2">
+                                  <IconeTransporte className="w-4 h-4 text-blue-600" />
+                                  {formatarTexto(user.tipoTransporte)}
+                                </li>
+                              );
+                            })()}
                           </ul>
-                        </div>
-
-                        <button
-                          className="bg-orange-600 text-white px-4 py-2 rounded mt-4 hover:bg-orange-700 w-full font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+                        </div>                        <button
+                          className="bg-orange-600 text-white px-4 py-3 rounded-lg mt-4 hover:bg-orange-700 w-full font-semibold flex items-center justify-center gap-2 disabled:opacity-60 transition-colors duration-200"
                           onClick={() => abrirModalConvite(user)}
                           disabled={usuarioCarregandoId === user.id}
                         >
@@ -597,7 +688,10 @@ const EncontrePessoas = () => {
                               Carregando...
                             </>
                           ) : (
-                            <>Convidar para Viagem</>
+                            <>
+                              <Users className="w-4 h-4" />
+                              Convidar para Viagem
+                            </>
                           )}
                         </button>
                       </div>
