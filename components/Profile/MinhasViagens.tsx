@@ -32,6 +32,20 @@ const MinhasViagens = () => {
   const [loadingCadastrar, setLoadingCadastrar] = useState(false);
   const [loadingActions, setLoadingActions] = useState<{[key: string]: boolean}>({});
 
+  // Função para formatar o status
+  const formatarStatus = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      "RASCUNHO": "Rascunho",
+      "PENDENTE": "Pendente", 
+      "CONFIRMADA": "Confirmada",
+      "EM_ANDAMENTO": "Em Andamento",
+      "CONCLUIDA": "Concluída",
+      "CANCELADA": "Cancelada"
+    };
+    
+    return statusMap[status] || status;
+  };
+
   // Registra callback para invalidação do cache
   useEffect(() => {
     const invalidateCallback = () => {
@@ -132,175 +146,287 @@ const MinhasViagens = () => {
   return (
     <>
       <motion.div
-        className="flex flex-col items-center p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
+        className="space-y-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <h2 className="text-2xl font-bold mb-6">Minhas Viagens</h2>        <div className="mb-6 -mt-4 flex flex-wrap justify-between w-full max-w-5xl z-10 relative gap-4">
-          <select
-            value={filtroStatus}
-            onChange={(e) => setFiltroStatus(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 flex items-center gap-2"
-          >
-            <option value="TODOS">Todos os Status</option>
-            <option value="RASCUNHO">Rascunho</option>
-            <option value="PENDENTE">Pendente</option>
-            <option value="CONFIRMADA">Confirmada</option>
-            <option value="EM_ANDAMENTO">Em andamento</option>
-            <option value="CONCLUIDA">Concluída</option>
-            <option value="CANCELADA">Cancelada</option>
-          </select>
-
-          <select
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value as any)}
-            className="border border-gray-300 rounded px-3 py-2"
-          >
-            <option value="TODOS">Todos</option>
-            <option value="CRIADOR">Onde sou criador</option>
-            <option value="PARTICIPANTE">Onde sou participante</option>
-          </select>
-
-          <select
-            value={ordenacao}
-            onChange={(e) => setOrdenacao(e.target.value as any)}
-            className="border border-gray-300 rounded px-3 py-2"
-          >
-            <option value="dataDesc">Mais recentes</option>
-            <option value="dataAsc">Mais antigas</option>
-            <option value="az">A-Z</option>
-            <option value="za">Z-A</option>
-          </select>
+        {/* Header Section */}
+        <div className="text-center">
+          <h2 className="text-3xl font-bold mb-2">
+            <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+              Minhas Viagens
+            </span>
+          </h2>
+          <p className="text-gray-600">Gerencie todas as suas aventuras e descobertas</p>
         </div>
 
-        {viagensOrdenadas.length === 0 ? (
-          <div className="text-gray-500">Nenhuma viagem encontrada com esse filtro.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {viagensOrdenadas.map(({ viagem, criador }) => (              <motion.div
-                key={viagem.id}
-                whileHover={{ scale: 1.05 }}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden w-80 cursor-pointer"
-                onClick={() => {
-                  setViagemSelecionadaId(viagem.id);
-                }}
+        {/* Modern Filter Section */}
+        <motion.div 
+          className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/30 p-6 shadow-xl"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Status</label>
+              <select
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                className="w-full bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
               >
-                <div className="relative w-full h-48">
+                <option value="TODOS">Todos os Status</option>
+                <option value="RASCUNHO">Rascunho</option>
+                <option value="PENDENTE">Pendente</option>
+                <option value="CONFIRMADA">Confirmada</option>
+                <option value="EM_ANDAMENTO">Em andamento</option>
+                <option value="CONCLUIDA">Concluída</option>
+                <option value="CANCELADA">Cancelada</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Tipo</label>
+              <select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value as any)}
+                className="w-full bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              >
+                <option value="TODOS">Todos</option>
+                <option value="CRIADOR">Onde sou criador</option>
+                <option value="PARTICIPANTE">Onde sou participante</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Ordenação</label>
+              <select
+                value={ordenacao}
+                onChange={(e) => setOrdenacao(e.target.value as any)}
+                className="w-full bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              >
+                <option value="dataDesc">Mais recentes</option>
+                <option value="dataAsc">Mais antigas</option>
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Content Section */}
+        {viagensOrdenadas.length === 0 ? (
+          <motion.div 
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/30 p-8 shadow-xl">
+              <div className="w-20 h-20 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plane className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Nenhuma viagem encontrada</h3>
+              <p className="text-gray-500">Não encontramos viagens com os filtros selecionados.</p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, staggerChildren: 0.1 }}
+          >
+            {viagensOrdenadas.map(({ viagem, criador }, index) => (
+              <motion.div
+                key={viagem.id}
+                className="group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5, scale: 1.02 }}
+                onClick={() => setViagemSelecionadaId(viagem.id)}
+              >
+                {/* Image Section */}
+                <div className="relative h-48 overflow-hidden">
                   <img
                     src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
                     alt={viagem.destino}
-                    className={`object-cover w-full h-48 rounded-t-2xl transition-all duration-300 ease-in-out ${
+                    className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
                       ["CONCLUIDA", "CANCELADA"].includes(viagem.status) ? "grayscale" : ""
                     }`}
                   />
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  
+                  {/* Status Badge */}
+                  <div className="absolute top-4 left-4">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border border-white/30 ${
+                        viagem.status === "CONFIRMADA"
+                          ? "bg-green-500/80 text-white"
+                          : viagem.status === "EM_ANDAMENTO"
+                          ? "bg-blue-500/80 text-white"
+                          : viagem.status === "CONCLUIDA"
+                          ? "bg-gray-500/80 text-white"
+                          : viagem.status === "CANCELADA"
+                          ? "bg-red-500/80 text-white"
+                          : viagem.status === "PENDENTE"
+                          ? "bg-yellow-500/80 text-white"
+                          : "bg-gray-400/80 text-white"                      }`}
+                    >
+                      {formatarStatus(viagem.status)}
+                    </span>
+                  </div>
+
+                  {/* Creator Badge */}
+                  {!criador && (
+                    <div className="absolute top-4 right-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/80 text-white backdrop-blur-sm border border-white/30">
+                        Participante
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="p-4 flex flex-col items-center">
-                  <h3 className="text-lg font-semibold text-center">
-                    {viagem.destino} {!criador && <span className="text-xs text-gray-500">(Participante)</span>}
+                {/* Content Section */}
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">
+                    {viagem.destino}
                   </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                    {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} - {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
+                  </p>
 
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full mb-2 capitalize ${
-                      viagem.status === "CONFIRMADA"
-                        ? "bg-green-100 text-green-800"
-                        : viagem.status === "EM_ANDAMENTO"
-                        ? "bg-blue-100 text-blue-800"
-                        : viagem.status === "CONCLUIDA"
-                        ? "bg-gray-200 text-gray-700"
-                        : viagem.status === "CANCELADA"
-                        ? "bg-red-100 text-red-800"
-                        : viagem.status === "PENDENTE"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {viagem.status.replace("_", " ").toLowerCase()}
-                  </span>
-
-                  <p className="text-sm text-gray-500 text-center mb-4">
-                    De {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} até{" "}
-                    {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
-                  </p>                  <div className="flex justify-center gap-5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const actionKey = `roteiro-${viagem.id}`;
-                        setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
-                        router.push(`/viagens/cadastrarRoteiro?viagemId=${viagem.id}`);
-                      }}
-                      className="text-purple-600 hover:text-purple-800"
-                      title="Ver Roteiro"
-                    >
-                      {loadingActions[`roteiro-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <MapPin size={18} />}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const actionKey = `participantes-${viagem.id}`;
-                        setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
-                        router.push(`/viagens/${viagem.id}/participantes`);
-                      }}
-                      className="text-green-600 hover:text-green-800"
-                      title="Ver Participantes"
-                    >
-                      {loadingActions[`participantes-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Users size={18} />}
-                    </button>
-                    {criador ? (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const actionKey = `edit-${viagem.id}`;
-                            setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
-                            router.push(`/viagens/editar/${viagem.id}`);
-                          }}
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Editar"
-                        >
-                          {loadingActions[`edit-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Edit size={18} />}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeletar(viagem.id);
-                          }}
-                          className="text-red-600 hover:text-red-800"
-                          title="Excluir"
-                        >
-                          {loadingActions[`delete-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={18} />}
-                        </button>
-                      </>
-                    ) : (
-                      <button
+                  {/* Action Buttons */}
+                  <div className="flex justify-between items-center gap-3">
+                    <div className="flex gap-2">
+                      <motion.button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSairDaViagem(viagem.id);
+                          const actionKey = `roteiro-${viagem.id}`;
+                          setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
+                          router.push(`/viagens/cadastrarRoteiro?viagemId=${viagem.id}`);
                         }}
-                        className="text-red-600 hover:text-red-800"
-                        title="Sair da Viagem"
+                        className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors duration-200"
+                        title="Ver Roteiro"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                       >
-                        {loadingActions[`leave-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <LogOut size={18} />}
-                      </button>
-                    )}
+                        {loadingActions[`roteiro-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <MapPin size={16} />}
+                      </motion.button>
+                      
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const actionKey = `participantes-${viagem.id}`;
+                          setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
+                          router.push(`/viagens/${viagem.id}/participantes`);
+                        }}
+                        className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors duration-200"
+                        title="Ver Participantes"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {loadingActions[`participantes-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Users size={16} />}
+                      </motion.button>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {criador ? (
+                        <>
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const actionKey = `edit-${viagem.id}`;
+                              setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
+                              router.push(`/viagens/editar/${viagem.id}`);
+                            }}
+                            className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
+                            title="Editar"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            {loadingActions[`edit-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Edit size={16} />}
+                          </motion.button>
+                          
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeletar(viagem.id);
+                            }}
+                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                            title="Excluir"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            {loadingActions[`delete-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16} />}
+                          </motion.button>
+                        </>
+                      ) : (
+                        <motion.button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSairDaViagem(viagem.id);
+                          }}
+                          className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                          title="Sair da Viagem"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          {loadingActions[`leave-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <LogOut size={16} />}
+                        </motion.button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
             ))}
-          </div>
-        )}        <motion.button
-          whileHover={{ scale: 1.05 }}
-          onClick={() => {
-            setLoadingCadastrar(true);
-            router.push("/viagens/cadastrar");
-          }}
-          className="mt-8 flex items-center gap-2 bg-orange-500 text-white font-bold py-2 px-6 rounded-full shadow-md hover:bg-orange-600"
+          </motion.div>
+        )}
+
+        {/* Modern CTA Button */}
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
         >
-          {loadingCadastrar ? <Loader2 className="animate-spin w-5 h-5" /> : <Plane className="w-5 h-5" />}
-          Cadastrar Viagem
-        </motion.button>
-      </motion.div>      {/* Modal de detalhes da viagem */}
+          <motion.button
+            onClick={() => {
+              setLoadingCadastrar(true);
+              router.push("/viagens/cadastrar");
+            }}
+            className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={loadingCadastrar}
+          >
+            {/* Animated Background */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              initial={{ x: '-100%' }}
+              whileHover={{ x: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+            
+            <span className="relative z-10 flex items-center gap-3">
+              {loadingCadastrar ? (
+                <Loader2 className="animate-spin w-5 h-5" />
+              ) : (
+                <Plane className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+              )}
+              {loadingCadastrar ? "Redirecionando..." : "Nova Viagem"}
+            </span>
+          </motion.button>
+        </motion.div>
+      </motion.div>
+
+      {/* Modal de detalhes da viagem */}
       {viagemSelecionadaId && (
         <ViagemDetalhesModal
           viagemId={viagemSelecionadaId}

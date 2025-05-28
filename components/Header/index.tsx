@@ -15,6 +15,7 @@ const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [focusedItem, setFocusedItem] = useState(-1);
   const pathUrl = usePathname();
   const { isAuthenticated } = useAuth();
 
@@ -38,6 +39,52 @@ const Header = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  // Navegação por teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!navigationOpen) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          setNavigationOpen(false);
+          setFocusedItem(-1);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setFocusedItem(prev => (prev < menuData.length - 1 ? prev + 1 : 0));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setFocusedItem(prev => (prev > 0 ? prev - 1 : menuData.length - 1));
+          break;
+        case 'Enter':
+        case ' ':
+          if (focusedItem >= 0 && menuData[focusedItem]?.path) {
+            e.preventDefault();
+            window.location.href = menuData[focusedItem].path;
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [navigationOpen, focusedItem]);
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Element;
+      if (navigationOpen && !target.closest('header')) {
+        setNavigationOpen(false);
+        setFocusedItem(-1);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [navigationOpen]);
+
   const headerVariants = {
     initial: { y: -100, opacity: 0 },
     animate: { y: 0, opacity: 1 },
@@ -55,8 +102,7 @@ const Header = () => {
     animate: { opacity: 1, height: "auto", y: 0 },
     exit: { opacity: 0, height: 0, y: -20 },
     transition: { duration: 0.4, ease: "easeInOut" }
-  };
-  return (
+  };  return (
     <motion.header
       initial="initial"
       animate="animate"
@@ -66,13 +112,24 @@ const Header = () => {
           ? "bg-white/80 backdrop-blur-xl py-3 shadow-2xl border-b border-white/20 dark:bg-black/80 dark:border-white/10"
           : "bg-white/60 backdrop-blur-lg py-5 dark:bg-black/60"
       }`}
+      role="banner"
+      aria-label="Navegação principal"
     >
+      {/* Skip to main content link for screen readers */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-primary text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      >
+        Pular para o conteúdo principal
+      </a>
+
       {/* Magical gradient overlay */}
       <div 
         className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-700"
         style={{
           background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(234, 88, 12, 0.05) 0%, transparent 50%)`
         }}
+        aria-hidden="true"
       />
       
       <div className="relative mx-auto flex max-w-c-1390 items-center justify-between px-4 md:px-8 2xl:px-0">
@@ -82,32 +139,43 @@ const Header = () => {
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
         >
-          <Link href="/" className="relative group">
+          <Link 
+            href="/" 
+            className="relative group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
+            aria-label="Unindo Destinos - Página inicial"
+          >
             <motion.div
-              className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"
               initial={{ scale: 0 }}
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.3 }}
+              aria-hidden="true"
             />
             <Image
               src="/images/logo/unindo-destinos-logo.png"
-              alt="logo"
+              alt="Unindo Destinos - Logo"
               width={140}
               height={40}
               className="dark:hidden transition-all duration-300 hover:scale-105 relative z-10"
+              priority
             />
             <Image
               src="/images/logo/unindo-destinos-logo.png"
-              alt="logo dark"
+              alt="Unindo Destinos - Logo"
               width={140}
               height={40}
               className="hidden dark:block transition-all duration-300 hover:scale-105 relative z-10"
+              priority
             />
           </Link>
         </motion.div>
 
         {/* Enhanced Nav Menu */}
-        <nav className="hidden xl:flex items-center gap-2">
+        <nav 
+          className="hidden xl:flex items-center gap-2"
+          role="navigation"
+          aria-label="Menu principal"
+        >
           {menuData.map((menuItem, index) =>
             menuItem.path ? (
               <motion.div
