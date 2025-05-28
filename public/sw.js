@@ -91,6 +91,14 @@ self.addEventListener('fetch', (event) => {
   // Ignorar chrome-extension e outros protocolos
   if (!url.startsWith('http')) return;
 
+  // Ignorar APIs externas de imagens para evitar interferência
+  if (url.includes('googleapis.com') || 
+      url.includes('unsplash.com') || 
+      url.includes('images.unsplash.com') ||
+      url.includes('pixabay.com')) {
+    return; // Deixa a requisição passar normalmente
+  }
+
   // Encontrar estratégia apropriada
   const routeStrategy = ROUTE_STRATEGIES.find(route => route.pattern.test(url));
   

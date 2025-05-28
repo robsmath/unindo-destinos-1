@@ -8,6 +8,7 @@ import { deletarViagem, sairDaViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
 import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
+import SmartImage from "@/components/Common/SmartImage";
 import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
 import { 
   Loader2, 
@@ -230,32 +231,29 @@ const MinhasViagens = () => {
               <h3 className="text-lg font-semibold text-gray-700 mb-2">Nenhuma viagem encontrada</h3>
               <p className="text-gray-500">Não encontramos viagens com os filtros selecionados.</p>
             </div>
-          </motion.div>
-        ) : (
+          </motion.div>        ) : (
           <motion.div 
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, staggerChildren: 0.1 }}
+            transition={{ delay: 0.2, staggerChildren: 0.05 }}
           >
-            {viagensOrdenadas.map(({ viagem, criador }, index) => (
-              <motion.div
+            {viagensOrdenadas.map(({ viagem, criador }, index) => (              <motion.div
                 key={viagem.id}
-                className="group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-xl overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300"
-                initial={{ opacity: 0, y: 20 }}
+                className="group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-lg overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300"
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5, scale: 1.02 }}
+                transition={{ delay: index * 0.02 }}
+                whileHover={{ y: -1 }}
                 onClick={() => setViagemSelecionadaId(viagem.id)}
-              >
-                {/* Image Section */}
-                <div className="relative h-48 overflow-hidden">
-                  <img
+              >{/* Image Section */}
+                <div className="relative h-48 overflow-hidden">                  <SmartImage
                     src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
                     alt={viagem.destino}
-                    className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                    className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.02] ${
                       ["CONCLUIDA", "CANCELADA"].includes(viagem.status) ? "grayscale" : ""
                     }`}
+                    fallbackSrc="/images/common/beach.jpg"
                   />
                   
                   {/* Gradient Overlay */}
@@ -304,8 +302,7 @@ const MinhasViagens = () => {
 
                   {/* Action Buttons */}
                   <div className="flex justify-between items-center gap-3">
-                    <div className="flex gap-2">
-                      <motion.button
+                    <div className="flex gap-2">                      <motion.button
                         onClick={(e) => {
                           e.stopPropagation();
                           const actionKey = `roteiro-${viagem.id}`;
@@ -314,14 +311,13 @@ const MinhasViagens = () => {
                         }}
                         className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors duration-200"
                         title="Ver Roteiro"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         {loadingActions[`roteiro-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <MapPin size={16} />}
                       </motion.button>
                       
-                      <motion.button
-                        onClick={(e) => {
+                      <motion.button                        onClick={(e) => {
                           e.stopPropagation();
                           const actionKey = `participantes-${viagem.id}`;
                           setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
@@ -329,8 +325,8 @@ const MinhasViagens = () => {
                         }}
                         className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors duration-200"
                         title="Ver Participantes"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         {loadingActions[`participantes-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Users size={16} />}
                       </motion.button>
@@ -338,18 +334,16 @@ const MinhasViagens = () => {
 
                     <div className="flex gap-2">
                       {criador ? (
-                        <>
-                          <motion.button
+                        <>                          <motion.button
                             onClick={(e) => {
                               e.stopPropagation();
                               const actionKey = `edit-${viagem.id}`;
                               setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
                               router.push(`/viagens/editar/${viagem.id}`);
-                            }}
-                            className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
+                            }}                            className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
                             title="Editar"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                           >
                             {loadingActions[`edit-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Edit size={16} />}
                           </motion.button>
@@ -358,25 +352,22 @@ const MinhasViagens = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeletar(viagem.id);
-                            }}
-                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                            }}                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
                             title="Excluir"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                           >
                             {loadingActions[`delete-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16} />}
                           </motion.button>
                         </>
-                      ) : (
-                        <motion.button
+                      ) : (                        <motion.button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleSairDaViagem(viagem.id);
-                          }}
-                          className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
+                          }}                          className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
                           title="Sair da Viagem"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                         >
                           {loadingActions[`leave-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <LogOut size={16} />}
                         </motion.button>
@@ -395,15 +386,14 @@ const MinhasViagens = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-        >
-          <motion.button
+        >          <motion.button
             onClick={() => {
               setLoadingCadastrar(true);
               router.push("/viagens/cadastrar");
             }}
             className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden"
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.01, y: -1 }}
+            whileTap={{ scale: 0.99 }}
             disabled={loadingCadastrar}
           >
             {/* Animated Background */}

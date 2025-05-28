@@ -1,11 +1,12 @@
 import EditarPetClient from "./EditarPetClient";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function Page({ params }: Props) {
-  const petId = parseInt(params.id);
+  const { id } = await params;
+  const petId = parseInt(id);
 
   return <EditarPetClient petId={petId} />;
 }

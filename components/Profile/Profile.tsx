@@ -22,7 +22,7 @@ function classNames(...classes: string[]) {
 
 const Profile = () => {
   const { isAuthenticated, usuario, atualizarFotoPerfil } = useAuth();
-  const { carregarUsuario, carregarPreferencias, recarregarViagens } = usePerfil();
+  const { } = usePerfil(); // Dados já são carregados automaticamente pelo context
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -38,17 +38,15 @@ const Profile = () => {
     { label: "Minhas Preferências", param: "preferencias" },
     { label: "Meus Pets", param: "pets" },
     { label: "Central de Solicitações", param: "solicitacoes" },
-  ];
-  useEffect(() => {
+  ];  useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/signin");
     } else {
-      carregarUsuario().then(() => {
-        setAbasCarregadas(prev => new Set(prev).add(0));
-        setTimeout(() => {
-          setLoadingPage(false);
-        }, 500);
-      });
+      // PerfilContext já carrega todos os dados automaticamente
+      setAbasCarregadas(prev => new Set(prev).add(0));
+      setTimeout(() => {
+        setLoadingPage(false);
+      }, 500);
     }
   }, [isAuthenticated, router]);
 
@@ -60,35 +58,16 @@ const Profile = () => {
         setSelectedIndex(tabIndex);
       }
     }
-  }, [searchParams]);
-  const handleTabChange = async (index: number) => {
+  }, [searchParams]);  const handleTabChange = async (index: number) => {
     setSelectedIndex(index);
     const tab = tabs[index];
     
     const newUrl = `/profile?tab=${tab.param}`;
     window.history.pushState({}, '', newUrl);
 
-    if (!abasCarregadas.has(index)) {
-      try {
-        switch (index) {
-          case 0:
-            await carregarUsuario();
-            break;          case 1: // Minhas Viagens
-            await recarregarViagens();
-            break;
-          case 2:
-            await carregarPreferencias();
-            break;
-          case 3:
-          case 4:
-            break;
-        }
-        
-        setAbasCarregadas(prev => new Set(prev).add(index));
-      } catch (error) {
-        console.error("Erro ao carregar dados da aba:", error);
-      }
-    }
+    // Todos os dados já são carregados pelo PerfilContext automaticamente
+    // Só precisamos marcar a aba como carregada
+    setAbasCarregadas(prev => new Set(prev).add(index));
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

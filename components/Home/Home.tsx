@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import Carousel from "@/components/Common/Carousel";
 import LoadingScreen from "@/components/Common/LoadingScreen";
 import AnimatedStats from "./AnimatedStats";
@@ -226,15 +227,12 @@ export default function Home() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="inline-block"
-            >
-              <Link
+            >              <Link
                 href="/auth/signup"
                 className="inline-flex items-center px-10 py-4 bg-white text-primary font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-lg hover:bg-gray-50"
               >
                 Criar Conta Gratuita
-                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </motion.div>
           </motion.div>        </div>

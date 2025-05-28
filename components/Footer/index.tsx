@@ -100,30 +100,17 @@ const Footer = () => {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
               className="lg:col-span-1"
-            >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-                className="relative group mb-8"
-              >
+            >              <div className="mb-8">
                 <Link href="/" className="block">
                   <Image
                     width={140}
                     height={60}
                     src="/images/logo/unindo-destinos-logo.png"
                     alt="Unindo Destinos"
-                    className="brightness-0 invert group-hover:brightness-100 group-hover:invert-0 transition-all duration-500"
+                    className="brightness-0 invert"
                   />
                 </Link>
-                
-                {/* Glow effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"
-                  initial={{ scale: 0 }}
-                  whileHover={{ scale: 1.2 }}
-                  transition={{ duration: 0.3 }}
-                />
-              </motion.div>
+              </div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -301,23 +288,15 @@ const Footer = () => {
                   whileTap={{ scale: 0.98 }}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
-                    Inscrever-se
-                    <motion.svg
+                    Inscrever-se                    <motion.svg
                       width="20"
                       height="20"
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                       className="group-hover:translate-x-1 transition-transform duration-300"
-                    >
-                      <path
-                        d="M3 12H21M21 12L15 6M21 12L15 18"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </motion.svg>
+                      dangerouslySetInnerHTML={{ __html: `<path d="M3 12H21M21 12L15 6M21 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />` }}
+                    />
                   </span>
                   
                   {/* Shimmer effect */}
@@ -401,8 +380,7 @@ const Footer = () => {
                            rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   whileHover={{ scale: 1.2 }}
                 />
-                
-                {/* Icon */}
+                  {/* Icon */}
                 <svg
                   width="20"
                   height="20"
@@ -410,9 +388,8 @@ const Footer = () => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   className="relative z-10 text-gray-400 group-hover:text-primary transition-colors duration-300"
-                >
-                  <path d={social.icon} fill="currentColor" />
-                </svg>
+                  dangerouslySetInnerHTML={{ __html: `<path d="${social.icon}" fill="currentColor" />` }}
+                />
 
                 {/* Sparkle effect */}
                 <motion.div

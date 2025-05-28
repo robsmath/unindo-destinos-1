@@ -123,13 +123,12 @@ const Header = () => {
         Pular para o conteúdo principal
       </a>
 
-      {/* Magical gradient overlay */}
-      <div 
+      {/* Magical gradient overlay */}      <div 
         className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-700"
         style={{
           background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(234, 88, 12, 0.05) 0%, transparent 50%)`
         }}
-        aria-hidden="true"
+        aria-hidden={true}
       />
       
       <div className="relative mx-auto flex max-w-c-1390 items-center justify-between px-4 md:px-8 2xl:px-0">
@@ -143,13 +142,12 @@ const Header = () => {
             href="/" 
             className="relative group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
             aria-label="Unindo Destinos - Página inicial"
-          >
-            <motion.div
+          >            <motion.div
               className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"
               initial={{ scale: 0 }}
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.3 }}
-              aria-hidden="true"
+              aria-hidden={true}
             />
             <Image
               src="/images/logo/unindo-destinos-logo.png"

@@ -130,13 +130,10 @@ const Loading = ({
         {loadingContent}
       </motion.div>
     );
-  }
-
-  return (
-    <div 
+  }  return (    <div 
       className="flex items-center justify-center p-8"
-      role="status"
-      aria-live="polite"
+      role="status" 
+      aria-live={"polite" as "polite"} 
       aria-label={getMessage()}
     >
       {loadingContent}

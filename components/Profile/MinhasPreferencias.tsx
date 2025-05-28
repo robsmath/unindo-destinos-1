@@ -48,15 +48,13 @@ const MinhasPreferencias = () => {
           }
         : null
     );
-  };
-
-  const handleSubmit = async () => {
+  };  const handleSubmit = async () => {
     if (!preferenciasEditaveis) return;
 
     setSalvando(true);    try {
       const metodo = preferencias ? atualizarPreferenciasDoUsuario : salvarPreferenciasDoUsuario;
       await metodo(preferenciasEditaveis);
-      await carregarPreferencias();
+      await carregarPreferencias(true); // Força o recarregamento das preferências
       toast.success("Preferências salvas com sucesso!");
     } catch (error) {
       toast.error("Erro ao salvar preferências.");

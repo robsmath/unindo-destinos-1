@@ -92,12 +92,11 @@ const Breadcrumbs = ({ items, className = "", showHome = true }: BreadcrumbsProp
                   {item.icon}
                   <span>{item.label}</span>
                 </Link>
-              ) : (
-                <span 
+              ) : (                <span 
                   className={`flex items-center space-x-1 ${
                     isLast ? 'text-gray-900 font-medium' : 'text-gray-600'
                   }`}
-                  aria-current={isLast ? "page" : undefined}
+                  {...(isLast && { 'aria-current': 'page' as const })}
                 >
                   {item.icon}
                   <span>{item.label}</span>

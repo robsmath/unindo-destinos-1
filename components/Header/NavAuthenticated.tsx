@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence } from "framer-motion";
+import { User, LogOut } from "lucide-react";
 
 interface TokenPayload {
   sub: string;
@@ -90,11 +91,8 @@ const NavAuthenticated = () => {
                   href="/profile"
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-primary/10 hover:to-orange-500/10 hover:text-primary transition-all duration-300 dark:text-gray-200 dark:hover:bg-gray-800/50 group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3 group-hover:bg-primary/20 transition-colors">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                >                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3 group-hover:bg-primary/20 transition-colors">
+                    <User className="w-4 h-4 text-primary" />
                   </div>
                   Perfil
                 </Link>
@@ -111,11 +109,8 @@ const NavAuthenticated = () => {
                     setMenuOpen(false);
                   }}
                   className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 transition-all duration-300 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400 group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center mr-3 group-hover:bg-red-100 transition-colors dark:bg-red-900/20">
-                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                >                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center mr-3 group-hover:bg-red-100 transition-colors dark:bg-red-900/20">
+                    <LogOut className="w-4 h-4 text-red-500" />
                   </div>
                   Sair
                 </button>

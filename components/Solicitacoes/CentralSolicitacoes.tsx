@@ -27,6 +27,7 @@ import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
 import PerfilUsuarioModal from "@/components/EncontrePessoas/PerfilUsuarioModal";
 import { useTabData } from "@/components/Profile/hooks/useTabData";
 import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
+import { usePerfil } from "@/app/context/PerfilContext";
 
 type AcaoResposta = {
   id: number;
@@ -35,6 +36,7 @@ type AcaoResposta = {
 
 const CentralSolicitacoes = () => {
   const { invalidateCache } = useCacheInvalidation();
+  const { imagensViagens } = usePerfil();
   const {
     data: solicitacoes,
     loading: carregando,
@@ -141,20 +143,19 @@ const CentralSolicitacoes = () => {
     }
   };
 
-  const renderCard = (s: SolicitacaoParticipacaoDTO, index: number) => (
-    <motion.li
+  const renderCard = (s: SolicitacaoParticipacaoDTO, index: number) => (    <motion.li
       key={s.id}
-      className={`group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-xl p-6 transition-all duration-300 hover:shadow-2xl overflow-hidden ${
+      className={`group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-lg p-6 transition-all duration-300 hover:shadow-lg overflow-hidden ${
         s.status === "APROVADA"
           ? "border-green-300/50 bg-gradient-to-r from-green-50/80 to-emerald-50/80"
           : s.status === "RECUSADA"
           ? "border-red-300/50 bg-gradient-to-r from-red-50/80 to-rose-50/80"
           : "hover:border-primary/30"
       }`}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.4 }}
-      whileHover={{ y: -2 }}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
+      whileHover={{ y: -1 }}
     >
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Content Section */}
@@ -212,18 +213,16 @@ const CentralSolicitacoes = () => {
           </div>
 
           {/* Action Buttons Row */}
-          <div className="flex gap-3">
-            <motion.button
+          <div className="flex gap-3">            <motion.button
               onClick={() => setPerfilAbertoId(s.outroUsuarioId)}
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
               <User className="w-4 h-4" />
               Ver Perfil
             </motion.button>
-            
-            <motion.button
+              <motion.button
               onClick={() => {
                 setCarregandoViagemId(s.viagemId);
                 setTimeout(() => {
@@ -232,8 +231,8 @@ const CentralSolicitacoes = () => {
                 }, 200);
               }}
               className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-medium transition-colors duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
               {carregandoViagemId === s.viagemId ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -249,13 +248,12 @@ const CentralSolicitacoes = () => {
         {s.status === "PENDENTE" && (
           <div className="flex flex-col gap-3 lg:min-w-[140px]">
             {["CONVITE_RECEBIDO", "SOLICITACAO_RECEBIDA"].includes(s.tipo) && (
-              <>
-                <motion.button
+              <>                <motion.button
                   onClick={() => aceitar(s)}
                   disabled={resposta?.id === s.id && resposta?.tipo === "ACEITAR"}
                   className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
-                  whileHover={{ scale: resposta?.id === s.id ? 1 : 1.02 }}
-                  whileTap={{ scale: resposta?.id === s.id ? 1 : 0.98 }}
+                  whileHover={{ scale: resposta?.id === s.id ? 1 : 1.01 }}
+                  whileTap={{ scale: resposta?.id === s.id ? 1 : 0.99 }}
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -269,13 +267,12 @@ const CentralSolicitacoes = () => {
                     Aceitar
                   </span>
                 </motion.button>
-                
-                <motion.button
+                  <motion.button
                   onClick={() => recusar(s)}
                   disabled={resposta?.id === s.id && resposta?.tipo === "RECUSAR"}
                   className="group relative bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
-                  whileHover={{ scale: resposta?.id === s.id ? 1 : 1.02 }}
-                  whileTap={{ scale: resposta?.id === s.id ? 1 : 0.98 }}
+                  whileHover={{ scale: resposta?.id === s.id ? 1 : 1.01 }}
+                  whileTap={{ scale: resposta?.id === s.id ? 1 : 0.99 }}
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-rose-600 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -292,13 +289,12 @@ const CentralSolicitacoes = () => {
               </>
             )}
             
-            {["CONVITE_ENVIADO", "SOLICITACAO_ENVIADA"].includes(s.tipo) && (
-              <motion.button
+            {["CONVITE_ENVIADO", "SOLICITACAO_ENVIADA"].includes(s.tipo) && (              <motion.button
                 onClick={() => cancelar(s)}
                 disabled={resposta?.id === s.id && resposta?.tipo === "CANCELAR"}
                 className="group relative bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
-                whileHover={{ scale: resposta?.id === s.id ? 1 : 1.02 }}
-                whileTap={{ scale: resposta?.id === s.id ? 1 : 0.98 }}
+                whileHover={{ scale: resposta?.id === s.id ? 1 : 1.01 }}
+                whileTap={{ scale: resposta?.id === s.id ? 1 : 0.99 }}
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -444,9 +440,7 @@ const CentralSolicitacoes = () => {
           isOpen={!!perfilAbertoId}
           onClose={() => setPerfilAbertoId(null)}
         />
-      )}
-
-      {viagemAbertaId && (
+      )}      {viagemAbertaId && (
         <ViagemDetalhesModal
           viagemId={viagemAbertaId}
           open={!!viagemAbertaId}
@@ -455,6 +449,7 @@ const CentralSolicitacoes = () => {
             setCarregandoViagemId(null);
           }}
           exibirAvisoConvite
+          imagemViagem={imagensViagens[viagemAbertaId]}
         />
       )}
     </motion.div>

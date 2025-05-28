@@ -207,17 +207,15 @@ const EnhancedHero = () => {
             className="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-full shadow-lg transition-all duration-300 text-lg overflow-hidden"
           >
             <span className="relative z-10 flex items-center">
-              Comece sua Jornada
-              <motion.svg 
+              Comece sua Jornada              <motion.svg 
                 className="ml-2 w-5 h-5" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
                 whileHover={{ x: 5 }}
                 transition={{ duration: 0.2 }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </motion.svg>
+                dangerouslySetInnerHTML={{ __html: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />' }}
+              />
             </span>
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -236,17 +234,15 @@ const EnhancedHero = () => {
             className="group relative inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:border-primary hover:text-primary transition-all duration-300 text-lg overflow-hidden"
           >
             <span className="relative z-10 flex items-center">
-              Explorar Destinos
-              <motion.svg 
+              Explorar Destinos              <motion.svg 
                 className="ml-2 w-5 h-5" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
                 whileHover={{ y: 5 }}
                 transition={{ duration: 0.2 }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </motion.svg>
+                dangerouslySetInnerHTML={{ __html: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />' }}
+              />
             </span>
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"

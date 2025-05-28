@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaTimes } from "react-icons/fa";
+
 import PhoneInput from "react-phone-input-2";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -22,9 +23,10 @@ interface ValidationErrors {
 
 const PersonalDataForm = () => {
   const router = useRouter();
-  const { usuario, loading, carregarPerfil } = usePerfil();
+  const { usuario, carregarUsuario } = usePerfil();
   const [userData, setUserData] = useState<UsuarioDTO | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -37,6 +39,7 @@ const PersonalDataForm = () => {
       setAnnouncements(prev => prev.slice(1));
     }, 1000);
   };
+
   // Função para validar campos em tempo real
   const validateField = (fieldName: string, value: string): string => {
     switch (fieldName) {
@@ -48,20 +51,25 @@ const PersonalDataForm = () => {
         if (!value.trim()) return 'Email é obrigatório';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) return 'Email inválido';
-        return '';
-      case 'telefone':
+        return '';      case 'telefone':
         if (!value.trim()) return 'Telefone é obrigatório';
         if (value.replace(/\D/g, '').length < 10) return 'Telefone deve ter pelo menos 10 dígitos';
         return '';
       case 'cpf':
         if (!value.trim()) return 'CPF é obrigatório';
-        if (value.replace(/\D/g, '').length !== 11) return 'CPF deve ter 11 dígitos';
+        const cpfLimpo = value.replace(/\D/g, '');
+        if (cpfLimpo.length !== 11) return 'CPF deve ter 11 dígitos';
+        // Validação básica de CPF
+        if (!/^\d{11}$/.test(cpfLimpo)) return 'CPF inválido';
+        if (/^(\d)\1+$/.test(cpfLimpo)) return 'CPF inválido';
         return '';
       case 'dataNascimento':
         if (!value.trim()) return 'Data de nascimento é obrigatória';
         const hoje = new Date();
         const nascimento = new Date(value);
-        if (nascimento >= hoje) return 'Data de nascimento deve ser anterior a hoje';
+        if (nascimento >= hoje) return 'Data de nascimento deve ser anterior à data atual';
+        const idade = hoje.getFullYear() - nascimento.getFullYear();
+        if (idade < 18) return 'Você deve ter pelo menos 18 anos';
         return '';
       case 'genero':
         if (!value.trim()) return 'Gênero é obrigatório';
@@ -73,12 +81,6 @@ const PersonalDataForm = () => {
       case 'rua':
         if (!value.trim()) return 'Endereço é obrigatório';
         return '';
-      case 'numero':
-        if (!value.trim()) return 'Número é obrigatório';
-        return '';
-      case 'bairro':
-        if (!value.trim()) return 'Bairro é obrigatório';
-        return '';
       case 'cidade':
         if (!value.trim()) return 'Cidade é obrigatória';
         return '';
@@ -89,11 +91,11 @@ const PersonalDataForm = () => {
         return '';
     }
   };
+
   // Função para validar todos os campos
   const validateAllFields = (data: UsuarioDTO): ValidationErrors => {
     const errors: ValidationErrors = {};
-    
-    // Validar campos básicos
+      // Validar campos básicos
     const basicFields = ['nome', 'email', 'telefone', 'cpf', 'dataNascimento', 'genero'];
     basicFields.forEach(field => {
       const value = data[field as keyof UsuarioDTO] as string || '';
@@ -105,7 +107,7 @@ const PersonalDataForm = () => {
 
     // Validar endereço se existir
     if (data.endereco) {
-      const addressFields = ['cep', 'rua', 'numero', 'bairro', 'cidade', 'estado'];
+      const addressFields = ['cep', 'rua', 'cidade', 'estado'];
       addressFields.forEach(field => {
         const value = data.endereco![field as keyof EnderecoDTO] as string || '';
         const error = validateField(field, value);
@@ -173,12 +175,27 @@ const PersonalDataForm = () => {
     } finally {
       setIsAddressLoading(false);
     }
-  };  useEffect(() => {
-    console.log("PersonalDataForm: useEffect executado", { usuario: !!usuario, loading });
-    
-    // O PerfilContext já carrega o usuário automaticamente quando autenticado
-    // Não precisamos chamar carregarUsuario aqui
-  }, []); // Só executa uma vez na montagem
+  };
+  useEffect(() => {
+    // Aguarda os dados do PerfilContext, só chama carregarUsuario se não tiver dados
+    const carregarDados = async () => {
+      if (!usuario) {
+        try {
+          setLoading(true);
+          await carregarUsuario();
+        } catch (error) {
+          console.error("Erro ao carregar usuário:", error);
+          toast.error("Erro ao carregar dados do usuário");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    carregarDados();
+  }, [usuario, carregarUsuario]);
 
   useEffect(() => {
     if (usuario) {
@@ -201,7 +218,9 @@ const PersonalDataForm = () => {
   }, [usuario]);
 
   const handleInputChange = (field: string, value: string) => {
-    if (!userData) return;    // Verificar se é campo de endereço
+    if (!userData) return;
+
+    // Verificar se é campo de endereço
     const addressFields = ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado'];
     
     if (addressFields.includes(field)) {
@@ -235,16 +254,7 @@ const PersonalDataForm = () => {
     if (field === 'cep' && value.replace(/\D/g, '').length === 8) {
       buscarEnderecoPorCep(value);
     }
-  };  // Função para formatar CEP para exibição
-  const formatCepForDisplay = (cep: string) => {
-    if (!cep) return "";
-    const cleanCep = cep.replace(/\D/g, "");
-    if (cleanCep.length <= 5) {
-      return cleanCep;
-    }
-    return `${cleanCep.slice(0, 5)}-${cleanCep.slice(5, 8)}`;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -262,8 +272,7 @@ const PersonalDataForm = () => {
     
     try {
       await updateUsuarioLogado(userData);
-      // Forçar recarregamento do perfil após atualização
-      await carregarPerfil(true);
+      await carregarUsuario(true); // Força o recarregamento
       
       toast.success("Dados atualizados com sucesso!");
       announceToScreenReader("Dados atualizados com sucesso");
@@ -301,9 +310,8 @@ const PersonalDataForm = () => {
   }
 
   return (
-    <>
-      {/* Anúncios para leitores de tela */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
+    <>      {/* Anúncios para leitores de tela */}
+      <div aria-live={"polite" as const} aria-atomic={true} className="sr-only">
         {announcements.map((announcement, index) => (
           <div key={index}>{announcement}</div>
         ))}
@@ -414,7 +422,8 @@ const PersonalDataForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.email}
                 aria-describedby={validationErrors.email ? "email-error" : undefined}
-              />              <AnimatePresence>
+              />
+              <AnimatePresence>
                 {touchedFields.has("email") && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -430,28 +439,7 @@ const PersonalDataForm = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-            {/* Aviso de verificação do email */}
-            {userData.emailVerificado && (
-              <div className="flex items-center text-sm text-green-600">
-                <FaCheck className="mr-2" />
-                Email verificado
-              </div>
-            )}            {!userData.emailVerificado && userData.email && (
-              <div className="flex items-center justify-between text-sm text-yellow-600">
-                <div className="flex items-center">
-                  <FaTimes className="mr-2" />
-                  Email não verificado
-                </div>
-                <Link 
-                  href="/verify-email" 
-                  className="text-blue-600 hover:text-blue-800 text-sm underline"
-                >
-                  Verificar agora
-                </Link>
-              </div>
-            )}
-            {validationErrors.email && (
+            </div>            {validationErrors.email && (
               <motion.p
                 id="email-error"
                 initial={{ opacity: 0, height: 0 }}
@@ -461,6 +449,32 @@ const PersonalDataForm = () => {
                 role="alert"
               >
                 {validationErrors.email}
+              </motion.p>
+            )}
+            {/* Status de verificação do email */}
+            {userData.emailVerificado ? (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="text-sm text-green-600 flex items-center gap-2"
+              >
+                <FaCheck className="text-green-500" />
+                Email verificado
+              </motion.p>
+            ) : (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="text-sm text-red-600 flex items-center gap-2"
+              >
+                <FaTimes className="text-red-500" />
+                Email não verificado -{" "}
+                <Link 
+                  href="/verificacao-conta" 
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Verificar agora
+                </Link>
               </motion.p>
             )}
           </motion.div>
@@ -510,29 +524,9 @@ const PersonalDataForm = () => {
                       <FaCheck className="text-green-500" />
                     ) : null}
                   </motion.div>
-                )}              </AnimatePresence>
-            </div>
-            {/* Aviso de verificação do telefone */}
-            {userData.telefoneVerificado && (
-              <div className="flex items-center text-sm text-green-600">
-                <FaCheck className="mr-2" />
-                Telefone verificado
-              </div>
-            )}            {!userData.telefoneVerificado && userData.telefone && (
-              <div className="flex items-center justify-between text-sm text-yellow-600">
-                <div className="flex items-center">
-                  <FaTimes className="mr-2" />
-                  Telefone não verificado
-                </div>
-                <Link 
-                  href="/verify-phone" 
-                  className="text-blue-600 hover:text-blue-800 text-sm underline"
-                >
-                  Verificar agora
-                </Link>
-              </div>
-            )}
-            {validationErrors.telefone && (
+                )}
+              </AnimatePresence>
+            </div>            {validationErrors.telefone && (
               <motion.p
                 id="telefone-error"
                 initial={{ opacity: 0, height: 0 }}
@@ -542,10 +536,34 @@ const PersonalDataForm = () => {
                 role="alert"
               >
                 {validationErrors.telefone}
-              </motion.p>            )}
-          </motion.div>
-
-          {/* CPF */}
+              </motion.p>
+            )}
+            {/* Status de verificação do telefone */}
+            {userData.telefoneVerificado ? (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="text-sm text-green-600 flex items-center gap-2"
+              >
+                <FaCheck className="text-green-500" />
+                Telefone verificado
+              </motion.p>
+            ) : (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="text-sm text-red-600 flex items-center gap-2"
+              >
+                <FaTimes className="text-red-500" />
+                Telefone não verificado -{" "}
+                <Link 
+                  href="/verificacao-conta" 
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Verificar agora
+                </Link>
+              </motion.p>
+            )}</motion.div>          {/* CPF */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -618,7 +636,7 @@ const PersonalDataForm = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.36 }}
+            transition={{ delay: 0.5 }}
             className="space-y-2"
           >
             <label 
@@ -631,7 +649,7 @@ const PersonalDataForm = () => {
               <Input
                 id="dataNascimento"
                 type="date"
-                value={userData.dataNascimento || ""}
+                value={userData.dataNascimento ? new Date(userData.dataNascimento).toISOString().split('T')[0] : ""}
                 onChange={(e) => handleInputChange("dataNascimento", e.target.value)}
                 className={`w-full ${
                   validationErrors.dataNascimento ? "border-red-500 focus:border-red-500" : ""
@@ -676,7 +694,7 @@ const PersonalDataForm = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.37 }}
+            transition={{ delay: 0.6 }}
             className="space-y-2"
           >
             <label 
@@ -700,12 +718,12 @@ const PersonalDataForm = () => {
                   aria-invalid={!!validationErrors.genero}
                   aria-describedby={validationErrors.genero ? "genero-error" : undefined}
                 >
-                  <SelectValue placeholder="Selecione o gênero" />
+                  <SelectValue placeholder="Selecione seu gênero" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="MASCULINO">Masculino</SelectItem>
                   <SelectItem value="FEMININO">Feminino</SelectItem>
-                  <SelectItem value="NAO_BINARIO">Não Binário</SelectItem>
+                  <SelectItem value="NAO_BINARIO">Não-binário</SelectItem>
                   <SelectItem value="OUTRO">Outro</SelectItem>
                   <SelectItem value="NAO_TENHO_PREFERENCIA">Prefiro não informar</SelectItem>
                 </SelectContent>
@@ -739,13 +757,11 @@ const PersonalDataForm = () => {
                 {validationErrors.genero}
               </motion.p>
             )}
-          </motion.div>
-
-          {/* CEP */}
+          </motion.div>{/* CEP */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.8 }}
             className="space-y-2"
           >
             <label 
@@ -753,10 +769,14 @@ const PersonalDataForm = () => {
               className="block text-sm font-medium text-gray-700"
             >
               CEP *
-            </label>            <div className="relative">              <Input
+            </label>            <div className="relative">
+              <Input
                 id="cep"
                 type="text"
-                value={formatCepForDisplay(userData.endereco?.cep || "")}
+                value={userData.endereco?.cep ? 
+                  userData.endereco.cep.replace(/(\d{5})(\d{3})/, "$1-$2") : 
+                  ""
+                }
                 onChange={(e) => {
                   const value = e.target.value;
                   const cepLimpo = value.replace(/\D/g, "");
@@ -764,9 +784,11 @@ const PersonalDataForm = () => {
                     handleInputChange("cep", cepLimpo);
                   }
                 }}
+                className={`w-full ${
+                  validationErrors.cep ? "border-red-500 focus:border-red-500" : ""
+                }`}
                 placeholder="00000-000"
                 maxLength={9}
-                className={`w-full ${validationErrors.cep ? "border-red-500 focus:border-red-500" : ""}`}
                 required
                 aria-required="true"
                 aria-invalid={!!validationErrors.cep}
@@ -806,13 +828,11 @@ const PersonalDataForm = () => {
                 {validationErrors.cep}
               </motion.p>
             )}
-          </motion.div>
-
-          {/* Endereço */}
+          </motion.div>          {/* Endereço */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.9 }}
             className="space-y-2"
           >
             <label 
@@ -863,8 +883,8 @@ const PersonalDataForm = () => {
                 role="alert"
               >
                 {validationErrors.rua}
-              </motion.p>            )}
-          </motion.div>
+              </motion.p>
+            )}          </motion.div>
 
           {/* Número e Complemento */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -872,14 +892,14 @@ const PersonalDataForm = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.55 }}
+              transition={{ delay: 0.95 }}
               className="space-y-2"
             >
               <label 
                 htmlFor="numero" 
                 className="block text-sm font-medium text-gray-700"
               >
-                Número *
+                Número
               </label>
               <div className="relative">
                 <Input
@@ -887,51 +907,17 @@ const PersonalDataForm = () => {
                   type="text"
                   value={userData.endereco?.numero || ""}
                   onChange={(e) => handleInputChange("numero", e.target.value)}
-                  className={`w-full ${
-                    validationErrors.numero ? "border-red-500 focus:border-red-500" : ""
-                  }`}
-                  placeholder="Número"
-                  required
-                  aria-required="true"
-                  aria-invalid={!!validationErrors.numero}
-                  aria-describedby={validationErrors.numero ? "numero-error" : undefined}
+                  className="w-full"
+                  placeholder="Digite o número"
                 />
-                <AnimatePresence>
-                  {touchedFields.has("numero") && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                    >
-                      {validationErrors.numero ? (
-                        <FaTimes className="text-red-500" />
-                      ) : userData.endereco?.numero && userData.endereco.numero.length > 0 ? (
-                        <FaCheck className="text-green-500" />
-                      ) : null}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
-              {validationErrors.numero && (
-                <motion.p
-                  id="numero-error"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="text-sm text-red-600"
-                  role="alert"
-                >
-                  {validationErrors.numero}
-                </motion.p>
-              )}
             </motion.div>
 
             {/* Complemento */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.56 }}
+              transition={{ delay: 0.96 }}
               className="space-y-2"
             >
               <label 
@@ -947,7 +933,7 @@ const PersonalDataForm = () => {
                   value={userData.endereco?.complemento || ""}
                   onChange={(e) => handleInputChange("complemento", e.target.value)}
                   className="w-full"
-                  placeholder="Apartamento, bloco, etc."
+                  placeholder="Apto, bloco, etc. (opcional)"
                 />
               </div>
             </motion.div>
@@ -957,14 +943,14 @@ const PersonalDataForm = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.57 }}
+            transition={{ delay: 0.97 }}
             className="space-y-2"
           >
             <label 
               htmlFor="bairro" 
               className="block text-sm font-medium text-gray-700"
             >
-              Bairro *
+              Bairro
             </label>
             <div className="relative">
               <Input
@@ -972,53 +958,18 @@ const PersonalDataForm = () => {
                 type="text"
                 value={userData.endereco?.bairro || ""}
                 onChange={(e) => handleInputChange("bairro", e.target.value)}
-                className={`w-full ${
-                  validationErrors.bairro ? "border-red-500 focus:border-red-500" : ""
-                }`}
+                className="w-full"
                 placeholder="Digite o bairro"
-                required
-                aria-required="true"
-                aria-invalid={!!validationErrors.bairro}
-                aria-describedby={validationErrors.bairro ? "bairro-error" : undefined}
               />
-              <AnimatePresence>
-                {touchedFields.has("bairro") && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {validationErrors.bairro ? (
-                      <FaTimes className="text-red-500" />
-                    ) : userData.endereco?.bairro && userData.endereco.bairro.length > 0 ? (
-                      <FaCheck className="text-green-500" />
-                    ) : null}
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
-            {validationErrors.bairro && (
-              <motion.p
-                id="bairro-error"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="text-sm text-red-600"
-                role="alert"
-              >
-                {validationErrors.bairro}
-              </motion.p>
-            )}
           </motion.div>
 
           {/* Cidade e Estado */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Cidade */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{/* Cidade */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 1.0 }}
               className="space-y-2"
             >
               <label 
@@ -1071,13 +1022,11 @@ const PersonalDataForm = () => {
                   {validationErrors.cidade}
                 </motion.p>
               )}
-            </motion.div>
-
-            {/* Estado */}
+            </motion.div>            {/* Estado */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: 1.1 }}
               className="space-y-2"
             >
               <label 
@@ -1163,13 +1112,11 @@ const PersonalDataForm = () => {
                 </motion.p>
               )}
             </motion.div>
-          </div>
-
-          {/* Botão de Salvar */}
+          </div>          {/* Botão de Salvar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 1.2 }}
             className="flex items-center justify-between pt-6"
           >
             <div className="text-sm text-gray-500">

@@ -20,7 +20,6 @@ export default function SigninClient() {
 
   const searchParams = useSearchParams();
 
-  // 🔥 Redirecionamento automático se já estiver logado
   useEffect(() => {
     if (usuario) {
       router.push("/profile");
@@ -133,7 +132,7 @@ export default function SigninClient() {
             </p>
 
             <button
-              type="submit"
+              type={"submit" as "submit"}
               className="w-full rounded-full bg-primary px-6 py-3 font-medium text-white hover:bg-primaryho transition duration-300"
               disabled={loading}
             >

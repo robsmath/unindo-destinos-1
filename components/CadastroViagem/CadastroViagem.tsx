@@ -289,21 +289,13 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             transition={{ duration: 1, delay: 0.1 }}
             className="w-full rounded-lg bg-white p-7.5 shadow-solid-8 md:w-3/5 lg:w-3/4 xl:p-15"
           >
-            <div className="relative mb-8">
-              <button
+            <div className="relative mb-8">              <button
+                type={"button" as const}
                 onClick={() => router.push("/profile?tab=minhas-viagens")}
                 className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow hover:scale-105 transition"
                 title="Voltar"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-orange-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+              >{/* Ícone de seta para voltar */}
+                <span className="h-5 w-5 text-orange-600">&#8592;</span>
               </button>
 
               <h2 className="text-3xl font-semibold text-center text-black">
@@ -496,9 +488,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   {/* Mostrar botões se status permitir */}
   {(form.status !== "EM_ANDAMENTO" && form.status !== "CONCLUIDA" && form.status !== "CANCELADA") && (
     <div className="flex gap-3">
-      {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (
-        <button
-          type="button"
+      {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (        <button
+          type={"button" as const}
           onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
           className="px-3 py-1.5 text-sm rounded-md border font-medium 
             border-green-600 text-green-700 hover:bg-green-50 transition"
@@ -508,9 +499,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       )}
 
       {/* Cancelar é permitido em PENDENTE, RASCUNHO e CONFIRMADA */}
-      {["PENDENTE", "RASCUNHO", "CONFIRMADA"].includes(form.status) && (
-        <button
-          type="button"
+      {["PENDENTE", "RASCUNHO", "CONFIRMADA"].includes(form.status) && (        <button
+          type={"button" as const}
           onClick={() => setForm((prev) => ({ ...prev, status: "CANCELADA" }))}
           className="px-3 py-1.5 text-sm rounded-md border font-medium 
             border-red-600 text-red-700 hover:bg-red-50 transition"
@@ -529,7 +519,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
 
               <div className="mb-7.5">
                 <button
-                  type="button"
+                  type={"button" as const}
                   className="flex items-center gap-2 font-semibold text-primary"
                   onClick={() => setShowPreferences(!showPreferences)}
                 >
@@ -558,9 +548,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                 </AnimatePresence>
               </div>
 
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button
-                  type="submit"
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">                <button
+                  type={"submit" as const}
                   disabled={loading}
                   className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md 
                     bg-orange-600 text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -577,9 +566,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                   )}
                 </button>
 
-                {id && (
-                  <button
-                    type="button"
+                {id && (                  <button
+                    type={"button" as const}
                     onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${id}`)}
                     className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md 
                       bg-purple-600 text-white hover:bg-purple-700 transition"
@@ -632,6 +620,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             </p>
 
             <button
+              type={"button" as const}
               onClick={async () => {
                 const descricaoFinal = consultaImagem[1] || form.destino;
                 if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);

@@ -78,11 +78,10 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
       {/* Faixa Etária */}
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="text-sm">Idade mínima</label>
-          <input
+          <label className="text-sm">Idade mínima</label>          <input
             type="text"
             name="idadeMinima"
-            inputMode="numeric"
+            inputMode={"numeric" as const}
             value={idadeMinimaInput}
             onChange={(e) => setIdadeMinimaInput(e.target.value)}
             onBlur={() => {
@@ -105,11 +104,10 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
           />
         </div>
         <div className="flex-1">
-          <label className="text-sm">Idade máxima</label>
-          <input
+          <label className="text-sm">Idade máxima</label>          <input
             type="text"
             name="idadeMaxima"
-            inputMode="numeric"
+            inputMode={"numeric" as const}
             value={idadeMaximaInput}
             onChange={(e) => setIdadeMaximaInput(e.target.value)}
             onBlur={() => {
@@ -136,11 +134,10 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
 
       {/* Valor médio por viagem */}
       <div>
-        <label className="text-sm">Valor médio por viagem (R$)</label>
-        <input
+        <label className="text-sm">Valor médio por viagem (R$)</label>        <input
           type="text"
           name="valorMedioViagem"
-          inputMode="numeric"
+          inputMode={"numeric" as const}
           value={valorMedioInput}
           onChange={(e) => {
             const raw = e.target.value.replace(/\D/g, "");

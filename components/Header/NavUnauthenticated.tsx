@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { LogIn, UserPlus } from "lucide-react";
 
 const NavUnauthenticated = () => {
   const pathname = usePathname();
@@ -18,11 +19,8 @@ const NavUnauthenticated = () => {
           <Link
             href="/auth/signin"
             className="relative group flex items-center justify-center rounded-full border-2 border-primary/30 px-6 py-2.5 text-sm font-semibold text-primary transition-all duration-500 hover:border-primary hover:shadow-lg hover:shadow-primary/25 overflow-hidden backdrop-blur-sm bg-white/50 dark:bg-black/50"
-          >
-            <span className="relative z-10 flex items-center">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m0 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+          >            <span className="relative z-10 flex items-center">
+              <LogIn className="w-4 h-4 mr-2" />
               Entrar
             </span>
             
@@ -53,11 +51,8 @@ const NavUnauthenticated = () => {
           <Link
             href="/auth/signup"
             className="relative group flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-500 hover:shadow-xl hover:shadow-primary/40 overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
+          >            <span className="relative z-10 flex items-center">
+              <UserPlus className="w-4 h-4 mr-2" />
               Criar Conta
             </span>
             

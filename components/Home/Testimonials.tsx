@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
+import { Check, ArrowRight, Star } from "lucide-react";
 
 interface TestimonialProps {
   name: string;
@@ -54,11 +55,8 @@ const TestimonialCard: React.FC<TestimonialProps & { index: number }> = ({
           width={60}
           height={60}
           className="rounded-full object-cover ring-4 ring-orange-100 group-hover:ring-primary/20 transition-all duration-300"
-        />
-        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
+        />        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+          <Check className="w-3 h-3 text-white" />
         </div>
       </div>
       <div className="ml-4">
@@ -66,12 +64,9 @@ const TestimonialCard: React.FC<TestimonialProps & { index: number }> = ({
         <p className="text-gray-600 text-sm">{location}</p>
       </div>
     </div>
-    
-    <div className="flex mb-4">
+      <div className="flex mb-4">
       {[...Array(rating)].map((_, i) => (
-        <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
+        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
       ))}
     </div>
     
@@ -153,12 +148,9 @@ const Testimonials = () => {
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-          >
-            <button className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+          >            <button className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
               Começar Agora
-              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+              <ArrowRight className="ml-2 w-5 h-5" />
             </button>
           </motion.div>
         </motion.div>

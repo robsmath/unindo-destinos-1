@@ -50,7 +50,7 @@ export default function RecuperarSenhaForm() {
         />
 
         <button
-          type="submit"
+          type={"submit" as "submit"}
           disabled={enviando}
           className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
