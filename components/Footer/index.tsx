@@ -100,17 +100,37 @@ const Footer = () => {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
               className="lg:col-span-1"
-            >              <div className="mb-8">
-                <Link href="/" className="block">
-                  <Image
-                    width={140}
-                    height={60}
-                    src="/images/logo/unindo-destinos-logo.png"
-                    alt="Unindo Destinos"
-                    className="brightness-0 invert"
+            >              <motion.div 
+                className="mb-8 inline-block"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
+              >
+                <Link 
+                  href="/" 
+                  className="block relative group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
+                >
+                  <motion.div
+                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"
+                    initial={{ scale: 0 }}
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.3 }}
                   />
+                  <motion.div
+                    whileHover={{ 
+                      filter: "brightness(1.2) drop-shadow(0 0 20px rgba(234, 88, 12, 0.3))"
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Image
+                      width={140}
+                      height={60}
+                      src="/images/logo/unindo-destinos-logo.png"
+                      alt="Unindo Destinos"
+                      className="brightness-0 invert transition-all duration-300 relative z-10"
+                    />
+                  </motion.div>
                 </Link>
-              </div>
+              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
