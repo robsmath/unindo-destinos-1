@@ -470,7 +470,7 @@ const PersonalDataForm = () => {
                 <FaTimes className="text-red-500" />
                 Email não verificado -{" "}
                 <Link 
-                  href="/verificacao-conta" 
+                  href="/profile/verificar" 
                   className="text-blue-600 hover:text-blue-800 underline"
                 >
                   Verificar agora
@@ -557,7 +557,7 @@ const PersonalDataForm = () => {
                 <FaTimes className="text-red-500" />
                 Telefone não verificado -{" "}
                 <Link 
-                  href="/verificacao-conta" 
+                  href="/profile/verificar" 
                   className="text-blue-600 hover:text-blue-800 underline"
                 >
                   Verificar agora

@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface SmartImageProps {
   src: string;
   alt: string;
   className?: string;
   fallbackSrc?: string;
-  maxRetries?: number;
   onRetrySuccess?: (newSrc: string) => void;
 }
 
@@ -17,99 +16,55 @@ export default function SmartImage({
   alt,
   className = "",
   fallbackSrc = "/images/common/beach.jpg",
-  maxRetries = 2,
   onRetrySuccess
 }: SmartImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src);
-  const [retryCount, setRetryCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRetrying, setIsRetrying] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   const handleLoad = useCallback(() => {
     setIsLoading(false);
     setHasError(false);
-    if (retryCount > 0 && onRetrySuccess) {
+    if (onRetrySuccess && currentSrc !== src) {
       onRetrySuccess(currentSrc);
     }
-  }, [currentSrc, retryCount, onRetrySuccess]);
+  }, [currentSrc, src, onRetrySuccess]);
 
   const handleError = useCallback(() => {
     setIsLoading(false);
-    
-    if (retryCount < maxRetries && currentSrc !== fallbackSrc) {
-      setIsRetrying(true);
-      setRetryCount(prev => prev + 1);
-      
-      // Tenta novamente após um delay
-      setTimeout(() => {
-        if (retryCount === 0 && src !== fallbackSrc) {
-          // Primeira tentativa: tenta a imagem original novamente com cache bust
-          setCurrentSrc(`${src}?retry=${Date.now()}`);
-        } else {
-          // Tentativas subsequentes: usa a imagem fallback
-          setCurrentSrc(fallbackSrc);
-        }
-        setIsRetrying(false);
-        setIsLoading(true);
-      }, 1000 * (retryCount + 1)); // Delay progressivo
+    if (currentSrc !== fallbackSrc) {
+      setCurrentSrc(fallbackSrc);
+      setIsLoading(true);
     } else {
       setHasError(true);
-      if (currentSrc !== fallbackSrc) {
-        setCurrentSrc(fallbackSrc);
-        setIsLoading(true);
-      }
     }
-  }, [currentSrc, retryCount, maxRetries, src, fallbackSrc]);
-
-  const handleManualRetry = useCallback(() => {
-    if (hasError && retryCount < maxRetries) {
-      setHasError(false);
-      setIsRetrying(true);
-      setRetryCount(prev => prev + 1);
-      
-      setTimeout(() => {
-        setCurrentSrc(`${src}?retry=${Date.now()}`);
-        setIsRetrying(false);
-        setIsLoading(true);
-      }, 500);
-    }
-  }, [hasError, retryCount, maxRetries, src]);
+  }, [currentSrc, fallbackSrc]);
 
   return (
     <div className="relative w-full h-full">
       {/* Loader overlay */}
-      {(isLoading || isRetrying) && (
+      {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
           <Loader2 className="animate-spin w-6 h-6 text-gray-400" />
         </div>
-      )}
-
-      {/* Retry button overlay */}
-      {hasError && retryCount < maxRetries && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100/90 z-20">
-          <button
-            onClick={handleManualRetry}
-            className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-gray-600 hover:text-gray-800"
-            disabled={isRetrying}
-          >
-            <RefreshCw className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
-            <span className="text-sm">Tentar novamente</span>
-          </button>
-        </div>
-      )}
-
-      {/* Main image */}
+      )}      {/* Image */}
       <img
         src={currentSrc}
         alt={alt}
-        className={className}
+        className={`w-full h-full object-cover ${className} ${isLoading ? "invisible" : "visible"}`}
         onLoad={handleLoad}
         onError={handleError}
-        style={{ 
-          display: (isLoading || isRetrying) ? 'none' : 'block'
-        }}
+        loading={"lazy" as const}
       />
-    </div>
+      
+      {/* Error state */}
+      {hasError && !isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="text-center text-gray-500">
+            <div className="text-2xl mb-2">📷</div>
+            <p className="text-sm">Erro ao carregar imagem</p>
+          </div>
+        </div>
+      )}    </div>
   );
-}
+};

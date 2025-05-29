@@ -2,7 +2,8 @@
 
 import { useEffect, useState, Fragment } from "react";
 import { Dialog, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
-import { FaCheckCircle, FaTimes } from "react-icons/fa";
+import { FaCheckCircle, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed } from "lucide-react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { getUsuarioById } from "@/services/userService";
 import { Loader2 } from "lucide-react";
@@ -74,26 +75,27 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
               leaveFrom="opacity-100 scale-100 translate-y-0"
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
-              <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-lg border border-white/20 shadow-2xl transition-all">
                 <button
                   onClick={onClose}
-                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+                  className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-105"
                   aria-label="Fechar"
                 >
-                  <FaTimes size={16} />
+                  <FaTimes className="w-5 h-5" />
                 </button>
 
                 {loading ? (
-                  <div className="flex flex-col items-center justify-center py-10 text-gray-500">
-                    <Loader2 className="animate-spin w-6 h-6 mb-2" />
-                    Carregando perfil...
+                  <div className="flex flex-col items-center justify-center py-16 px-8 text-gray-500">
+                    <Loader2 className="animate-spin w-8 h-8 mb-4" />
+                    <p className="text-lg font-medium">Carregando perfil...</p>
                   </div>
                 ) : usuario ? (
-                  <div className="flex flex-col items-center text-center">
+                  <div className="flex flex-col items-center text-center p-8">
+                    {/* Foto do Usuário */}
                     <img
                       src={usuario.fotoPerfil || "/images/user/avatar.png"}
                       alt="Foto"
-                      className="w-24 h-24 rounded-full mb-4 object-cover border"
+                      className="w-24 h-24 rounded-full mb-4 object-cover border shadow-md"
                     />
                     <h2 className="text-xl font-bold">
                       {usuario.nome}{" "}
@@ -105,32 +107,74 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
                       {usuario.genero} • {usuario.idade} anos
                     </p>
 
+                    {/* Descrição */}
                     {usuario.descricao && (
                       <p className="mt-4 text-gray-800 text-sm italic">"{usuario.descricao}"</p>
                     )}
 
-                    <div className="mt-4 text-left w-full text-sm space-y-1">
+                    {/* Preferências */}
+                    <div className="mt-6 text-left w-full text-sm space-y-2">
                       {usuario.tipoAcomodacao && (
-                        <p>🏨 {formatarTexto(usuario.tipoAcomodacao)}</p>
+                        <p className="flex items-center gap-2">
+                          <Hotel className="w-4 h-4 text-gray-600" />
+                          <span>{formatarTexto(usuario.tipoAcomodacao)}</span>
+                        </p>
                       )}
                       {usuario.tipoTransporte && (
-                        <p>🚗 {formatarTexto(usuario.tipoTransporte)}</p>
+                        <p className="flex items-center gap-2">
+                          <Car className="w-4 h-4 text-gray-600" />
+                          <span>{formatarTexto(usuario.tipoTransporte)}</span>
+                        </p>
                       )}
-                      {usuario.petFriendly && <p>🐶 Pet Friendly</p>}
-                      {usuario.aceitaCriancas && <p>👶 Aceita Crianças</p>}
-                      {usuario.aceitaFumantes && <p>🚬 Aceita Fumantes</p>}
-                      {usuario.aceitaBebidasAlcoolicas && <p>🍷 Aceita Bebidas</p>}
-                      {usuario.acomodacaoCompartilhada && <p>🛏️ Acomodação Compartilhada</p>}
+                      {usuario.petFriendly && (
+                        <p className="flex items-center gap-2">
+                          <Heart className="w-4 h-4 text-red-500" />
+                          <span>Pet Friendly</span>
+                        </p>
+                      )}
+                      {usuario.aceitaCriancas && (
+                        <p className="flex items-center gap-2">
+                          <Baby className="w-4 h-4 text-blue-500" />
+                          <span>Aceita Crianças</span>
+                        </p>
+                      )}
+                      {usuario.aceitaFumantes && (
+                        <p className="flex items-center gap-2">
+                          <Cigarette className="w-4 h-4 text-gray-500" />
+                          <span>Aceita Fumantes</span>
+                        </p>
+                      )}
+                      {usuario.aceitaBebidasAlcoolicas && (
+                        <p className="flex items-center gap-2">
+                          <Wine className="w-4 h-4 text-purple-500" />
+                          <span>Aceita Bebidas</span>
+                        </p>
+                      )}
+                      {usuario.acomodacaoCompartilhada && (
+                        <p className="flex items-center gap-2">
+                          <Bed className="w-4 h-4 text-orange-500" />
+                          <span>Acomodação Compartilhada</span>
+                        </p>
+                      )}
                     </div>
 
-                    {deveExibirAviso && (
-                      <div className="mt-4 p-3 rounded-md bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs">
-                        ⚠️ Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
-                      </div>
-                    )}
+                    {/* Aviso */}
+                      {deveExibirAviso && (
+                        <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                          <div className="flex items-start gap-3">
+                            <FaExclamationTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="text-sm font-medium text-amber-800 mb-1">Informações Incompletas</h4>
+                              <p className="text-xs text-amber-700">
+                                Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 ) : (
-                  <p className="text-center text-gray-500 py-10">Usuário não encontrado.</p>
+                  <p className="text-center text-gray-500 py-16">Usuário não encontrado.</p>
                 )}
               </DialogPanel>
             </TransitionChild>

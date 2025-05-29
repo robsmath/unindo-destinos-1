@@ -5,7 +5,7 @@ import { salvarPreferenciasViagem, getPreferenciaByViagemId } from "@/services/p
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getImage } from "@/services/googleImageService";
+import { getImage } from "@/services/unsplashService";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { toast } from "sonner";
@@ -262,14 +262,13 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       setLoading(false);
     }
   };
-
   const fetchImagemPaisagemDestino = async (destino: string, categoriaViagem: string): Promise<string> => {
     try {
       const descricaoCustom = id ? localStorage.getItem(`imagemCustom-${id}`) : null;
       const imagem = await getImage(descricaoCustom || destino, categoriaViagem);
       return imagem || "/images/common/beach.jpg";
     } catch (error) {
-      console.error("Erro ao buscar imagem:", error);
+      console.warn("Erro ao buscar imagem:", error);
       return "/images/common/beach.jpg";
     }
   };

@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { getUsuarioLogado } from "@/services/userService";
 import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
 import { getMinhasViagens } from "@/services/viagemService";
-import { getImage } from "@/services/googleImageService";
+import { getImage } from "@/services/unsplashService";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
@@ -31,39 +31,17 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   const [viagens, setViagens] = useState<MinhasViagensDTO[]>([]);
   const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
   const [carregado, setCarregado] = useState(false);
-  const { atualizarUsuario, token, isAuthenticated, logout } = useAuth();
-  const carregarImagens = useCallback(async (viagensLista: MinhasViagensDTO[]) => {
+  const { atualizarUsuario, token, isAuthenticated, logout } = useAuth();  const carregarImagens = useCallback(async (viagensLista: MinhasViagensDTO[]) => {
     const novasImagens: { [key: number]: string } = {};
     
-    // Função auxiliar para tentar carregar uma imagem com retry
-    const carregarImagemComRetry = async (viagem: any, maxTentativas = 3): Promise<string> => {
-      const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-      
-      for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
-        try {
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          if (imagem) {
-            return imagem;
-          }
-        } catch (error: any) {
-          console.warn(`Tentativa ${tentativa} falhou para viagem ${viagem.id}:`, error);
-          
-          // Se não é a última tentativa, aguarda um pouco antes de tentar novamente
-          if (tentativa < maxTentativas) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * tentativa)); // Delay exponencial
-          }
-        }
-      }
-      
-      // Se todas as tentativas falharam, retorna a imagem padrão
-      return "/images/common/beach.jpg";
-    };
-
     await Promise.all(
       viagensLista.map(async ({ viagem }) => {
         try {
-          novasImagens[viagem.id] = await carregarImagemComRetry(viagem);
-        } catch {
+          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
+          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
+          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
+        } catch (error) {
+          console.warn(`Erro ao carregar imagem para viagem ${viagem.id}:`, error);
           novasImagens[viagem.id] = "/images/common/beach.jpg";
         }
       })

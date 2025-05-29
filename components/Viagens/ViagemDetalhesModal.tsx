@@ -181,13 +181,11 @@ export default function ViagemDetalhesModal({
                   </div>
                 ) : (
                   <>                    {/* Header com Imagem */}
-                    <div className="relative h-64 overflow-hidden rounded-t-3xl">
-                      <SmartImage
+                    <div className="relative h-64 overflow-hidden rounded-t-3xl">                      <SmartImage
                         src={imagem || "/images/common/beach.jpg"}
                         alt={viagem.destino}
                         className="w-full h-full object-cover"
                         fallbackSrc="/images/common/beach.jpg"
-                        maxRetries={3}
                       />
                       
                       {/* Gradient Overlay */}

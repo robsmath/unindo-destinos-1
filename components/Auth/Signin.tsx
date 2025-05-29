@@ -1,37 +1,43 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
-import { Loader2 } from "lucide-react";
+import { 
+  Loader2, 
+  Plane, 
+  MapPin, 
+  Compass, 
+  Camera, 
+  Heart, 
+  Globe,
+  Map,
+  Luggage,
+  Bus
+} from "lucide-react";
 import { toast } from "sonner";
 
-export default function SigninClient() {
-  const router = useRouter();
-  const { login, usuario } = useAuth();
+const Signin = () => {
+  const [data, setData] = useState({
+    email: "",
+    senha: "",
+  });
 
-  const [data, setData] = useState({ email: "", senha: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  const { isAuthenticated, login } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   useEffect(() => {
-    if (usuario) {
-      router.push("/profile");
+    if (isAuthenticated) {
+      router.replace(redirect || "/profile");
     }
-  }, [usuario, router]);
-
-  useEffect(() => {
-    const erro = searchParams.get("erro");
-    if (erro === "expirado") {
-      toast.warning("Sua sessão expirou. Faça login novamente.");
-    }
-  }, [searchParams]);
+  }, [isAuthenticated, router, redirect]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,117 +45,379 @@ export default function SigninClient() {
     setError("");
 
     try {
-      const { token, usuario } = await signIn(data.email, data.senha);
-
-      login(token, {
-        id: usuario.id!,
-        nome: usuario.nome,
-        email: usuario.email,
-        fotoPerfil: usuario.fotoPerfil,
+      const response = await signIn(data.email, data.senha);
+      
+      // Atualizar o contexto de autenticação com o token e dados do usuário
+      login(response.token, {
+        id: response.usuario.id!,
+        nome: response.usuario.nome,
+        email: response.usuario.email,
+        fotoPerfil: response.usuario.fotoPerfil,
       });
-
-      const emailNaoVerificado = usuario.emailVerificado === false;
-      const telefoneNaoVerificado = usuario.telefoneVerificado === false;
-
-      if (emailNaoVerificado || telefoneNaoVerificado) {
-        let mensagem = "⚠️ Você precisa confirmar ";
-
-        if (emailNaoVerificado && telefoneNaoVerificado) {
-          mensagem += "seu e-mail e seu telefone.";
-        } else if (emailNaoVerificado) {
-          mensagem += "seu e-mail.";
-        } else if (telefoneNaoVerificado) {
-          mensagem += "seu telefone.";
-        }
-
-        toast.info(mensagem);
-        router.push("/profile/verificar");
+      
+      toast.success("Login realizado com sucesso!");
+      
+      // O redirecionamento será feito automaticamente pelo contexto de autenticação
+    } catch (error: any) {
+      console.error("Erro no login:", error);
+      
+      if (error.response?.status === 403) {
+        setError("Conta não verificada. Verifique seu e-mail antes de fazer login.");
+      } else if (error.response?.status === 401) {
+        setError("E-mail ou senha inválidos. Verifique suas credenciais.");
       } else {
-        router.push("/profile");
+        setError("Erro no servidor. Tente novamente mais tarde.");
       }
-    } catch (err: any) {
-      setError(
-        err.response?.status === 404
-          ? "E-mail não encontrado. Verifique os dados."
-          : err.response?.status === 401
-          ? "E-mail ou senha incorretos."
-          : "Erro ao fazer login. Verifique suas credenciais."
-      );
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="bg-[url(/images/common/beach.jpg)] bg-cover min-h-screen pt-40 pb-16 px-4 relative">
-      {loading && (
-        <div className="absolute inset-0 bg-white bg-opacity-70 z-50 flex items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
-      )}
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
+      {/* Background with Simple Animated Icons */}
+      <div className="absolute inset-0 z-10">
+        {/* Animated Background Gradient */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
+          animate={{
+            background: [
+              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))",
+              "linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08))",
+              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))"
+            ]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
 
-      <div className="relative z-10 mx-auto max-w-c-1016 px-7.5 pb-7.5 pt-10">
-        <div className="absolute bottom-17.5 left-0 -z-1 h-1/3 w-full">
-          <Image src="/images/shape/shape-dotted-light.svg" alt="Dotted" className="dark:hidden" fill />
-          <Image src="/images/shape/shape-dotted-dark.svg" alt="Dotted" className="hidden dark:block" fill />
-        </div>
+        {/* Simple Floating Particles */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+            }}
+            animate={{ 
+              y: [0, -80, 0],
+              x: [0, Math.random() * 20 - 10, 0],
+              opacity: [0, 0.6, 0],
+              scale: [0, 1, 0]
+            }}
+            transition={{ 
+              duration: 6 + Math.random() * 3,
+              repeat: Infinity,
+              delay: Math.random() * 6,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+
+        {/* Travel Icons with Simple Animations */}
+        <motion.div
+          className="absolute top-24 right-20"
+          animate={{ 
+            y: [0, -15, 0],
+            rotate: [0, 8, 0]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <Plane className="w-7 h-7 text-orange-500/30 drop-shadow-lg" />
+        </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.1 }}
-          className="animate_top rounded-lg bg-white px-7.5 pt-7.5 shadow-solid-8 dark:border dark:border-strokedark dark:bg-black xl:px-15 xl:pt-15"
+          className="absolute top-32 left-16"
+          animate={{ 
+            y: [0, 12, 0],
+            rotate: [0, -12, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
         >
-          <h2 className="mb-15 text-center text-3xl font-semibold text-black dark:text-white">
-            Entre na sua conta
-          </h2>
+          <MapPin className="w-8 h-8 text-blue-500/30 drop-shadow-lg" />
+        </motion.div>
 
-          <form onSubmit={handleLogin}>
-            <div className="mb-8 flex flex-col gap-6">
-              <input
-                type="email"
-                placeholder="E-mail"
-                value={data.email}
-                onChange={(e) => setData({ ...data, email: e.target.value })}
-                required
-                className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
-              />
-              <input
-                type="password"
-                placeholder="Senha"
-                value={data.senha}
-                onChange={(e) => setData({ ...data, senha: e.target.value })}
-                required
-                className="w-full border-b border-stroke bg-transparent pb-3.5 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:focus:border-primary"
-              />
-            </div>
+        <motion.div
+          className="absolute bottom-48 left-20"
+          animate={{ 
+            y: [0, -18, 0],
+            rotate: [0, 15, 0]
+          }}
+          transition={{ 
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5
+          }}
+        >
+          <Compass className="w-9 h-9 text-green-500/30 drop-shadow-lg" />
+        </motion.div>
 
-            {error && (
-              <div className="mb-2 text-center text-red-500 font-medium">{error}</div>
-            )}
+        <motion.div
+          className="absolute top-48 left-40"
+          animate={{ 
+            y: [0, -10, 0],
+            x: [0, 8, 0]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5
+          }}
+        >
+          <Camera className="w-6 h-6 text-purple-500/30 drop-shadow-lg" />
+        </motion.div>
 
-            <p className="text-right text-sm text-primary hover:underline mb-4">
-              <Link href="/auth/recuperar-senha">Esqueci minha senha</Link>
-            </p>
+        <motion.div
+          className="absolute bottom-40 right-24"
+          animate={{ 
+            y: [0, 15, 0],
+            rotate: [0, -8, 0]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        >
+          <Map className="w-7 h-7 text-red-500/30 drop-shadow-lg" />
+        </motion.div>
 
-            <button
-              type={"submit" as "submit"}
-              className="w-full rounded-full bg-primary px-6 py-3 font-medium text-white hover:bg-primaryho transition duration-300"
-              disabled={loading}
+        <motion.div
+          className="absolute top-64 right-40"
+          animate={{ 
+            y: [0, -12, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        >
+          <Luggage className="w-8 h-8 text-indigo-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-56 right-48"
+          animate={{ 
+            y: [0, 8, 0],
+            x: [0, -6, 0]
+          }}
+          transition={{ 
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2.5
+          }}
+        >
+          <Bus className="w-7 h-7 text-yellow-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-36 right-64"
+          animate={{ 
+            y: [0, -20, 0],
+            rotate: [0, 360, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <Globe className="w-9 h-9 text-teal-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-32 left-48"
+          animate={{ 
+            y: [0, -8, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 3
+          }}
+        >
+          <Heart className="w-5 h-5 text-pink-500/30 drop-shadow-lg" />
+        </motion.div>
+      </div>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <motion.div 
+          className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div 
+            className="text-center p-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="inline-block"
             >
-              {loading ? "Entrando..." : "Entrar"}
-            </button>
+              <Loader2 className="h-12 w-12 text-primary mb-4" />
+            </motion.div>
+            <p className="text-lg font-medium text-gray-700">Entrando em sua conta...</p>
+            <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
+          </motion.div>
+        </motion.div>
+      )}
 
-            <div className="mt-8 text-center border-t pt-5 dark:border-strokedark">
-              <p className="text-sm">
-                Não tem uma conta?{" "}
-                <Link href="/auth/signup" className="text-primary hover:underline">
-                  Cadastre-se
-                </Link>
-              </p>
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          {/* Glass Morphism Container */}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
+            {/* Inner glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
+            
+            <div className="relative z-10">
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="text-center mb-8"
+              >
+                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                  <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
+                    Bem-vindo de volta
+                  </span>
+                </h1>
+                <p className="text-gray-600 text-lg">
+                  Entre em sua conta e continue sua jornada
+                </p>
+              </motion.div>
+
+              <form onSubmit={handleLogin} className="space-y-6">
+                {/* Modern Input Fields */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                  className="space-y-6"
+                >
+                  <div className="relative group">
+                    <input
+                      type="email"
+                      placeholder="Digite seu e-mail"
+                      value={data.email}
+                      onChange={(e) => setData({ ...data, email: e.target.value })}
+                      required
+                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                    />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                  </div>
+
+                  <div className="relative group">
+                    <input
+                      type="password"
+                      placeholder="Digite sua senha"
+                      value={data.senha}
+                      onChange={(e) => setData({ ...data, senha: e.target.value })}
+                      required
+                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                    />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                  </div>
+                </motion.div>
+
+                {/* Error Message */}
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-red-50 border border-red-200 rounded-2xl"
+                  >
+                    <p className="text-red-700 text-sm font-medium text-center">{error}</p>
+                  </motion.div>
+                )}
+
+                {/* Forgot Password Link */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-right"
+                >
+                  <Link 
+                    href="/auth/recuperar-senha" 
+                    className="text-primary hover:text-orange-500 transition-colors duration-200 text-sm font-medium hover:underline"
+                  >
+                    Esqueci minha senha
+                  </Link>
+                </motion.div>
+
+                {/* Submit Button */}
+                <motion.button
+                  type="submit"
+                  disabled={loading}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.6 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-lg relative overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 hover:opacity-100 transition-opacity duration-300"
+                    initial={false}
+                  />
+                  <span className="relative z-10">
+                    {loading ? "Entrando..." : "Entrar"}
+                  </span>
+                </motion.button>
+
+                {/* Sign Up Link */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                  className="text-center pt-6 border-t border-gray-200/50"
+                >
+                  <p className="text-gray-600">
+                    Não tem uma conta?{" "}
+                    <Link 
+                      href="/auth/signup" 
+                      className="text-primary hover:text-orange-500 transition-colors duration-200 font-semibold hover:underline"
+                    >
+                      Cadastre-se aqui
+                    </Link>
+                  </p>
+                </motion.div>
+              </form>
             </div>
-          </form>
+          </div>
         </motion.div>
       </div>
     </section>
   );
-}
+};
+
+export default Signin;
