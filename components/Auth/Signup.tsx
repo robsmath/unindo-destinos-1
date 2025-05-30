@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 
 import "react-phone-input-2/lib/style.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "@/styles/custom-datepicker.css";
 
 const Signup = () => {
   type Genero = "" | "MASCULINO" | "FEMININO" | "OUTRO";
@@ -81,7 +84,6 @@ const Signup = () => {
       router.replace("/profile");
     }
   }, [isAuthenticated, router]);
-
   const handleChange = (e: any) => {
     const { name, value } = e.target;
 
@@ -98,6 +100,22 @@ const Signup = () => {
       setForm((prev) => ({
         ...prev,
         [name]: value,
+      }));
+    }
+  };
+
+  // Função específica para tratar mudanças de data
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0];
+      setForm((prev) => ({
+        ...prev,
+        dataNascimento: formattedDate,
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        dataNascimento: "",
       }));
     }
   };
@@ -125,13 +143,71 @@ const Signup = () => {
       console.error("Erro ao buscar endereço:", err);
     }
   };
+  // Função para validar idade mínima de 18 anos
+  const validarIdade = (dataNascimento: string): boolean => {
+    if (!dataNascimento) return false;
+    
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    const idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mesAtual = hoje.getMonth();
+    const diaAtual = hoje.getDate();
+    const mesNascimento = nascimento.getMonth();
+    const diaNascimento = nascimento.getDate();
+    
+    // Verifica se já fez aniversário este ano
+    let idadeReal = idade;
+    if (mesAtual < mesNascimento || (mesAtual === mesNascimento && diaAtual < diaNascimento)) {
+      idadeReal--;
+    }
+    
+    return idadeReal >= 18;
+  };
+
+  // Função para validar email
+  const validarEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Função para validar CPF
+  const validarCPF = (cpf: string): boolean => {
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    return cpfLimpo.length === 11;
+  };
+
+  // Função para validar telefone
+  const validarTelefone = (telefone: string): boolean => {
+    const telefoneNumeros = telefone.replace(/\D/g, '');
+    return telefoneNumeros.length >= 10;
+  };
+
+  // Função para validar senha
+  const validarSenha = (senha: string): boolean => {
+    return senha.length >= 6;
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
   
+    // Validação de senhas
     if (form.senha !== form.confirmSenha) {
       toast.error("Senhas não coincidem. Verifique e tente novamente.");
+      setLoading(false);
+      return;
+    }
+
+    // Validação de idade mínima
+    if (!validarIdade(form.dataNascimento)) {
+      toast.error("Você deve ter pelo menos 18 anos para se cadastrar.");
+      setLoading(false);
+      return;
+    }
+
+    // Validação de campos obrigatórios
+    if (!form.nome.trim() || !form.email.trim() || !form.senha.trim() || !form.cpf.trim() || !form.telefone.trim() || !form.dataNascimento) {
+      toast.error("Por favor, preencha todos os campos obrigatórios.");
       setLoading(false);
       return;
     }
@@ -414,8 +490,7 @@ const Signup = () => {
                 </p>
               </motion.div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Campos principais */}
+              <form onSubmit={handleSubmit} className="space-y-6">                {/* Campos principais */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -423,117 +498,217 @@ const Signup = () => {
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
                   <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nome Completo *
+                    </label>
                     <input 
                       name="nome" 
-                      placeholder="Nome completo" 
+                      placeholder="Digite seu nome completo" 
                       value={form.nome} 
                       onChange={handleChange} 
                       className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                      style={{ fontSize: '16px' }} // Previne zoom no iOS
                     />
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-                  </div>
-
-                  <div className="relative group">
+                  </div>                  <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      E-mail *
+                    </label>
                     <input 
                       type="email" 
                       name="email" 
-                      placeholder="E-mail" 
+                      placeholder="Digite seu e-mail" 
                       value={form.email} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                        form.email && !validarEmail(form.email) 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                          : form.email && validarEmail(form.email)
+                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                      }`}
+                      style={{ fontSize: '16px' }} // Previne zoom no iOS
                     />
+                    {form.email && !validarEmail(form.email) && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Por favor, insira um e-mail válido
+                      </p>
+                    )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
-                </motion.div>
-
-                <motion.div
+                </motion.div>                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5, duration: 0.6 }}
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  <div className="relative group">
+                >                  <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Senha *
+                    </label>
                     <input 
                       type="password" 
                       name="senha" 
-                      placeholder="Senha" 
+                      placeholder="Digite sua senha (mín. 6 caracteres)" 
                       value={form.senha} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                        form.senha && !validarSenha(form.senha) 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                          : form.senha && validarSenha(form.senha)
+                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                      }`}
+                      style={{ fontSize: '16px' }} // Previne zoom no iOS
                     />
+                    {form.senha && !validarSenha(form.senha) && (
+                      <p className="text-red-500 text-sm mt-1">
+                        A senha deve ter pelo menos 6 caracteres
+                      </p>
+                    )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
 
                   <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Confirmar Senha *
+                    </label>
                     <input 
                       type="password" 
                       name="confirmSenha" 
-                      placeholder="Confirmar senha" 
+                      placeholder="Confirme sua senha" 
                       value={form.confirmSenha} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                        form.confirmSenha && form.senha !== form.confirmSenha 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                          : form.confirmSenha && form.senha === form.confirmSenha && form.senha
+                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                      }`}
+                      style={{ fontSize: '16px' }} // Previne zoom no iOS
                     />
+                    {form.confirmSenha && form.senha !== form.confirmSenha && (
+                      <p className="text-red-500 text-sm mt-1">
+                        As senhas não coincidem
+                      </p>
+                    )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
-                </motion.div>
-
-                {/* CPF e Telefone */}
+                </motion.div>{/* CPF e Telefone */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6, duration: 0.6 }}
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  <div className="relative group">
+                >                  <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      CPF *
+                    </label>
                     <InputMask
                       mask="___.___.___-__"
                       replacement={{ _: /\d/ }}
                       name="cpf"
                       value={form.cpf}
                       onChange={handleChange}
-                      placeholder="CPF"
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                      placeholder="000.000.000-00"
+                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                        form.cpf && !validarCPF(form.cpf) 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                          : form.cpf && validarCPF(form.cpf)
+                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                      }`}
+                      style={{ fontSize: '16px' }} // Previne zoom no iOS
                     />
+                    {form.cpf && !validarCPF(form.cpf) && (
+                      <p className="text-red-500 text-sm mt-1">
+                        CPF deve conter 11 dígitos
+                      </p>
+                    )}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                  </div>                  <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telefone *
+                    </label>
+                    <div className="phone-input-wrapper">
+                      <PhoneInput
+                        country={"br"}
+                        value={form.telefone}
+                        onChange={(phone) => setForm((prev) => ({ ...prev, telefone: `+${phone}` }))}
+                        inputClass={`!w-full !pl-[70px] !pr-4 !py-4 !bg-white/70 !backdrop-blur-sm !border !rounded-2xl !focus:ring-2 !transition-all !duration-300 !text-gray-900 !text-base !h-[56px] !leading-none ${
+                          form.telefone && !validarTelefone(form.telefone) 
+                            ? '!border-red-300 !focus:border-red-500 !focus:ring-red-200' 
+                            : form.telefone && validarTelefone(form.telefone)
+                            ? '!border-green-300 !focus:border-green-500 !focus:ring-green-200'
+                            : '!border-gray-200 !focus:border-primary !focus:ring-primary/20'
+                        }`}
+                        containerClass="!w-full !h-[56px]"
+                        buttonClass="!bg-white/70 !border-gray-200 !rounded-l-2xl !border-r-0 !w-[68px] !h-[56px] !flex !items-center !justify-center !px-2"
+                        dropdownClass="!bg-white !border !border-gray-200 !rounded-xl !shadow-lg"
+                        inputProps={{
+                          style: { 
+                            fontSize: '16px',
+                            height: '56px',
+                            lineHeight: '56px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          },
+                          placeholder: '(11) 99999-9999'
+                        }}
+                      />
+                    </div>
+                    {form.telefone && !validarTelefone(form.telefone) && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Telefone deve ter pelo menos 10 dígitos
+                      </p>
+                    )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
-
-                  <div className="relative group">
-                    <PhoneInput
-                      country={"br"}
-                      value={form.telefone}
-                      onChange={(phone) => setForm((prev) => ({ ...prev, telefone: `+${phone}` }))}
-                      inputClass="!w-full !px-4 !py-4 !bg-white/70 !backdrop-blur-sm !border !border-gray-200 !rounded-2xl !focus:border-primary !transition-all !duration-300 !text-gray-900"
-                      containerClass="!w-full"
-                      buttonClass="!bg-white/70 !border-gray-200 !rounded-l-2xl"
-                    />
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-                  </div>
-                </motion.div>
-
-                {/* Data de nascimento e Gênero */}
+                </motion.div>{/* Data de nascimento e Gênero */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7, duration: 0.6 }}
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
-                  <div className="relative group">
-                    <input 
-                      type="date" 
-                      name="dataNascimento" 
-                      value={form.dataNascimento} 
-                      onChange={handleChange} 
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                >                  <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Data de Nascimento *
+                    </label>                    <DatePicker
+                      selected={form.dataNascimento ? new Date(form.dataNascimento) : null}
+                      onChange={handleDateChange}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="Selecione sua data de nascimento"
+                      maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+                      minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
+                      showYearDropdown
+                      showMonthDropdown
+                      dropdownMode="select"
+                      yearDropdownItemNumber={100}
+                      scrollableYearDropdown
+                      autoComplete="off"
+                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                      calendarClassName="shadow-2xl border-0"
+                      popperClassName="z-50"
+                      wrapperClassName="w-full"
                     />
+                    {form.dataNascimento && !validarIdade(form.dataNascimento) && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Você deve ter pelo menos 18 anos para se cadastrar
+                      </p>
+                    )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
 
                   <div className="relative group">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Gênero *
+                    </label>
                     <select 
                       name="genero" 
                       value={form.genero} 
                       onChange={handleChange} 
                       className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 group-hover:bg-white/80"
+                      style={{ fontSize: '16px' }} // Previne zoom no iOS
                     >
                       <option value="MASCULINO">Masculino</option>
                       <option value="FEMININO">Feminino</option>
@@ -567,9 +742,11 @@ const Signup = () => {
                       exit={{ opacity: 0, y: -10, height: 0 }}
                       transition={{ duration: 0.3 }}
                       className="space-y-4 bg-white/30 backdrop-blur-sm rounded-2xl p-6 border border-white/30"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    >                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="relative group">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            CEP
+                          </label>
                           <InputMask
                             mask="_____-___"
                             replacement={{ _: /\d/ }}
@@ -581,70 +758,102 @@ const Signup = () => {
                               const cepSemMascara = value.replace(/\D/g, "");
                               if (cepSemMascara.length === 8) buscarEndereco(cepSemMascara);
                             }}
-                            placeholder="CEP"
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            placeholder="00000-000"
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            style={{ fontSize: '16px' }} // Previne zoom no iOS
                           />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
 
                         <div className="relative group">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Rua
+                          </label>
                           <input 
                             name="endereco.rua" 
-                            placeholder="Rua" 
+                            placeholder="Nome da rua" 
                             value={form.endereco.rua} 
                             onChange={handleChange} 
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            style={{ fontSize: '16px' }} // Previne zoom no iOS
                           />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
 
                         <div className="relative group">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Número
+                          </label>
                           <input 
                             name="endereco.numero" 
-                            placeholder="Número" 
+                            placeholder="123" 
                             value={form.endereco.numero} 
                             onChange={handleChange} 
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            style={{ fontSize: '16px' }} // Previne zoom no iOS
                           />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
 
                         <div className="relative group">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Bairro
+                          </label>
                           <input 
                             name="endereco.bairro" 
-                            placeholder="Bairro" 
+                            placeholder="Nome do bairro" 
                             value={form.endereco.bairro} 
                             onChange={handleChange} 
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            style={{ fontSize: '16px' }} // Previne zoom no iOS
                           />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
 
                         <div className="relative group">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Cidade
+                          </label>
                           <input 
                             name="endereco.cidade" 
-                            placeholder="Cidade" 
+                            placeholder="Nome da cidade" 
                             value={form.endereco.cidade} 
                             onChange={handleChange} 
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            style={{ fontSize: '16px' }} // Previne zoom no iOS
                           />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
 
                         <div className="relative group">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Estado
+                          </label>
                           <input 
                             name="endereco.estado" 
-                            placeholder="Estado" 
+                            placeholder="UF" 
                             value={form.endereco.estado} 
                             onChange={handleChange} 
-                            className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                            style={{ fontSize: '16px' }} // Previne zoom no iOS
                           />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
                       </div>
 
                       <div className="relative group">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Complemento (opcional)
+                        </label>
                         <input 
                           name="endereco.complemento" 
-                          placeholder="Complemento (opcional)" 
+                          placeholder="Apto, bloco, casa, etc." 
                           value={form.endereco.complemento} 
                           onChange={handleChange} 
-                          className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                          className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                          style={{ fontSize: '16px' }} // Previne zoom no iOS
                         />
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                       </div>
                     </motion.div>
                   )}

@@ -10,7 +10,22 @@ import { ViagemDTO } from "@/models/ViagemDTO";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { toast } from "sonner";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { Loader2 } from "lucide-react";
+import { 
+  Loader2, 
+  ArrowLeft,
+  Plane, 
+  MapPin, 
+  Calendar,
+  Heart,
+  Settings,
+  Save,
+  Route,
+  Camera,
+  Globe,
+  Map,
+  Compass,
+  Luggage
+} from "lucide-react";
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { useAuth } from "@/app/context/AuthContext";
 import paisesTraduzidos from "@/models/paisesTraduzidos";
@@ -111,7 +126,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     };
     fetchCidades();
   }, [estado]);
-
   useEffect(() => {
     setHasMounted(true);
   
@@ -161,12 +175,16 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           const preferenciasSalvas = await getPreferenciaByViagemId(id);
           if (preferenciasSalvas !== null) {
             setPreferencias(preferenciasSalvas);
+            setSemPreferencias(false);
           } else {
             setSemPreferencias(true);
           }
         } catch (error) {
           console.error("Erro ao carregar viagem ou preferências para edição", error);
         }
+      } else {
+        // Para novo cadastro, sempre mostrar aviso de preferências não cadastradas
+        setSemPreferencias(true);
       }
     };
   
@@ -182,15 +200,19 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  };  const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, type } = e.target;
-    const value = type === "checkbox" ? (e.target as HTMLInputElement).checked : (e.target as HTMLInputElement).value;
+    const value = type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
+    
     setPreferencias((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "number" ? (value === "" ? null : Number(value)) : value,
     }));
+
+    // Se o usuário começou a preencher preferências, esconder o aviso
+    if (semPreferencias) {
+      setSemPreferencias(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -229,33 +251,37 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       return;
     }
     
-    setLoading(true);
+    setLoading(true);      try {
+        let viagemId: number;
 
-    try {
-      let viagemId: number;
+        const viagemRequest = { ...form };
 
-      const viagemRequest = { ...form };
+        if (id) {
+          await editarViagem(id, { ...viagemRequest, id });
+          viagemId = id;
+          toast.success("Viagem atualizada com sucesso!", { position: "top-center" });
+        } else {
+          const viagemSalva = await cadastrarViagem({ ...viagemRequest, id: 0 });
+          viagemId = viagemSalva.id;
 
-      if (id) {
-        await editarViagem(id, { ...viagemRequest, id });
-        viagemId = id;
-        toast.success("Viagem atualizada com sucesso!", { position: "top-center" });
-      } else {
-        const viagemSalva = await cadastrarViagem({ ...viagemRequest, id: 0 });
-        viagemId = viagemSalva.id;
+          if (!viagemId || viagemId === 0) {
+            throw new Error("Erro ao cadastrar viagem: ID não retornado ou inválido.");
+          }
 
-        if (!viagemId || viagemId === 0) {
-          throw new Error("Erro ao cadastrar viagem: ID não retornado ou inválido.");
+          toast.success("Viagem cadastrada com sucesso!", { position: "top-center" });
+        }        // Sempre salvar as preferências
+        try {
+          console.log("Salvando preferências:", preferencias); // Debug
+          await salvarPreferenciasViagem(viagemId, preferencias);
+          toast.success("Preferências salvas com sucesso!", { position: "top-center" });
+        } catch (prefError) {
+          console.error("Erro ao salvar preferências:", prefError);
+          // Não bloquear o fluxo se houver erro nas preferências
+          toast.warning("Viagem salva, mas houve um problema ao salvar as preferências.");
         }
 
-        toast.success("Viagem cadastrada com sucesso!", { position: "top-center" });
-      }
-
-      await salvarPreferenciasViagem(viagemId, preferencias);
-      toast.success("Preferências salvas com sucesso!", { position: "top-center" });
-
-      router.push("/profile?tab=viagens");
-    } catch (error) {
+        router.push("/profile?tab=viagens");
+      } catch (error) {
       console.error(error);
       toast.error("Erro ao salvar viagem ou preferências. Tente novamente.", { position: "top-center" });
     } finally {
@@ -273,366 +299,701 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     }
   };
   
-
   return (
-      <section
-        className="min-h-screen bg-cover bg-center pt-36 pb-16 px-4"
-        style={{ backgroundImage: "url('/images/common/beach.jpg')" }}
-      >
-      <div className="relative mx-auto max-w-c-1390 px-7.5">
-
-        <div className="flex flex-col-reverse flex-wrap gap-8 md:flex-row md:flex-nowrap md:justify-between xl:gap-20">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.1 }}
-            className="w-full rounded-lg bg-white p-7.5 shadow-solid-8 md:w-3/5 lg:w-3/4 xl:p-15"
-          >
-            <div className="relative mb-8">              <button
-                type={"button" as const}
-                onClick={() => router.push("/profile?tab=minhas-viagens")}
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow hover:scale-105 transition"
-                title="Voltar"
-              >{/* Ícone de seta para voltar */}
-                <span className="h-5 w-5 text-orange-600">&#8592;</span>
-              </button>
-
-              <h2 className="text-3xl font-semibold text-center text-black">
-                {id ? "Editar Viagem" : "Cadastre sua viagem"}
-              </h2>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-
-{/* Tipo de Viagem */}
-<label className="block text-sm font-medium text-gray-700">Tipo de Viagem</label>
-<select
-  name="categoriaViagem"
-  value={form.categoriaViagem}
-  onChange={(e) => {
-    handleChange(e);
-    setEstado("");
-    setCidade("");
-    setForm(prev => ({ ...prev, destino: "" }));
-  }}
-  className="input mb-1"
->
-  <option value="NACIONAL">Nacional</option>
-  <option value="INTERNACIONAL">Internacional</option>
-</select>
-
-<p className="text-xs text-gray-500 mb-4">Escolha se a viagem será dentro do Brasil ou para outro país.</p>
-
-{/* País + Cidade/Estado (para internacional) */}
-{form.categoriaViagem === "INTERNACIONAL" && (
-  <>
-   <label className="block text-sm font-medium text-gray-700">País</label>
-<select
-  name="pais"
-  value={paisSelecionado}
-  onChange={(e) => {
-    const pais = e.target.value;
-    setPaisSelecionado(pais);
-    const cidade = cidadeInternacional.trim();
-    const paisTraduzido = paisesTraduzidos[pais] || pais;
-    const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
-    setForm(prev => ({ ...prev, destino }));
-  }}
-  className="input mb-1"
->
-  <option value="">Selecione um país</option>
-  {paises.map((pais) => (
-    <option key={pais} value={pais}>
-      {paisesTraduzidos[pais] || pais}
-    </option>
-  ))}
-</select>
-<p className="text-xs text-gray-500 mb-4">Escolha o país de destino da viagem.</p>
-
-
-    {/* Cidade/Estado digitado */}
-    <label className="block text-sm font-medium text-gray-700">Cidade ou estado</label>
-    <input
-      type="text"
-      value={cidadeInternacional}
-      onChange={(e) => {
-        const cidade = e.target.value;
-        setCidadeInternacional(cidade);
-        const paisIngles = paises.find(p => (paisesTraduzidos[p] || p) === form.destino.split(" - ").pop()?.trim());
-        const paisTraduzido = paisesTraduzidos[paisIngles || ""] || "";
-        const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
-        setForm(prev => ({ ...prev, destino }));
-      }}
-      className="input mb-1"
-      placeholder="Ex: Londres, Paris, Roma..."
-    />
-    <p className="text-xs text-gray-500 mb-4">Digite a cidade ou estado de destino.</p>
-  </>
-)}
-
-
-{/* Estado (para nacional) */}
-{form.categoriaViagem === "NACIONAL" && (
-  <>
-    <label className="block text-sm font-medium text-gray-700">Estado</label>
-    <select
-      value={estado}
-      onChange={(e) => {
-        const novoEstado = e.target.value;
-        setEstado(novoEstado);
-        setCidade("");
-        setForm(prev => ({ ...prev, destino: "" }));
-      }}
-      className="input mb-1"
-    >
-      <option value="">Selecione um estado</option>
-      {estados.map((estado) => (
-        <option key={estado.id} value={estado.sigla}>{estado.nome}</option>
-      ))}
-    </select>
-    <p className="text-xs text-gray-500 mb-4">Escolha o estado brasileiro para destino da viagem.</p>
-
-    {estado && (
-      <>
-        <label className="block text-sm font-medium text-gray-700">Cidade</label>
-        <select
-          value={cidade}
-          onChange={(e) => {
-            const novaCidade = e.target.value;
-            setCidade(novaCidade);
-            setForm(prev => ({ ...prev, destino: `${novaCidade} - ${estado}` }));
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
+      {/* Background with Simple Animated Icons */}
+      <div className="absolute inset-0 z-10">
+        {/* Animated Background Gradient */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
+          animate={{
+            background: [
+              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))",
+              "linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08))",
+              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))"
+            ]
           }}
-          className="input mb-1"
-        >
-          <option value="">Selecione uma cidade</option>
-          {cidades.map((cidade) => (
-            <option key={cidade} value={cidade}>{cidade}</option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-500 mb-4">Selecione a cidade de destino dentro do estado escolhido.</p>
-      </>
-    )}
-  </>
-)}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
 
-{/* Destino gerado automaticamente */}
-{form.destino && (
-  <div className="mb-4">
-    <label className="block text-sm font-medium text-gray-700">Destino</label>
-    <input
-      type="text"
-      value={form.destino}
-      readOnly
-      className="input"
-    />
-    <p className="text-xs text-gray-500 mt-1">Este campo é preenchido automaticamente com base nas seleções acima.</p>
-  </div>
-)}
-
-{/* Datas */}
-<label className="block text-sm font-medium text-gray-700">Data de Início</label>
-<input
-  type="date"
-  name="dataInicio"
-  value={form.dataInicio}
-  onChange={handleChange}
-  className="input mb-1"
-/>
-<p className="text-xs text-gray-500 mb-4">Data em que a viagem começa.</p>
-
-<label className="block text-sm font-medium text-gray-700">Data de Fim</label>
-<input
-  type="date"
-  name="dataFim"
-  value={form.dataFim}
-  onChange={handleChange}
-  className="input mb-1"
-/>
-<p className="text-xs text-gray-500 mb-4">Data prevista para o fim da viagem.</p>
-
-{/* Estilo */}
-<label className="block text-sm font-medium text-gray-700">Estilo de Viagem</label>
-<select name="estilo" value={form.estilo} onChange={handleChange} className="input mb-1">
-  <option value="AVENTURA">Aventura</option>
-  <option value="CULTURA">Cultura</option>
-  <option value="RELAXAMENTO">Relaxamento</option>
-  <option value="GASTRONOMIA">Gastronomia</option>
-  <option value="ROMANTICA">Romântica</option>
-  <option value="RELIGIOSA">Religiosa</option>
-  <option value="COMPRAS">Compras</option>
-  <option value="PRAIA">Praia</option>
-  <option value="HISTORICA">Histórica</option>
-  <option value="TECNOLOGIA">Tecnologia</option>
-  <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
-</select>
-<p className="text-xs text-gray-500 mt-1 mb-4">Qual o estilo principal da viagem que você está planejando.</p>
-{/* Status da Viagem */}
-<div className="mb-5">
-  <label className="block text-sm font-medium text-gray-700 mb-1">Status da Viagem</label>
-  <p className="text-sm text-gray-800 mb-2">
-    <span className="font-semibold">Status atual:</span>{" "}
-    {form.status === "CONFIRMADA"
-      ? "Confirmada ✅"
-      : form.status === "CANCELADA"
-      ? "Cancelada ❌"
-      : form.status === "EM_ANDAMENTO"
-      ? "Em andamento 🕒"
-      : form.status === "CONCLUIDA"
-      ? "Concluída 🏁"
-      : form.status === "RASCUNHO"
-      ? "Rascunho ✍️"
-      : "Pendente ⏳"}
-  </p>
-
-  {/* Mostrar botões se status permitir */}
-  {(form.status !== "EM_ANDAMENTO" && form.status !== "CONCLUIDA" && form.status !== "CANCELADA") && (
-    <div className="flex gap-3">
-      {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (        <button
-          type={"button" as const}
-          onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
-          className="px-3 py-1.5 text-sm rounded-md border font-medium 
-            border-green-600 text-green-700 hover:bg-green-50 transition"
-        >
-          ✅ Confirmar
-        </button>
-      )}
-
-      {/* Cancelar é permitido em PENDENTE, RASCUNHO e CONFIRMADA */}
-      {["PENDENTE", "RASCUNHO", "CONFIRMADA"].includes(form.status) && (        <button
-          type={"button" as const}
-          onClick={() => setForm((prev) => ({ ...prev, status: "CANCELADA" }))}
-          className="px-3 py-1.5 text-sm rounded-md border font-medium 
-            border-red-600 text-red-700 hover:bg-red-50 transition"
-        >
-          ❌ Cancelar
-        </button>
-      )}
-    </div>
-  )}
-
-  <p className="text-xs text-gray-500 mt-1">
-    Você pode confirmar ou cancelar esta viagem. Viagens em andamento, concluídas ou canceladas não permitem alterações de status.
-  </p>
-</div>
-
-
-              <div className="mb-7.5">
-                <button
-                  type={"button" as const}
-                  className="flex items-center gap-2 font-semibold text-primary"
-                  onClick={() => setShowPreferences(!showPreferences)}
-                >
-                  Preferências da Viagem {showPreferences ? <FaChevronUp /> : <FaChevronDown />}
-                </button>
-
-                <AnimatePresence>
-                  {showPreferences && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      {semPreferencias && (
-                        <div className="mb-4 rounded-lg bg-yellow-100 p-4 text-yellow-800 text-sm">
-                          Nenhuma preferência cadastrada ainda para esta viagem. Você pode preenchê-las abaixo!
-                        </div>
-                      )}
-                      <PreferenciasForm
-                        preferencias={preferencias}
-                        handlePreferenceChange={handlePreferenceChange}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">                <button
-                  type={"submit" as const}
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md 
-                    bg-orange-600 text-white hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      ✏️ {id ? "Atualizar Viagem" : "Cadastrar Viagem"}
-                    </>
-                  )}
-                </button>
-
-                {id && (                  <button
-                    type={"button" as const}
-                    onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${id}`)}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md 
-                      bg-purple-600 text-white hover:bg-purple-700 transition"
-                  >
-                    🗺️ Roteiro
-                  </button>
-                )}
-              </div>
-
-            </form>
-          </motion.div>
-
+        {/* Simple Floating Particles */}
+        {Array.from({ length: 15 }).map((_, i) => (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="relative w-full md:w-[35%] lg:w-[32%] xl:w-[30%] overflow-hidden rounded-lg bg-white p-4 shadow-md flex flex-col transition-all duration-700"
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
             style={{
-              height: showPreferences ? "760px" : "640px", 
-              transition: "height 0.7s ease-in-out",
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
             }}
+            animate={{ 
+              y: [0, -100, 0],
+              x: [0, Math.random() * 30 - 15, 0],
+              opacity: [0, 0.6, 0],
+              scale: [0, 1, 0]
+            }}
+            transition={{ 
+              duration: 8 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 8,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+
+        {/* Travel Icons with Smooth Animations */}
+        <motion.div
+          className="absolute top-32 right-16"
+          animate={{ 
+            y: [0, -20, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <Plane className="w-8 h-8 text-orange-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-40 left-20"
+          animate={{ 
+            y: [0, -18, 0],
+            rotate: [0, 15, 0]
+          }}
+          transition={{ 
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5
+          }}
+        >
+          <Compass className="w-9 h-9 text-green-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-48 left-40"
+          animate={{ 
+            y: [0, -10, 0],
+            x: [0, 8, 0]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5
+          }}
+        >
+          <Camera className="w-6 h-6 text-purple-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-40 right-24"
+          animate={{ 
+            y: [0, 15, 0],
+            rotate: [0, -8, 0]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        >
+          <Map className="w-7 h-7 text-red-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-64 right-40"
+          animate={{ 
+            y: [0, -12, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        >
+          <Luggage className="w-8 h-8 text-indigo-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-36 right-64"
+          animate={{ 
+            y: [0, -20, 0],
+            rotate: [0, 360, 0]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <Globe className="w-9 h-9 text-teal-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-32 left-48"
+          animate={{ 
+            y: [0, -8, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.8
+          }}
+        >
+          <Heart className="w-6 h-6 text-pink-500/30 drop-shadow-lg" />
+        </motion.div>
+      </div>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <motion.div 
+          className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center"
           >
-            <div className="w-full h-[75%] mb-4">
-              <motion.img
-                key={imagemDestino}
-                src={imagemDestino}
-                alt="Imagem do destino"
-                className="object-cover w-full h-full rounded-lg"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-              />
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-lg font-medium text-gray-700">Salvando viagem...</p>
+            <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
+          </motion.div>
+        </motion.div>
+      )}
+
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 py-16">
+        <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+          {/* Form Container */}
+          <motion.div
+            initial={{ opacity: 0, x: -30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex-1 lg:max-w-4xl"
+          >
+            {/* Glass Morphism Container */}
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 lg:p-12 relative overflow-hidden">
+              {/* Inner glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
+              
+              <div className="relative z-10">
+                {/* Header */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="text-center mb-8"
+                >
+                  <div className="flex items-center justify-center gap-4 mb-6">
+                    <button
+                      type="button"
+                      onClick={() => router.push("/profile?tab=minhas-viagens")}
+                      className="flex items-center justify-center w-12 h-12 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl hover:bg-white/90 transition-all duration-300 group"
+                      title="Voltar"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-gray-600 group-hover:text-primary transition-colors" />
+                    </button>
+                    
+                    <h1 className="text-3xl md:text-4xl font-bold">
+                      <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
+                        {id ? "Editar Viagem" : "Nova Viagem"}
+                      </span>
+                    </h1>
+                  </div>
+                  
+                  <p className="text-gray-600 text-lg">
+                    {id ? "Atualize os detalhes da sua viagem" : "Planeje sua próxima aventura"}
+                  </p>
+                </motion.div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Travel Type Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <Globe className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-gray-800">Tipo de Viagem</h3>
+                    </div>
+
+                    <div className="relative group">
+                      <select
+                        name="categoriaViagem"
+                        value={form.categoriaViagem}
+                        onChange={(e) => {
+                          handleChange(e);
+                          setEstado("");
+                          setCidade("");
+                          setForm(prev => ({ ...prev, destino: "" }));
+                        }}
+                        className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80"
+                      >
+                        <option value="NACIONAL">Nacional</option>
+                        <option value="INTERNACIONAL">Internacional</option>
+                      </select>
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                    </div>
+                    <p className="text-sm text-gray-500">Escolha se a viagem será dentro do Brasil ou para outro país.</p>
+                  </motion.div>
+
+                  {/* Destination Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-gray-800">Destino</h3>
+                    </div>
+
+                    {/* International Destination */}
+                    {form.categoriaViagem === "INTERNACIONAL" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="relative group">
+                          <select
+                            name="pais"
+                            value={paisSelecionado}
+                            onChange={(e) => {
+                              const pais = e.target.value;
+                              setPaisSelecionado(pais);
+                              const cidade = cidadeInternacional.trim();
+                              const paisTraduzido = paisesTraduzidos[pais] || pais;
+                              const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
+                              setForm(prev => ({ ...prev, destino }));
+                            }}
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80"
+                          >
+                            <option value="">Selecione um país</option>
+                            {paises.map((pais) => (
+                              <option key={pais} value={pais}>
+                                {paisesTraduzidos[pais] || pais}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                        </div>
+
+                        <div className="relative group">
+                          <input
+                            type="text"
+                            value={cidadeInternacional}
+                            onChange={(e) => {
+                              const cidade = e.target.value;
+                              setCidadeInternacional(cidade);
+                              const paisIngles = paises.find(p => (paisesTraduzidos[p] || p) === form.destino.split(" - ").pop()?.trim());
+                              const paisTraduzido = paisesTraduzidos[paisIngles || ""] || "";
+                              const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
+                              setForm(prev => ({ ...prev, destino }));
+                            }}
+                            placeholder="Ex: Londres, Paris, Roma..."
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                          />
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* National Destination */}
+                    {form.categoriaViagem === "NACIONAL" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="relative group">
+                          <select
+                            value={estado}
+                            onChange={(e) => {
+                              const novoEstado = e.target.value;
+                              setEstado(novoEstado);
+                              setCidade("");
+                              setForm(prev => ({ ...prev, destino: "" }));
+                            }}
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80"
+                          >
+                            <option value="">Selecione um estado</option>
+                            {estados.map((estado) => (
+                              <option key={estado.id} value={estado.sigla}>{estado.nome}</option>
+                            ))}
+                          </select>
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                        </div>
+
+                        {estado && (
+                          <div className="relative group">
+                            <select
+                              value={cidade}
+                              onChange={(e) => {
+                                const novaCidade = e.target.value;
+                                setCidade(novaCidade);
+                                setForm(prev => ({ ...prev, destino: `${novaCidade} - ${estado}` }));
+                              }}
+                              className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80"
+                            >
+                              <option value="">Selecione uma cidade</option>
+                              {cidades.map((cidade) => (
+                                <option key={cidade} value={cidade}>{cidade}</option>
+                              ))}
+                            </select>
+                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Generated Destination Display */}
+                    {form.destino && (
+                      <div className="p-4 bg-green-50 border border-green-200 rounded-2xl">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-800">Destino Selecionado</span>
+                        </div>
+                        <p className="text-green-700 font-semibold">{form.destino}</p>
+                      </div>
+                    )}
+                  </motion.div>
+
+                  {/* Dates Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-gray-800">Datas da Viagem</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative group">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Data de Início</label>
+                        <input
+                          type="date"
+                          name="dataInicio"
+                          value={form.dataInicio}
+                          onChange={handleChange}
+                          className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 group-hover:bg-white/80"
+                        />
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                      </div>
+
+                      <div className="relative group">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Data de Fim</label>
+                        <input
+                          type="date"
+                          name="dataFim"
+                          value={form.dataFim}
+                          onChange={handleChange}
+                          className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 group-hover:bg-white/80"
+                        />
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-500">Defina o período da sua viagem.</p>
+                  </motion.div>
+
+                  {/* Style and Status Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7, duration: 0.6 }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                  >
+                    {/* Travel Style */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Heart className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-gray-800">Estilo de Viagem</h3>
+                      </div>
+
+                      <div className="relative group">
+                        <select 
+                          name="estilo" 
+                          value={form.estilo} 
+                          onChange={handleChange}
+                          className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80"
+                        >
+                          <option value="AVENTURA">Aventura</option>
+                          <option value="CULTURA">Cultura</option>
+                          <option value="RELAXAMENTO">Relaxamento</option>
+                          <option value="GASTRONOMIA">Gastronomia</option>
+                          <option value="ROMANTICA">Romântica</option>
+                          <option value="RELIGIOSA">Religiosa</option>
+                          <option value="COMPRAS">Compras</option>
+                          <option value="PRAIA">Praia</option>
+                          <option value="HISTORICA">Histórica</option>
+                          <option value="TECNOLOGIA">Tecnologia</option>
+                          <option value="NAO_TENHO_PREFERENCIA">Não tenho preferência</option>
+                        </select>
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                      </div>
+                      <p className="text-sm text-gray-500">Qual o estilo principal da viagem.</p>
+                    </div>
+
+                    {/* Travel Status */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Settings className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-gray-800">Status da Viagem</h3>
+                      </div>
+
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                        <p className="text-sm text-blue-800 mb-3">
+                          <span className="font-semibold">Status atual:</span>{" "}
+                          {form.status === "CONFIRMADA"
+                            ? "Confirmada ✅"
+                            : form.status === "CANCELADA"
+                            ? "Cancelada ❌"
+                            : form.status === "EM_ANDAMENTO"
+                            ? "Em andamento 🕒"
+                            : form.status === "CONCLUIDA"
+                            ? "Concluída 🏁"
+                            : form.status === "RASCUNHO"
+                            ? "Rascunho ✍️"
+                            : "Pendente ⏳"}
+                        </p>
+
+                        {/* Status Action Buttons */}
+                        {(form.status !== "EM_ANDAMENTO" && form.status !== "CONCLUIDA" && form.status !== "CANCELADA") && (
+                          <div className="flex gap-2">
+                            {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (
+                              <button
+                                type="button"
+                                onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
+                                className="px-3 py-1.5 text-sm rounded-xl border font-medium border-green-600 text-green-700 hover:bg-green-50 transition-all duration-300"
+                              >
+                                ✅ Confirmar
+                              </button>
+                            )}
+
+                            {["PENDENTE", "RASCUNHO", "CONFIRMADA"].includes(form.status) && (
+                              <button
+                                type="button"
+                                onClick={() => setForm((prev) => ({ ...prev, status: "CANCELADA" }))}
+                                className="px-3 py-1.5 text-sm rounded-xl border font-medium border-red-600 text-red-700 hover:bg-red-50 transition-all duration-300"
+                              >
+                                ❌ Cancelar
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500">Você pode confirmar ou cancelar esta viagem.</p>
+                    </div>
+                  </motion.div>
+
+                  {/* Preferences Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <button
+                      type="button"
+                      className="flex items-center gap-3 p-4 w-full bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl hover:bg-white/90 transition-all duration-300"
+                      onClick={() => setShowPreferences(!showPreferences)}
+                    >
+                      <Settings className="h-5 w-5 text-primary" />
+                      <span className="text-lg font-semibold text-gray-800 flex-1 text-left">
+                        Preferências da Viagem
+                      </span>
+                      {showPreferences ? (
+                        <FaChevronUp className="h-4 w-4 text-gray-600" />
+                      ) : (
+                        <FaChevronDown className="h-4 w-4 text-gray-600" />
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {showPreferences && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.4, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >                          <div className="p-6 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl">
+                            {semPreferencias && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <Heart className="h-4 w-4 text-blue-600" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="text-blue-900 font-semibold text-base mb-2">
+                                      Preferências não cadastradas
+                                    </h4>
+                                    <p className="text-blue-800 text-sm leading-relaxed">
+                                      Você ainda não possui preferências cadastradas para esta viagem. 
+                                      <br />
+                                      <strong>Configure suas preferências abaixo</strong> para encontrar companheiros de viagem ideais!
+                                    </p>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                            <PreferenciasForm
+                              preferencias={preferencias}
+                              handlePreferenceChange={handlePreferenceChange}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  {/* Action Buttons */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9, duration: 0.6 }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6"
+                  >
+                    <motion.button
+                      type="submit"
+                      disabled={loading}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-lg relative overflow-hidden"
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 hover:opacity-100 transition-opacity duration-300"
+                        initial={false}
+                      />
+                      <span className="relative z-10 flex items-center gap-3">
+                        {loading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Salvando...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-5 w-5" />
+                            {id ? "Atualizar Viagem" : "Cadastrar Viagem"}
+                          </>
+                        )}
+                      </span>
+                    </motion.button>
+
+                    {id && (
+                      <motion.button
+                        type="button"
+                        onClick={() => router.push(`/viagens/cadastrarRoteiro?viagemId=${id}`)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg relative overflow-hidden"
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                          initial={false}
+                        />
+                        <span className="relative z-10 flex items-center gap-3">
+                          <Route className="h-5 w-5" />
+                          Criar Roteiro
+                        </span>
+                      </motion.button>
+                    )}
+                  </motion.div>
+                </form>
+              </div>
             </div>
-
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Consulta personalizada de imagem
-            </label>
-            <input
-              type="text"
-              value={consultaImagem[1] || form.destino}
-              onChange={(e) =>
-                setConsultaImagem((prev) => ({ ...prev, 1: e.target.value }))
-              }
-              placeholder="Ex: Torre Eiffel - Paris - França"
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Digite uma nova descrição se quiser alterar a imagem automaticamente buscada para este destino.
-            </p>
-
-            <button
-              type={"button" as const}
-              onClick={async () => {
-                const descricaoFinal = consultaImagem[1] || form.destino;
-                if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);
-
-                const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
-                setImagemDestino(novaImagem || "/images/common/beach.jpg");
-              }}
-              className="mt-3 w-full bg-blue-600 text-white text-sm font-semibold py-2 rounded hover:bg-blue-700 transition-all"
-            >
-              Buscar nova imagem
-            </button>
           </motion.div>
 
+          {/* Image Preview Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, x: 30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            className="w-full lg:w-80 xl:w-96"
+          >
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 relative overflow-hidden sticky top-8">
+              {/* Inner glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
+              
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Camera className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800">Prévia do Destino</h3>
+                </div>
+
+                {/* Image Container */}
+                <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-gray-100">
+                  <motion.img
+                    key={imagemDestino}
+                    src={imagemDestino}
+                    alt="Imagem do destino"
+                    className="object-cover w-full h-full"
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.8 }}
+                  />
+                </div>
+
+                {/* Custom Image Search */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Personalizar imagem do destino
+                  </label>
+                  
+                  <div className="relative group">
+                    <input
+                      type="text"
+                      value={consultaImagem[1] || form.destino}
+                      onChange={(e) =>
+                        setConsultaImagem((prev) => ({ ...prev, 1: e.target.value }))
+                      }
+                      placeholder="Ex: Torre Eiffel - Paris - França"
+                      className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 text-sm"
+                    />
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                  </div>
+                  
+                  <p className="text-xs text-gray-500">
+                    Digite uma nova descrição se quiser alterar a imagem automaticamente buscada para este destino.
+                  </p>                  <motion.button
+                    type="button"
+                    onClick={async () => {
+                      const descricaoFinal = consultaImagem[1] || form.destino;
+                      if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);
+
+                      const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
+                      setImagemDestino(novaImagem || "/images/common/beach.jpg");
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full py-3 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-sm relative overflow-hidden"
+                  >
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 hover:opacity-100 transition-opacity duration-300"
+                      initial={false}
+                    />
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      <Camera className="h-4 w-4" />
+                      Buscar nova imagem
+                    </span>
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

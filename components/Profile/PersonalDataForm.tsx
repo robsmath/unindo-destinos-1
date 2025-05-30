@@ -15,7 +15,10 @@ import PhoneInput from "react-phone-input-2";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import DatePicker from "react-datepicker";
 import "react-phone-input-2/lib/style.css";
+import "react-datepicker/dist/react-datepicker.css";
+import "@/styles/custom-datepicker.css";
 
 interface ValidationErrors {
   [key: string]: string;
@@ -217,6 +220,16 @@ const PersonalDataForm = () => {
     }
   }, [usuario]);
 
+  // Função específica para tratar mudanças de data
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0];
+      handleInputChange("dataNascimento", formattedDate);
+    } else {
+      handleInputChange("dataNascimento", "");
+    }
+  };
+
   const handleInputChange = (field: string, value: string) => {
     if (!userData) return;
 
@@ -315,34 +328,37 @@ const PersonalDataForm = () => {
         {announcements.map((announcement, index) => (
           <div key={index}>{announcement}</div>
         ))}
-      </div>
-
-      <motion.div
+      </div>      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-xl shadow-lg p-6 space-y-6"
+        className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 space-y-6"
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Dados Pessoais</h2>
-          <div className="text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+              Dados Pessoais
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Mantenha suas informações sempre atualizadas
+            </p>
+          </div>
+          <div className="text-xs sm:text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
             * Campos obrigatórios
           </div>
-        </div>
-
-        <motion.form 
+        </div>        <motion.form 
           onSubmit={handleSubmit} 
           className="space-y-6"
           role="form"
           aria-label="Formulário de dados pessoais"
-        >
-          {/* Nome Completo */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-2"
-          >
+        >          {/* Campos Básicos em Grid Responsivo */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Nome Completo */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-2"
+            >
             <label 
               htmlFor="nome" 
               className="block text-sm font-medium text-gray-700"
@@ -355,7 +371,7 @@ const PersonalDataForm = () => {
                 type="text"
                 value={userData.nome || ""}
                 onChange={(e) => handleInputChange("nome", e.target.value)}
-                className={`w-full ${
+                className={`w-full h-12 text-base ${
                   validationErrors.nome ? "border-red-500 focus:border-red-500" : ""
                 }`}
                 placeholder="Digite seu nome completo"
@@ -363,6 +379,7 @@ const PersonalDataForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.nome}
                 aria-describedby={validationErrors.nome ? "nome-error" : undefined}
+                style={{ fontSize: '16px' }} // Previne zoom no iOS
               />
               <AnimatePresence>
                 {touchedFields.has("nome") && (
@@ -390,8 +407,7 @@ const PersonalDataForm = () => {
                 className="text-sm text-red-600"
                 role="alert"
               >
-                {validationErrors.nome}
-              </motion.p>
+                {validationErrors.nome}              </motion.p>
             )}
           </motion.div>
 
@@ -414,7 +430,7 @@ const PersonalDataForm = () => {
                 type="email"
                 value={userData.email || ""}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className={`w-full ${
+                className={`w-full h-12 text-base ${
                   validationErrors.email ? "border-red-500 focus:border-red-500" : ""
                 }`}
                 placeholder="Digite seu email"
@@ -422,6 +438,7 @@ const PersonalDataForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.email}
                 aria-describedby={validationErrors.email ? "email-error" : undefined}
+                style={{ fontSize: '16px' }} // Previne zoom no iOS
               />
               <AnimatePresence>
                 {touchedFields.has("email") && (
@@ -474,10 +491,10 @@ const PersonalDataForm = () => {
                   className="text-blue-600 hover:text-blue-800 underline"
                 >
                   Verificar agora
-                </Link>
-              </motion.p>
+                </Link>              </motion.p>
             )}
           </motion.div>
+          </div>
 
           {/* Telefone */}
           <motion.div
@@ -491,25 +508,39 @@ const PersonalDataForm = () => {
               className="block text-sm font-medium text-gray-700"
             >
               Telefone *
-            </label>
-            <div className="relative">
-              <PhoneInput
-                country={'br'}
-                value={userData.telefone || ""}
-                onChange={(phone) => handleInputChange("telefone", phone)}
-                inputClass={`w-full ${
-                  validationErrors.telefone ? "border-red-500 focus:border-red-500" : ""
-                }`}
-                containerClass="w-full"
-                buttonClass="border-gray-300"
-                inputProps={{
-                  id: "telefone",
-                  required: true,
-                  'aria-required': 'true',
-                  'aria-invalid': !!validationErrors.telefone,
-                  'aria-describedby': validationErrors.telefone ? "telefone-error" : undefined
-                }}
-              />
+            </label>            <div className="relative">
+              <div className="phone-input-wrapper">
+                <PhoneInput
+                  country={'br'}
+                  value={userData.telefone || ""}
+                  onChange={(phone) => handleInputChange("telefone", phone)}
+                  inputClass={`!w-full !pl-[70px] !pr-4 !py-4 !bg-white/70 !backdrop-blur-sm !border !rounded-2xl !focus:ring-2 !transition-all !duration-300 !text-gray-900 !text-base !h-[56px] !leading-none ${
+                    validationErrors.telefone 
+                      ? '!border-red-300 !focus:border-red-500 !focus:ring-red-200' 
+                      : userData.telefone && userData.telefone.replace(/\D/g, '').length >= 10
+                      ? '!border-green-300 !focus:border-green-500 !focus:ring-green-200'
+                      : '!border-gray-200 !focus:border-blue-500 !focus:ring-blue-200'
+                  }`}
+                  containerClass="!w-full !h-[56px]"
+                  buttonClass="!bg-white/70 !border-gray-200 !rounded-l-2xl !border-r-0 !w-[68px] !h-[56px] !flex !items-center !justify-center !px-2"
+                  dropdownClass="!bg-white !border !border-gray-200 !rounded-xl !shadow-lg"
+                  inputProps={{
+                    id: "telefone",
+                    required: true,
+                    'aria-required': 'true',
+                    'aria-invalid': !!validationErrors.telefone,
+                    'aria-describedby': validationErrors.telefone ? "telefone-error" : undefined,
+                    style: { 
+                      fontSize: '16px',
+                      height: '56px',
+                      lineHeight: '56px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    },
+                    placeholder: '(11) 99999-9999'
+                  }}
+                />
+              </div>
               <AnimatePresence>
                 {touchedFields.has("telefone") && (
                   <motion.div
@@ -562,14 +593,17 @@ const PersonalDataForm = () => {
                 >
                   Verificar agora
                 </Link>
-              </motion.p>
-            )}</motion.div>          {/* CPF */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.35 }}
-            className="space-y-2"
-          >
+              </motion.p>            )}</motion.div>          
+          
+          {/* Campos de Informações Pessoais em Grid Responsivo */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* CPF */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-2"
+            >
             <label 
               htmlFor="cpf" 
               className="block text-sm font-medium text-gray-700"
@@ -591,7 +625,7 @@ const PersonalDataForm = () => {
                     handleInputChange("cpf", cpfLimpo);
                   }
                 }}
-                className={`w-full ${
+                className={`w-full h-12 ${
                   validationErrors.cpf ? "border-red-500 focus:border-red-500" : ""
                 }`}
                 placeholder="000.000.000-00"
@@ -644,16 +678,27 @@ const PersonalDataForm = () => {
               className="block text-sm font-medium text-gray-700"
             >
               Data de Nascimento *
-            </label>
-            <div className="relative">
-              <Input
-                id="dataNascimento"
-                type="date"
-                value={userData.dataNascimento ? new Date(userData.dataNascimento).toISOString().split('T')[0] : ""}
-                onChange={(e) => handleInputChange("dataNascimento", e.target.value)}
-                className={`w-full ${
-                  validationErrors.dataNascimento ? "border-red-500 focus:border-red-500" : ""
+            </label>            <div className="relative">
+              <DatePicker
+                selected={userData.dataNascimento ? new Date(userData.dataNascimento) : null}
+                onChange={handleDateChange}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Selecione sua data de nascimento"
+                maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+                minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
+                showYearDropdown
+                showMonthDropdown
+                dropdownMode="select"
+                yearDropdownItemNumber={100}
+                scrollableYearDropdown
+                autoComplete="off"
+                className={`w-full px-4 py-4 h-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-gray-900 placeholder-gray-500 ${
+                  validationErrors.dataNascimento ? "border-red-500 focus:border-red-500 focus:ring-red-200" : "border-gray-200"
                 }`}
+                calendarClassName="shadow-2xl border-0"
+                popperClassName="z-50"
+                wrapperClassName="w-full"
+                id="dataNascimento"
                 required
                 aria-required="true"
                 aria-invalid={!!validationErrors.dataNascimento}
@@ -711,7 +756,7 @@ const PersonalDataForm = () => {
               >
                 <SelectTrigger 
                   id="genero"
-                  className={`w-full ${
+                  className={`w-full h-12 ${
                     validationErrors.genero ? "border-red-500 focus:border-red-500" : ""
                   }`}
                   aria-required="true"
@@ -757,19 +802,27 @@ const PersonalDataForm = () => {
                 {validationErrors.genero}
               </motion.p>
             )}
-          </motion.div>{/* CEP */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.8 }}
-            className="space-y-2"
-          >
+          </motion.div>
+          </div>
+
+          {/* Seção de Endereço */}
+          <div className="space-y-6 pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800">Informações de Endereço</h3>
+            
+            {/* CEP */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+              className="space-y-2"
+            >
             <label 
               htmlFor="cep" 
               className="block text-sm font-medium text-gray-700"
             >
               CEP *
-            </label>            <div className="relative">
+            </label>
+            <div className="relative">
               <Input
                 id="cep"
                 type="text"
@@ -784,7 +837,7 @@ const PersonalDataForm = () => {
                     handleInputChange("cep", cepLimpo);
                   }
                 }}
-                className={`w-full ${
+                className={`w-full h-12 ${
                   validationErrors.cep ? "border-red-500 focus:border-red-500" : ""
                 }`}
                 placeholder="00000-000"
@@ -828,126 +881,126 @@ const PersonalDataForm = () => {
                 {validationErrors.cep}
               </motion.p>
             )}
-          </motion.div>          {/* Endereço */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9 }}
-            className="space-y-2"
-          >
-            <label 
-              htmlFor="rua" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              Endereço *
-            </label>
-            <div className="relative">
-              <Input
-                id="rua"
-                type="text"
-                value={userData.endereco?.rua || ""}
-                onChange={(e) => handleInputChange("rua", e.target.value)}
-                className={`w-full ${
-                  validationErrors.rua ? "border-red-500 focus:border-red-500" : ""
-                }`}
-                placeholder="Digite seu endereço"
-                required
-                aria-required="true"
-                aria-invalid={!!validationErrors.rua}
-                aria-describedby={validationErrors.rua ? "rua-error" : undefined}
-              />
-              <AnimatePresence>
-                {touchedFields.has("rua") && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {validationErrors.rua ? (
-                      <FaTimes className="text-red-500" />
-                    ) : userData.endereco?.rua && userData.endereco.rua.length > 0 ? (
-                      <FaCheck className="text-green-500" />
-                    ) : null}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            {validationErrors.rua && (
-              <motion.p
-                id="rua-error"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="text-sm text-red-600"
-                role="alert"
-              >
-                {validationErrors.rua}
-              </motion.p>
-            )}          </motion.div>
-
-          {/* Número e Complemento */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Número */}
+          </motion.div>          {/* Endereço e Número em grid responsivo */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Endereço */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.95 }}
-              className="space-y-2"
+              transition={{ delay: 0.8 }}
+              className="space-y-2 md:col-span-2"
             >
               <label 
-                htmlFor="numero" 
+                htmlFor="rua" 
                 className="block text-sm font-medium text-gray-700"
               >
-                Número
+                Endereço *
               </label>
               <div className="relative">
                 <Input
-                  id="numero"
+                  id="rua"
                   type="text"
-                  value={userData.endereco?.numero || ""}
-                  onChange={(e) => handleInputChange("numero", e.target.value)}
-                  className="w-full"
-                  placeholder="Digite o número"
+                  value={userData.endereco?.rua || ""}
+                  onChange={(e) => handleInputChange("rua", e.target.value)}
+                  className={`w-full h-12 ${
+                    validationErrors.rua ? "border-red-500 focus:border-red-500" : ""
+                  }`}
+                  placeholder="Rua, avenida, etc."
+                  required
+                  aria-required="true"
+                  aria-invalid={!!validationErrors.rua}
+                  aria-describedby={validationErrors.rua ? "rua-error" : undefined}
                 />
+                <AnimatePresence>
+                  {touchedFields.has("rua") && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    >
+                      {validationErrors.rua ? (
+                        <FaTimes className="text-red-500" />
+                      ) : userData.endereco?.rua && userData.endereco.rua.length > 0 ? (
+                        <FaCheck className="text-green-500" />
+                      ) : null}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </motion.div>
+              {validationErrors.rua && (
+                <motion.p
+                  id="rua-error"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-sm text-red-600"
+                  role="alert"
+                >
+                  {validationErrors.rua}
+                </motion.p>            )}          </motion.div>
 
+          {/* Número */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.85 }}
+            className="space-y-2"
+          >
+            <label 
+              htmlFor="numero" 
+              className="block text-sm font-medium text-gray-700"
+            >
+              Número
+            </label>
+            <div className="relative">
+              <Input
+                id="numero"
+                type="text"
+                value={userData.endereco?.numero || ""}
+                onChange={(e) => handleInputChange("numero", e.target.value)}
+                className="w-full h-12"
+                placeholder="Digite o número"
+              />
+            </div>            </motion.div>
+          </div>
+
+          {/* Complemento e Bairro em grid responsivo */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Complemento */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.96 }}
+              transition={{ delay: 0.9 }}
               className="space-y-2"
             >
-              <label 
-                htmlFor="complemento" 
-                className="block text-sm font-medium text-gray-700"
-              >
-                Complemento
-              </label>
-              <div className="relative">
-                <Input
-                  id="complemento"
-                  type="text"
-                  value={userData.endereco?.complemento || ""}
-                  onChange={(e) => handleInputChange("complemento", e.target.value)}
-                  className="w-full"
-                  placeholder="Apto, bloco, etc. (opcional)"
-                />
-              </div>
-            </motion.div>
-          </div>
+            <label 
+              htmlFor="complemento" 
+              className="block text-sm font-medium text-gray-700"
+            >
+              Complemento
+            </label>
+            <div className="relative">
+              <Input
+                id="complemento"
+                type="text"
+                value={userData.endereco?.complemento || ""}
+                onChange={(e) => handleInputChange("complemento", e.target.value)}
+                className="w-full h-12"
+                placeholder="Apto, bloco, etc. (opcional)"
+              />
+            </div>
+          </motion.div>
 
           {/* Bairro */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.97 }}
+            transition={{ delay: 0.95 }}
             className="space-y-2"
           >
             <label 
-              htmlFor="bairro" 
+              htmlFor="bairro"
               className="block text-sm font-medium text-gray-700"
             >
               Bairro
@@ -958,75 +1011,78 @@ const PersonalDataForm = () => {
                 type="text"
                 value={userData.endereco?.bairro || ""}
                 onChange={(e) => handleInputChange("bairro", e.target.value)}
-                className="w-full"
+                className="w-full h-12"
                 placeholder="Digite o bairro"
               />
             </div>
           </motion.div>
+          </div>
 
           {/* Cidade e Estado */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{/* Cidade */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Cidade */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.0 }}
               className="space-y-2"
             >
-              <label 
-                htmlFor="cidade" 
-                className="block text-sm font-medium text-gray-700"
+            <label 
+              htmlFor="cidade" 
+              className="block text-sm font-medium text-gray-700"
+            >
+              Cidade *
+            </label>
+            <div className="relative">
+              <Input
+                id="cidade"
+                type="text"
+                value={userData.endereco?.cidade || ""}
+                onChange={(e) => handleInputChange("cidade", e.target.value)}
+                className={`w-full h-12 ${
+                  validationErrors.cidade ? "border-red-500 focus:border-red-500" : ""
+                }`}
+                placeholder="Digite sua cidade"
+                required
+                aria-required="true"
+                aria-invalid={!!validationErrors.cidade}
+                aria-describedby={validationErrors.cidade ? "cidade-error" : undefined}
+              />
+              <AnimatePresence>
+                {touchedFields.has("cidade") && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  >
+                    {validationErrors.cidade ? (
+                      <FaTimes className="text-red-500" />
+                    ) : userData.endereco?.cidade && userData.endereco.cidade.length > 0 ? (
+                      <FaCheck className="text-green-500" />
+                    ) : null}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            {validationErrors.cidade && (
+              <motion.p
+                id="cidade-error"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="text-sm text-red-600"
+                role="alert"
               >
-                Cidade *
-              </label>
-              <div className="relative">
-                <Input
-                  id="cidade"
-                  type="text"
-                  value={userData.endereco?.cidade || ""}
-                  onChange={(e) => handleInputChange("cidade", e.target.value)}
-                  className={`w-full ${
-                    validationErrors.cidade ? "border-red-500 focus:border-red-500" : ""
-                  }`}
-                  placeholder="Digite sua cidade"
-                  required
-                  aria-required="true"
-                  aria-invalid={!!validationErrors.cidade}
-                  aria-describedby={validationErrors.cidade ? "cidade-error" : undefined}
-                />
-                <AnimatePresence>
-                  {touchedFields.has("cidade") && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                    >
-                      {validationErrors.cidade ? (
-                        <FaTimes className="text-red-500" />
-                      ) : userData.endereco?.cidade && userData.endereco.cidade.length > 0 ? (
-                        <FaCheck className="text-green-500" />
-                      ) : null}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              {validationErrors.cidade && (
-                <motion.p
-                  id="cidade-error"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="text-sm text-red-600"
-                  role="alert"
-                >
-                  {validationErrors.cidade}
-                </motion.p>
-              )}
-            </motion.div>            {/* Estado */}
+                {validationErrors.cidade}
+              </motion.p>              )}
+            </motion.div>
+
+            {/* Estado */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.1 }}
+              transition={{ delay: 1.05 }}
               className="space-y-2"
             >
               <label 
@@ -1043,7 +1099,7 @@ const PersonalDataForm = () => {
                 >
                   <SelectTrigger 
                     id="estado"
-                    className={`w-full ${
+                    className={`w-full h-12 ${
                       validationErrors.estado ? "border-red-500 focus:border-red-500" : ""
                     }`}
                     aria-required="true"
@@ -1110,35 +1166,36 @@ const PersonalDataForm = () => {
                 >
                   {validationErrors.estado}
                 </motion.p>
-              )}
-            </motion.div>
+              )}            </motion.div>
+          </div>
           </div>          {/* Botão de Salvar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
-            className="flex items-center justify-between pt-6"
+            transition={{ delay: 1.1 }}
+            className="mt-8 pt-6 border-t border-gray-200/50"
           >
-            <div className="text-sm text-gray-500">
-              <Link href="/profile" className="text-blue-600 hover:text-blue-800">
-                ← Voltar ao Perfil
-              </Link>
-            </div>
-            <Button
+            <motion.button
               type="submit"
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-lg disabled:opacity-50"
+              className="group relative w-full bg-gradient-to-r from-primary to-orange-500 text-white font-semibold py-4 px-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed text-base"
+              whileHover={{ scale: saving ? 1 : 1.02, y: saving ? 0 : -2 }}
+              whileTap={{ scale: saving ? 1 : 0.98 }}
               aria-label={saving ? "Salvando alterações..." : "Salvar alterações dos dados pessoais"}
             >
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Salvando...
-                </>
-              ) : (
-                "Salvar Alterações"
-              )}
-            </Button>
+              {/* Animated Background */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                initial={{ x: '-100%' }}
+                whileHover={saving ? {} : { x: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+              
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                {saving && <Loader2 className="animate-spin w-5 h-5" />}
+                {saving ? "Salvando alterações..." : "Salvar Alterações"}
+              </span>
+            </motion.button>
           </motion.div>
         </motion.form>
       </motion.div>

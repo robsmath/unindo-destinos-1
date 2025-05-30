@@ -1,0 +1,250 @@
+/* Custom DatePicker Styles */
+
+/* Container principal */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+/* Input field */
+.react-datepicker__input-container input {
+  width: 100% !important;
+  height: 56px !important;
+  font-size: 16px !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  border: 1px solid #e5e7eb !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.3s ease !important;
+  color: #111827 !important;
+}
+
+.react-datepicker__input-container input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+.react-datepicker__input-container input:hover {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Calendar popup */
+.react-datepicker {
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  font-family: inherit !important;
+  overflow: hidden !important;
+}
+
+/* Header */
+.react-datepicker__header {
+  background: linear-gradient(135deg, #3b82f6, #f97316) !important;
+  border-bottom: none !important;
+  border-radius: 16px 16px 0 0 !important;
+  padding: 16px !important;
+}
+
+.react-datepicker__current-month {
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  margin-bottom: 8px !important;
+}
+
+/* Navigation */
+.react-datepicker__navigation {
+  top: 20px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.react-datepicker__navigation:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.react-datepicker__navigation--previous {
+  left: 16px !important;
+  border-right-color: white !important;
+}
+
+.react-datepicker__navigation--next {
+  right: 16px !important;
+  border-left-color: white !important;
+}
+
+/* Day names */
+.react-datepicker__day-names {
+  background: rgba(255, 255, 255, 0.1) !important;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+}
+
+.react-datepicker__day-name {
+  color: white !important;
+  font-weight: 500 !important;
+  width: 2.5rem !important;
+  line-height: 2rem !important;
+}
+
+/* Month container */
+.react-datepicker__month-container {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.react-datepicker__month {
+  margin: 0 !important;
+  padding: 16px !important;
+}
+
+/* Days */
+.react-datepicker__day {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  line-height: 2.5rem !important;
+  margin: 0.125rem !important;
+  border-radius: 50% !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__day:hover {
+  background: #3b82f6 !important;
+  color: white !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--selected {
+  background: linear-gradient(135deg, #3b82f6, #f97316) !important;
+  color: white !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--today {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--disabled {
+  color: #d1d5db !important;
+  cursor: not-allowed !important;
+}
+
+.react-datepicker__day--disabled:hover {
+  background: transparent !important;
+  color: #d1d5db !important;
+}
+
+.react-datepicker__day--outside-month {
+  color: #d1d5db !important;
+}
+
+/* Dropdowns */
+.react-datepicker__year-dropdown,
+.react-datepicker__month-dropdown {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+.react-datepicker__year-option,
+.react-datepicker__month-option {
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__year-option:hover,
+.react-datepicker__month-option:hover {
+  background: #3b82f6 !important;
+  color: white !important;
+}
+
+.react-datepicker__year-option--selected,
+.react-datepicker__month-option--selected {
+  background: linear-gradient(135deg, #3b82f6, #f97316) !important;
+  color: white !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .react-datepicker {
+    width: calc(100vw - 2rem) !important;
+    max-width: 350px !important;
+    font-size: 16px !important;
+  }
+  
+  .react-datepicker__day {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    line-height: 2.25rem !important;
+    font-size: 14px !important;
+  }
+  
+  .react-datepicker__input-container input {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .react-datepicker {
+    background: rgba(31, 41, 55, 0.95) !important;
+    color: #f9fafb !important;
+  }
+  
+  .react-datepicker__month-container {
+    background: rgba(31, 41, 55, 0.95) !important;
+  }
+  
+  .react-datepicker__day {
+    color: #f9fafb !important;
+  }
+  
+  .react-datepicker__day--outside-month {
+    color: #6b7280 !important;
+  }
+  
+  .react-datepicker__day--disabled {
+    color: #4b5563 !important;
+  }
+}
+
+/* Animation */
+.react-datepicker__portal {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
