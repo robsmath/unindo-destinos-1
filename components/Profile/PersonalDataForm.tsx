@@ -708,15 +708,15 @@ const PersonalDataForm = () => {
             >
               Data de Nascimento *
             </label>            <div className="relative">
-              <input
+              <Input
                 type="date"
                 id="dataNascimento"
                 value={userData.dataNascimento || ""}
                 onChange={(e) => handleInputChange("dataNascimento", e.target.value)}
                 max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                 min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
-                className={`w-full px-4 py-4 h-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-gray-900 ${
-                  validationErrors.dataNascimento ? "border-red-500 focus:border-red-500 focus:ring-red-200" : "border-gray-200"
+                className={`w-full h-12 text-base ${
+                  validationErrors.dataNascimento ? "border-red-500 focus:border-red-500" : ""
                 }`}
                 required
                 aria-required="true"

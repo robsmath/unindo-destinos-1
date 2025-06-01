@@ -658,7 +658,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Data de Nascimento
             </label>            <div className="relative">
-              <input
+              <Input
                 type="date"
                 value={pet.dataNascimento}
                 onChange={(e) => {
@@ -676,10 +676,10 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
                   }));
                 }}
                 max={new Date().toISOString().split('T')[0]}
-                className={`w-full px-4 py-4 h-12 bg-white/70 backdrop-blur-sm border-2 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 ${
+                className={`w-full h-12 text-base ${
                   touchedFields.has('dataNascimento') && validationErrors.dataNascimento
-                    ? 'border-red-300 focus:border-red-500 bg-red-50'
-                    : 'border-gray-200 focus:border-primary'
+                    ? 'border-red-500 focus:border-red-500'
+                    : ''
                 }`}
                 style={{ fontSize: '16px' }}
               />

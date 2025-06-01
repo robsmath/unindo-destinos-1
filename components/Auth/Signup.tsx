@@ -10,6 +10,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { Input } from "@/components/ui/input";
 import { 
   Plane, 
   MapPin, 
@@ -638,19 +639,19 @@ const Signup = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Data de Nascimento *
                     </label>
-                    <input
+                    <Input
                       type="date"
                       name="dataNascimento"
                       value={form.dataNascimento}
                       onChange={handleChange}
                       max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                       min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
-                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 group-hover:bg-white/80 ${
+                      className={`w-full h-12 text-base ${
                         form.dataNascimento && !validarIdade(form.dataNascimento) 
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                          ? 'border-red-500 focus:border-red-500' 
                           : form.dataNascimento && validarIdade(form.dataNascimento)
-                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
-                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                          ? 'border-green-500 focus:border-green-500'
+                          : ''
                       }`}
                       style={{ fontSize: '16px' }}
                     />
