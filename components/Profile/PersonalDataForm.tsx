@@ -479,45 +479,72 @@ const PersonalDataForm = () => {
             >
               Telefone *
             </label>            <div className="relative">
-              <div className="phone-input-wrapper">
-                <PhoneInput
+              <div className={`phone-input-wrapper ${
+                validationErrors.telefone 
+                  ? 'error' 
+                  : userData.telefone && userData.telefone.replace(/\D/g, '').length >= 10
+                  ? 'success'
+                  : ''
+              }`}>                <PhoneInput
                   country={'br'}
                   value={userData.telefone || ""}
                   onChange={(phone) => handleInputChange("telefone", phone)}
-                  inputClass={`!w-full !pl-[70px] !pr-4 !py-4 !bg-white/70 !backdrop-blur-sm !border !rounded-2xl !focus:ring-2 !transition-all !duration-300 !text-gray-900 !text-base !h-[56px] !leading-none ${
-                    validationErrors.telefone 
-                      ? '!border-red-300 !focus:border-red-500 !focus:ring-red-200' 
-                      : userData.telefone && userData.telefone.replace(/\D/g, '').length >= 10
-                      ? '!border-green-300 !focus:border-green-500 !focus:ring-green-200'
-                      : '!border-gray-200 !focus:border-blue-500 !focus:ring-blue-200'
-                  }`}
-                  containerClass="!w-full !h-[56px]"
-                  buttonClass="!bg-white/70 !border-gray-200 !rounded-l-2xl !border-r-0 !w-[68px] !h-[56px] !flex !items-center !justify-center !px-2"
-                  dropdownClass="!bg-white !border !border-gray-200 !rounded-xl !shadow-lg"
                   inputProps={{
                     id: "telefone",
                     required: true,
                     'aria-required': 'true',
                     'aria-invalid': !!validationErrors.telefone,
                     'aria-describedby': validationErrors.telefone ? "telefone-error" : undefined,
-                    style: { 
-                      fontSize: '16px',
-                      height: '56px',
-                      lineHeight: '56px',
-                      display: 'flex',
-                      alignItems: 'center'
-                    },
-                    placeholder: '(11) 99999-9999'
+                    placeholder: "(11) 99999-9999",
+                    style: { fontSize: '16px' }
                   }}
+                  containerClass="w-full"
+                  inputClass={`!w-full !pl-16 !pr-12 !py-3 !h-12 !bg-white/70 !backdrop-blur-sm !border !rounded-2xl !focus:ring-2 !focus:ring-blue-200 !focus:border-blue-500 !transition-all !duration-300 !text-gray-900 !text-base ${
+                    validationErrors.telefone 
+                      ? '!border-red-500 !focus:border-red-500 !focus:ring-red-200' 
+                      : userData.telefone && userData.telefone.replace(/\D/g, '').length >= 10
+                      ? '!border-green-500 !focus:border-green-500 !focus:ring-green-200'
+                      : '!border-gray-200'
+                  }`}
+                  buttonClass="!absolute !left-0 !top-0 !h-12 !w-14 !bg-white/70 !backdrop-blur-sm !border-0 !rounded-l-2xl !flex !items-center !justify-center"                  dropdownClass="country-dropdown"
+                  searchClass="country-search"
+                  searchPlaceholder="Buscar país..."
+                  enableSearch={true}
+                  disableSearchIcon={true}
+                  countryCodeEditable={false}
+                  specialLabel=""
+                  autoFormat={true}
+                  preserveOrder={['br', 'us', 'pt', 'es', 'fr', 'it', 'de', 'ar', 'mx', 'co']}
+                  masks={{
+                    br: '(..) .....-..',
+                    us: '(...) ...-....',
+                    pt: '... ... ...',
+                    es: '... .. .. ..',
+                    fr: '. .. .. .. ..',
+                    it: '... ... ....',
+                    de: '.... .......',
+                    ar: '.. ....-..'
+                  }}
+                  priority={{
+                    br: 0,
+                    us: 1,
+                    pt: 2,
+                    es: 3,
+                    fr: 4,
+                    it: 5,
+                    de: 6,
+                    ar: 7
+                  }}
+                  onlyCountries={['br', 'us', 'pt', 'es', 'fr', 'it', 'de', 'ar', 'mx', 'co', 'pe', 'cl', 'uy', 'py', 've', 'ec', 'bo', 'sr', 'gy', 'gf', 'fk', 'ca', 'gb', 'ie', 'nl', 'be', 'lu', 'ch', 'at', 'se', 'no', 'dk', 'fi', 'is', 'jp', 'cn', 'kr', 'au', 'nz']}
+                  excludeCountries={[]}
                 />
-              </div>
-              <AnimatePresence>
+              </div>              <AnimatePresence>
                 {touchedFields.has("telefone") && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 z-10"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20"
                   >
                     {validationErrors.telefone ? (
                       <FaTimes className="text-red-500" />

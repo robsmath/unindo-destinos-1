@@ -6,6 +6,7 @@
 @import '../styles/hero-responsive.css';
 
 /* third-party libraries CSS */
+@import 'react-phone-input-2/lib/style.css';
 
 .testimonial-01 .swiper-pagination-bullet {
   @apply h-2.5 w-2.5 bg-stroke opacity-100;
@@ -338,5 +339,251 @@ pre {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for PhoneInput validation states */
+.phone-input-wrapper {
+  @apply relative;
+}
+
+.phone-input-wrapper .react-tel-input {
+  @apply relative;
+}
+
+.phone-input-wrapper .react-tel-input .form-control {
+  @apply transition-all duration-300;
+}
+
+.phone-input-wrapper .react-tel-input .form-control:focus {
+  @apply ring-2 ring-blue-200 border-blue-500;
+}
+
+.phone-input-wrapper.error .react-tel-input .form-control {
+  @apply border-red-500;
+}
+
+.phone-input-wrapper.error .react-tel-input .form-control:focus {
+  @apply ring-2 ring-red-200 border-red-500;
+}
+
+.phone-input-wrapper.success .react-tel-input .form-control {
+  @apply border-green-500;
+}
+
+.phone-input-wrapper.success .react-tel-input .form-control:focus {
+  @apply ring-2 ring-green-200 border-green-500;
+}
+
+/* Ensure proper flag button positioning */
+.phone-input-wrapper .react-tel-input .flag-dropdown {
+  @apply !absolute !left-0 !top-0 !h-12 !w-14 !border-0 !bg-transparent;
+}
+
+.phone-input-wrapper .react-tel-input .selected-flag {
+  @apply !w-14 !h-12 !flex !items-center !justify-center !rounded-l-2xl !bg-white/70 !backdrop-blur-sm;
+}
+
+.phone-input-wrapper .react-tel-input .selected-flag:hover {
+  @apply !bg-gray-50;
+}
+
+/* Fix dropdown positioning and responsiveness */
+.phone-input-wrapper .react-tel-input .country-list {
+  @apply !absolute !left-0 !top-full !mt-1 !bg-white !border !border-gray-200 !rounded-lg !shadow-xl !z-[9999] !max-h-60 !overflow-y-auto !min-w-[280px] !w-auto;
+  max-width: calc(100vw - 2rem) !important;
+  transform: translateX(0) !important;
+}
+
+/* Enhanced PhoneInput dropdown responsiveness fixes */
+.phone-input-wrapper .react-tel-input .country-list {
+  /* Force dropdown width calculation */
+  width: 300px !important;
+  min-width: 280px !important;
+  max-width: 100vw !important;
+  /* Better shadow for mobile */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  /* Prevent dropdown from going off-screen */
+  left: 0 !important;
+  right: auto !important;
+}
+
+/* Mobile-specific improvements for dropdown positioning */
+@media (max-width: 768px) {
+  .phone-input-wrapper .react-tel-input .country-list {
+    /* Position dropdown more strategically on mobile */
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+    max-width: 350px !important;
+    max-height: 70vh !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    z-index: 99999 !important;
+  }
+  
+  .phone-input-wrapper .react-tel-input .search-box {
+    border-radius: 12px 12px 0 0 !important;
+  }
+  
+  .phone-input-wrapper .react-tel-input .search-box input {
+    padding: 16px !important;
+    font-size: 16px !important;
+  }
+  
+  .phone-input-wrapper .react-tel-input .country-list .country {
+    padding: 16px !important;
+    font-size: 16px !important;
+    min-height: 60px !important;
+  }
+  
+  .phone-input-wrapper .react-tel-input .country-list .country .flag {
+    width: 28px !important;
+    height: 20px !important;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .phone-input-wrapper .react-tel-input .country-list {
+    width: 95vw !important;
+    max-width: none !important;
+    left: 2.5vw !important;
+    right: 2.5vw !important;
+    transform: translate(0, -50%) !important;
+  }
+}
+
+/* Backdrop for mobile dropdown */
+@media (max-width: 768px) {
+  .phone-input-wrapper .react-tel-input .country-list::before {
+    content: '' !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    z-index: -1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* Ensure flag button is always visible */
+.phone-input-wrapper .react-tel-input .selected-flag {
+  z-index: 5 !important;
+  border-right: 1px solid #e5e7eb !important;
+}
+
+/* Better focus states for accessibility */
+.phone-input-wrapper .react-tel-input .country-list .country:focus,
+.phone-input-wrapper .react-tel-input .country-list .country:focus-visible {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: -2px !important;
+  background: #eff6ff !important;
+}
+
+/* Improved search input styling */
+.phone-input-wrapper .react-tel-input .search-box input::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Prevent zoom on iOS */
+@supports (-webkit-touch-callout: none) {
+  .phone-input-wrapper .react-tel-input .form-control {
+    font-size: 16px !important;
+  }
+  
+  .phone-input-wrapper .react-tel-input .search-box input {
+    font-size: 16px !important;
+  }
+}
+
+/* Custom classes for PhoneInput dropdown */
+.country-dropdown {
+  position: absolute !important;
+  left: 0 !important;
+  top: 100% !important;
+  margin-top: 4px !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  z-index: 9999 !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  width: 300px !important;
+  min-width: 280px !important;
+}
+
+.country-search {
+  padding: 12px 16px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 8px 8px 0 0 !important;
+  font-size: 14px !important;
+  width: 100% !important;
+  outline: none !important;
+  background: white !important;
+  color: #374151 !important;
+}
+
+.country-search:focus {
+  background: #f9fafb !important;
+  border-bottom-color: #3b82f6 !important;
+}
+
+.country-search::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Enhanced dropdown for mobile devices */
+@media (max-width: 768px) {
+  .country-dropdown {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+    max-width: 350px !important;
+    max-height: 70vh !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    z-index: 99999 !important;
+  }
+  
+  .country-search {
+    padding: 16px !important;
+    font-size: 16px !important;
+    border-radius: 12px 12px 0 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .country-dropdown {
+    width: 95vw !important;
+    max-width: none !important;
+    left: 2.5vw !important;
+    right: 2.5vw !important;
+    transform: translate(0, -50%) !important;
+  }
+}
+
+/* Backdrop overlay for mobile */
+@media (max-width: 768px) {
+  .country-dropdown::before {
+    content: '' !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    z-index: -1 !important;
+    pointer-events: auto !important;
   }
 }
