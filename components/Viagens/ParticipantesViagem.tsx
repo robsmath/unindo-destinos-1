@@ -5,9 +5,11 @@ import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import ParticipanteCard from "@/components/Viagens/ParticipanteCard";
 import { useParams, useRouter } from "next/navigation";
 import { getParticipantesDaViagem } from "@/services/viagemService";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
-import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin } from "lucide-react";
+import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin, X } from "lucide-react";
+import ChatPrivado from "@/components/Chat/ChatPrivado";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 const ParticipantesViagem = () => {
   const { id } = useParams();
@@ -16,6 +18,21 @@ const ParticipantesViagem = () => {
 
   const [participantes, setParticipantes] = useState<UsuarioBuscaDTO[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [chatAberto, setChatAberto] = useState(false);
+  const [participanteSelecionado, setParticipanteSelecionado] = useState<UsuarioBuscaDTO | null>(null);
+    const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000); // 5 segundos para atualização rápida
+
+  const handleOpenChat = (participante: UsuarioBuscaDTO) => {
+    setParticipanteSelecionado(participante);
+    setChatAberto(true);
+    // Marcar conversa como visualizada
+    markConversationAsRead(participante.id);
+  };
+
+  const handleCloseChat = () => {
+    setChatAberto(false);
+    setParticipanteSelecionado(null);
+  };
 
   useEffect(() => {
     const fetchParticipantes = async () => {
@@ -368,19 +385,48 @@ const ParticipantesViagem = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     className="w-full"
-                  >
-                    <ParticipanteCard
+                  >                    <ParticipanteCard
                       participante={usuario}
                       viagemId={Number(id)}
                       usuarioEhCriador={usuarioEhCriador}
+                      onOpenChat={handleOpenChat}
+                      unreadCount={getUnreadCountForUser(usuario.id)}
                     />
                   </motion.div>
                 ))}
               </div>
-            )}
-          </motion.div>
+            )}          </motion.div>
         )}
       </div>
+
+      {/* Modal do Chat */}
+      <AnimatePresence>
+        {chatAberto && participanteSelecionado && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={handleCloseChat}
+          >            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="relative w-full max-w-md h-[600px] bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Componente do Chat - sem header duplicado */}
+              <div className="h-full">
+                <ChatPrivado 
+                  usuarioId={participanteSelecionado.id}
+                  onFechar={handleCloseChat}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

@@ -9,11 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
+import { 
+  FaArrowLeft, 
+  FaPaw, 
+  FaCamera, 
+  FaCheck, 
+  FaTimes, 
+  FaDog, 
+  FaCat, 
+  FaHeart, 
+  FaBone, 
+  FaHome 
+} from "react-icons/fa";
 import { Loader2, ImageIcon } from "lucide-react";
-import { FaCamera, FaPaw, FaCheck, FaTimes, FaArrowLeft, FaDog, FaCat, FaHeart, FaBone, FaHome } from "react-icons/fa";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
 interface CadastroPetProps {
   petId?: number;
@@ -45,7 +54,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
 
-  // Função para validar campos
   const validateField = (fieldName: string, value: string): string => {
     switch (fieldName) {
       case 'nome':
@@ -102,10 +110,8 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
     const { name, value } = e.target;
     setPet((prev) => ({ ...prev, [name]: value }));
     
-    // Marcar campo como tocado
     setTouchedFields(prev => new Set([...prev, name]));
     
-    // Validar campo em tempo real
     const error = validateField(name, value);
     setValidationErrors(prev => ({
       ...prev,
@@ -116,29 +122,12 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
   const handleSelectChange = (field: string, value: string) => {
     setPet((prev) => ({ ...prev, [field]: value }));
     
-    // Marcar campo como tocado
     setTouchedFields(prev => new Set([...prev, field]));
     
-    // Validar campo em tempo real
     const error = validateField(field, value);
     setValidationErrors(prev => ({
       ...prev,
       [field]: error
-    }));
-  };
-
-  const handleDateChange = (date: Date | null) => {
-    const formattedDate = date ? date.toISOString().split('T')[0] : "";
-    setPet((prev) => ({ ...prev, dataNascimento: formattedDate }));
-    
-    // Marcar campo como tocado
-    setTouchedFields(prev => new Set([...prev, 'dataNascimento']));
-    
-    // Validar campo em tempo real
-    const error = validateField('dataNascimento', formattedDate);
-    setValidationErrors(prev => ({
-      ...prev,
-      dataNascimento: error
     }));
   };
   // Função para comprimir imagem
@@ -186,7 +175,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             }
           },
           'image/jpeg',
-          0.8 // Qualidade 80%
+          0.8 
         );
       };
       
@@ -198,13 +187,12 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Verificar tipo de arquivo
     if (!file.type.startsWith('image/')) {
       toast.error('Por favor, selecione apenas arquivos de imagem.');
       return;
     }
 
-    const MAX_SIZE_MB = 10; // Aumentado para 10MB
+    const MAX_SIZE_MB = 10;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       toast.error(`Arquivo muito grande. Limite de ${MAX_SIZE_MB}MB.`);
       return;
@@ -669,22 +657,31 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           >
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Data de Nascimento
-            </label>
-            <div className="relative">
-              <DatePicker
-                selected={pet.dataNascimento ? new Date(pet.dataNascimento) : null}
-                onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Selecione a data"
-                maxDate={new Date()}
-                showYearDropdown
-                yearDropdownItemNumber={20}
-                scrollableYearDropdown
-                className={`w-full h-12 px-4 text-base border-2 rounded-md transition-all duration-300 ${
+            </label>            <div className="relative">
+              <input
+                type="date"
+                value={pet.dataNascimento}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setPet((prev) => ({ ...prev, dataNascimento: value }));
+                  
+                  // Marcar campo como tocado
+                  setTouchedFields(prev => new Set([...prev, 'dataNascimento']));
+                  
+                  // Validar campo em tempo real
+                  const error = validateField('dataNascimento', value);
+                  setValidationErrors(prev => ({
+                    ...prev,
+                    dataNascimento: error
+                  }));
+                }}
+                max={new Date().toISOString().split('T')[0]}
+                className={`w-full px-4 py-4 h-12 bg-white/70 backdrop-blur-sm border-2 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 ${
                   touchedFields.has('dataNascimento') && validationErrors.dataNascimento
                     ? 'border-red-300 focus:border-red-500 bg-red-50'
                     : 'border-gray-200 focus:border-primary'
                 }`}
+                style={{ fontSize: '16px' }}
               />
               {touchedFields.has('dataNascimento') && validationErrors.dataNascimento && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

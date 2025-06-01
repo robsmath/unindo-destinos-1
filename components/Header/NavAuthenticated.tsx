@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, LogOut } from "lucide-react";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import ChatDropdown from "@/components/Chat/ChatDropdown";
 
 interface TokenPayload {
   sub: string;
@@ -17,6 +19,8 @@ const NavAuthenticated = () => {
   const { token, usuario, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
+  const { hasUnreadMessages } = useUnreadMessages(5000); // 5 segundos para atualização rápida do badge global
+  const [chatDropdownOpen, setChatDropdownOpen] = useState(false);
 
   const isValidToken = (token: unknown): token is string => {
     return typeof token === "string" && token.trim() !== "";
@@ -42,6 +46,7 @@ const NavAuthenticated = () => {
       }
     }
   }, [token, usuario]);
+
   return (
     <div className="relative flex items-center gap-4">
       {firstName && (
@@ -53,6 +58,16 @@ const NavAuthenticated = () => {
           Olá, <span className="text-primary font-semibold">{firstName}</span>
         </motion.span>
       )}
+
+      {/* Componente de Chat Global */}
+      <div className="relative">
+        <ChatDropdown 
+          isOpen={chatDropdownOpen}
+          onClose={() => setChatDropdownOpen(false)}
+          onToggle={() => setChatDropdownOpen(!chatDropdownOpen)}
+          hasUnreadMessages={hasUnreadMessages}
+        />
+      </div>
 
       <motion.button
         onClick={() => setMenuOpen(!menuOpen)}
@@ -91,7 +106,8 @@ const NavAuthenticated = () => {
                   href="/profile"
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-primary/10 hover:to-orange-500/10 hover:text-primary transition-all duration-300 dark:text-gray-200 dark:hover:bg-gray-800/50 group"
-                >                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3 group-hover:bg-primary/20 transition-colors">
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3 group-hover:bg-primary/20 transition-colors">
                     <User className="w-4 h-4 text-primary" />
                   </div>
                   Perfil
@@ -109,7 +125,8 @@ const NavAuthenticated = () => {
                     setMenuOpen(false);
                   }}
                   className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 transition-all duration-300 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400 group"
-                >                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center mr-3 group-hover:bg-red-100 transition-colors dark:bg-red-900/20">
+                >
+                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center mr-3 group-hover:bg-red-100 transition-colors dark:bg-red-900/20">
                     <LogOut className="w-4 h-4 text-red-500" />
                   </div>
                   Sair

@@ -120,7 +120,7 @@ const SEOHead = ({
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <meta name="apple-mobile-web-app-title" content="Unindo Destinos" />      {/* Links para PWA */}
       <link rel="manifest" href="/manifest.json" />
-      <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
       {/* Meta tags para tema */}
       <meta name="theme-color" content="#2563eb" />

@@ -3,8 +3,8 @@ import Profile from "@/components/Profile/Profile";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Crie sua Conta - Unindo Destinos",
-  description: "Crie sua conta agora na Unindo Destinos",
+  title: "Meu Perfil - Unindo Destinos",
+  description: "Gerencie suas informações pessoais, viagens e preferências",
 };
 
 export default function ProfilePage() {

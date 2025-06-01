@@ -5,7 +5,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 import { removerParticipanteDaViagem, sairDaViagem } from "@/services/viagemService";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,8 @@ interface Props {
   participante: UsuarioBuscaDTO;
   viagemId: number;
   usuarioEhCriador: boolean;
+  onOpenChat: (participante: UsuarioBuscaDTO) => void;
+  unreadCount?: number;
 }
 
 const formatarNome = (nome: string) => {
@@ -31,7 +34,7 @@ const formatarNome = (nome: string) => {
   return `${partes[0]} ${partes[partes.length - 1]}`;
 };
 
-const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) => {
+const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador, onOpenChat, unreadCount }: Props) => {
   const { usuario } = useAuth();
   const router = useRouter();
   const [carregando, setCarregando] = useState(false);
@@ -123,14 +126,22 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador }: Props) =
             className="hover:text-blue-500 transition"
           >
             <FaUser />
-          </button>
-
-          <button
+          </button>          <button
             title="Enviar Mensagem"
-            disabled
-            className="hover:text-purple-500 transition"
+            onClick={() => onOpenChat(participante)}
+            disabled={usuario?.id === participante.id}
+            className="hover:text-purple-500 transition relative disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FaEnvelope />
+            <MessageCircle className="w-5 h-5" />
+            {unreadCount !== undefined && unreadCount > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-medium shadow-lg"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </motion.span>
+            )}
           </button>
 
           <button

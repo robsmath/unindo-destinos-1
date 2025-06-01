@@ -271,13 +271,13 @@ const Signin = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
-          >
-            <motion.div
+          >            <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="inline-block"
+              className="flex items-center justify-center mb-4"
+              style={{ transformOrigin: 'center' }}
             >
-              <Loader2 className="h-12 w-12 text-primary mb-4" />
+              <Loader2 className="h-12 w-12 text-primary" />
             </motion.div>
             <p className="text-lg font-medium text-gray-700">Entrando em sua conta...</p>
             <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>

@@ -123,12 +123,9 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
         nome: usuarioRes.nome,
         email: usuarioRes.email,
         fotoPerfil: usuarioRes.fotoPerfil,
-      });
-    } catch (err: any) {
+      });    } catch (err: any) {
       console.error("Erro ao carregar dados do usuário", err);
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
-        logout();
-      }
+      // Interceptor da API vai cuidar dos erros 401/403
     }
   }, [isAuthenticated, usuario, carregado, atualizarUsuario, logout]);
     const carregarPreferencias = useCallback(async (forcar: boolean = false) => {
@@ -145,9 +142,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       const preferenciasRes = await getPreferenciasDoUsuario();
       setPreferencias(preferenciasRes);    } catch (err: any) {
       console.error("Erro ao carregar preferências", err);
-      if (err?.response?.status === 401 || err?.response?.status === 403) {
-        logout();
-      }
+      // Interceptor da API vai cuidar dos erros 401/403
     }
   }, [isAuthenticated, preferencias, carregado, logout]);
   useEffect(() => {

@@ -15,10 +15,6 @@ import PhoneInput from "react-phone-input-2";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import DatePicker from "react-datepicker";
-import "react-phone-input-2/lib/style.css";
-import "react-datepicker/dist/react-datepicker.css";
-import "@/styles/custom-datepicker.css";
 
 interface ValidationErrors {
   [key: string]: string;
@@ -35,7 +31,6 @@ const PersonalDataForm = () => {
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [announcements, setAnnouncements] = useState<string[]>([]);
 
-  // Função para anunciar para leitores de tela
   const announceToScreenReader = (message: string) => {
     setAnnouncements(prev => [...prev, message]);
     setTimeout(() => {
@@ -43,7 +38,6 @@ const PersonalDataForm = () => {
     }, 1000);
   };
 
-  // Função para validar campos em tempo real
   const validateField = (fieldName: string, value: string): string => {
     switch (fieldName) {
       case 'nome':
@@ -62,7 +56,7 @@ const PersonalDataForm = () => {
         if (!value.trim()) return 'CPF é obrigatório';
         const cpfLimpo = value.replace(/\D/g, '');
         if (cpfLimpo.length !== 11) return 'CPF deve ter 11 dígitos';
-        // Validação básica de CPF
+
         if (!/^\d{11}$/.test(cpfLimpo)) return 'CPF inválido';
         if (/^(\d)\1+$/.test(cpfLimpo)) return 'CPF inválido';
         return '';
@@ -86,19 +80,19 @@ const PersonalDataForm = () => {
         return '';
       case 'cidade':
         if (!value.trim()) return 'Cidade é obrigatória';
-        return '';
-      case 'estado':
+        return '';      case 'estado':
         if (!value.trim()) return 'Estado é obrigatório';
+        return '';
+      case 'descricao':
+        if (value && value.length > 500) return 'Descrição deve ter no máximo 500 caracteres';
         return '';
       default:
         return '';
     }
   };
 
-  // Função para validar todos os campos
   const validateAllFields = (data: UsuarioDTO): ValidationErrors => {
     const errors: ValidationErrors = {};
-      // Validar campos básicos
     const basicFields = ['nome', 'email', 'telefone', 'cpf', 'dataNascimento', 'genero'];
     basicFields.forEach(field => {
       const value = data[field as keyof UsuarioDTO] as string || '';
@@ -108,7 +102,6 @@ const PersonalDataForm = () => {
       }
     });
 
-    // Validar endereço se existir
     if (data.endereco) {
       const addressFields = ['cep', 'rua', 'cidade', 'estado'];
       addressFields.forEach(field => {
@@ -123,7 +116,6 @@ const PersonalDataForm = () => {
     return errors;
   };
 
-  // Função para buscar endereço pelo CEP
   const buscarEnderecoPorCep = async (cep: string) => {
     const cepLimpo = cep.replace(/\D/g, '');
     
@@ -162,7 +154,6 @@ const PersonalDataForm = () => {
         setUserData(newUserData);
         announceToScreenReader("Endereço preenchido automaticamente");
         
-        // Limpar erros dos campos preenchidos
         setValidationErrors(prev => {
           const newErrors = { ...prev };
           delete newErrors.rua;
@@ -180,7 +171,6 @@ const PersonalDataForm = () => {
     }
   };
   useEffect(() => {
-    // Aguarda os dados do PerfilContext, só chama carregarUsuario se não tiver dados
     const carregarDados = async () => {
       if (!usuario) {
         try {
@@ -202,7 +192,6 @@ const PersonalDataForm = () => {
 
   useEffect(() => {
     if (usuario) {
-      // Garantir que o endereço tenha a estrutura correta
       const enderecoCompleto: EnderecoDTO = {
         cep: usuario.endereco?.cep || '',
         rua: usuario.endereco?.rua || '',
@@ -219,21 +208,9 @@ const PersonalDataForm = () => {
       });
     }
   }, [usuario]);
-
-  // Função específica para tratar mudanças de data
-  const handleDateChange = (date: Date | null) => {
-    if (date) {
-      const formattedDate = date.toISOString().split('T')[0];
-      handleInputChange("dataNascimento", formattedDate);
-    } else {
-      handleInputChange("dataNascimento", "");
-    }
-  };
-
   const handleInputChange = (field: string, value: string) => {
     if (!userData) return;
 
-    // Verificar se é campo de endereço
     const addressFields = ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado'];
     
     if (addressFields.includes(field)) {
@@ -248,22 +225,18 @@ const PersonalDataForm = () => {
       };
       setUserData(newUserData);
     } else {
-      // Campo básico do usuário
       const newUserData = { ...userData, [field]: value };
       setUserData(newUserData);
     }
 
-    // Marcar campo como tocado
     setTouchedFields(prev => new Set([...prev, field]));
 
-    // Validar campo em tempo real
     const error = validateField(field, value);
     setValidationErrors(prev => ({
       ...prev,
       [field]: error
     }));
 
-    // Se for CEP, buscar endereço
     if (field === 'cep' && value.replace(/\D/g, '').length === 8) {
       buscarEnderecoPorCep(value);
     }
@@ -273,7 +246,6 @@ const PersonalDataForm = () => {
     
     if (!userData) return;
 
-    // Validar todos os campos
     const errors = validateAllFields(userData);
     setValidationErrors(errors);
 
@@ -285,7 +257,7 @@ const PersonalDataForm = () => {
     
     try {
       await updateUsuarioLogado(userData);
-      await carregarUsuario(true); // Força o recarregamento
+      await carregarUsuario(true);
       
       toast.success("Dados atualizados com sucesso!");
       announceToScreenReader("Dados atualizados com sucesso");
@@ -323,7 +295,7 @@ const PersonalDataForm = () => {
   }
 
   return (
-    <>      {/* Anúncios para leitores de tela */}
+    <>      
       <div aria-live={"polite" as const} aria-atomic={true} className="sr-only">
         {announcements.map((announcement, index) => (
           <div key={index}>{announcement}</div>
@@ -350,9 +322,9 @@ const PersonalDataForm = () => {
           className="space-y-6"
           role="form"
           aria-label="Formulário de dados pessoais"
-        >          {/* Campos Básicos em Grid Responsivo */}
+        >         
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Nome Completo */}
+      
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -379,7 +351,7 @@ const PersonalDataForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.nome}
                 aria-describedby={validationErrors.nome ? "nome-error" : undefined}
-                style={{ fontSize: '16px' }} // Previne zoom no iOS
+                style={{ fontSize: '16px' }} 
               />
               <AnimatePresence>
                 {touchedFields.has("nome") && (
@@ -411,7 +383,7 @@ const PersonalDataForm = () => {
             )}
           </motion.div>
 
-          {/* Email */}
+
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -438,7 +410,7 @@ const PersonalDataForm = () => {
                 aria-required="true"
                 aria-invalid={!!validationErrors.email}
                 aria-describedby={validationErrors.email ? "email-error" : undefined}
-                style={{ fontSize: '16px' }} // Previne zoom no iOS
+                style={{ fontSize: '16px' }}
               />
               <AnimatePresence>
                 {touchedFields.has("email") && (
@@ -468,7 +440,6 @@ const PersonalDataForm = () => {
                 {validationErrors.email}
               </motion.p>
             )}
-            {/* Status de verificação do email */}
             {userData.emailVerificado ? (
               <motion.p
                 initial={{ opacity: 0, height: 0 }}
@@ -496,7 +467,6 @@ const PersonalDataForm = () => {
           </motion.div>
           </div>
 
-          {/* Telefone */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -595,9 +565,41 @@ const PersonalDataForm = () => {
                 </Link>
               </motion.p>            )}</motion.div>          
           
-          {/* Campos de Informações Pessoais em Grid Responsivo */}
+          {/* Campo de Descrição */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.35 }}
+            className="space-y-2"
+          >
+            <label 
+              htmlFor="descricao" 
+              className="block text-sm font-medium text-gray-700"
+            >
+              Sobre você
+            </label>
+            <div className="relative">
+              <textarea
+                id="descricao"
+                value={userData.descricao || ""}
+                onChange={(e) => handleInputChange("descricao", e.target.value)}
+                className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-gray-900 placeholder-gray-500 resize-none"
+                placeholder="Conte um pouco sobre você, seus interesses, hobbies e o que te motiva a viajar..."
+                rows={4}
+                maxLength={500}
+                style={{ fontSize: '16px' }}
+                aria-describedby="descricao-help"
+              />
+              <div className="absolute bottom-3 right-3 text-xs text-gray-400">
+                {(userData.descricao || "").length}/500
+              </div>
+            </div>
+            <p id="descricao-help" className="text-sm text-gray-500">
+              Esta descrição aparecerá no seu perfil e nos cards de busca. Seja autêntico e compartilhe o que te torna único!
+            </p>
+          </motion.div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* CPF */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -679,30 +681,21 @@ const PersonalDataForm = () => {
             >
               Data de Nascimento *
             </label>            <div className="relative">
-              <DatePicker
-                selected={userData.dataNascimento ? new Date(userData.dataNascimento) : null}
-                onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Selecione sua data de nascimento"
-                maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
-                minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
-                showYearDropdown
-                showMonthDropdown
-                dropdownMode="select"
-                yearDropdownItemNumber={100}
-                scrollableYearDropdown
-                autoComplete="off"
-                className={`w-full px-4 py-4 h-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-gray-900 placeholder-gray-500 ${
+              <input
+                type="date"
+                id="dataNascimento"
+                value={userData.dataNascimento || ""}
+                onChange={(e) => handleInputChange("dataNascimento", e.target.value)}
+                max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
+                className={`w-full px-4 py-4 h-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-gray-900 ${
                   validationErrors.dataNascimento ? "border-red-500 focus:border-red-500 focus:ring-red-200" : "border-gray-200"
                 }`}
-                calendarClassName="shadow-2xl border-0"
-                popperClassName="z-50"
-                wrapperClassName="w-full"
-                id="dataNascimento"
                 required
                 aria-required="true"
                 aria-invalid={!!validationErrors.dataNascimento}
                 aria-describedby={validationErrors.dataNascimento ? "dataNascimento-error" : undefined}
+                style={{ fontSize: '16px' }}
               />
               <AnimatePresence>
                 {touchedFields.has("dataNascimento") && (

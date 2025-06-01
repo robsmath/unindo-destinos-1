@@ -12,6 +12,12 @@ const api = axios.create({
 
 let isLoggingOut = false;
 
+let logoutCallback: (() => void) | null = null;
+
+export const setLogoutCallback = (callback: () => void) => {
+  logoutCallback = callback;
+};
+
 api.interceptors.request.use(
   (config) => {
     const token = Cookies.get("token");
@@ -19,6 +25,8 @@ api.interceptors.request.use(
     const isPublicRoute =
       config.url === "/auth/login" ||
       config.url === "/auth/validar-email" ||
+      config.url === "/auth/recuperar-senha" ||
+      config.url === "/auth/redefinir-senha" ||
       (config.method === "post" && config.url === "/usuarios");
 
     if (token && config.headers && !isPublicRoute) {
@@ -34,7 +42,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-
     const isAuthError = status === 401 || status === 403;
 
     if (typeof window !== "undefined" && isAuthError && !isLoggingOut) {
@@ -43,11 +50,24 @@ api.interceptors.response.use(
       if (!isOnAuthPage) {
         isLoggingOut = true;
 
-        toast.warning("Sua sessão expirou. Faça login novamente.");
+        // Exibir toast de sessão expirada
+        toast.error("Sua sessão expirou. Faça login novamente.", {
+          duration: 4000,
+        });
 
-        Cookies.remove("token");
+        // Executar logout através do callback do AuthContext
+        if (logoutCallback) {
+          logoutCallback();
+        } else {
+          // Fallback se o callback não estiver disponível
+          Cookies.remove("token");
+          window.location.href = "/auth/signin";
+        }
 
-        window.location.href = "/auth/signin?erro=expirado";
+        // Reset do flag após um tempo
+        setTimeout(() => {
+          isLoggingOut = false;
+        }, 2000);
       }
     }
 

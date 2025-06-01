@@ -130,8 +130,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   
     const carregarViagem = async () => {
       if (id) {
-        try {
-          const viagem = await getViagemById(id);          setForm({
+        try {          const viagem = await getViagemById(id);          setForm({
             destino: viagem.destino,
             dataInicio: viagem.dataInicio,
             dataFim: viagem.dataFim,
@@ -139,6 +138,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             status: viagem.status,
             categoriaViagem: viagem.categoriaViagem ?? "NACIONAL", // Mantido para compatibilidade com API
             descricao: viagem.descricao || "",
+            numeroMaximoParticipantes: viagem.numeroMaximoParticipantes
           });
   
           if (viagem.categoriaViagem === "NACIONAL") {

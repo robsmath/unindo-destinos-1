@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { getUsuarioLogado } from "@/services/userService";
+import { setLogoutCallback } from "@/services/api";
+import { toast } from "sonner";
 
 interface Usuario {
   id: number;
@@ -30,7 +32,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [carregando, setCarregando] = useState(true);
   const router = useRouter();
 
+  const logout = (redirectToLogin: boolean = true) => {
+    limparSessao(false, redirectToLogin);
+  };
+
+  const limparSessao = (mostrarToast = false, redirect = true) => {
+    Cookies.remove("token");
+    setToken(null);
+    setUsuario(null);
+    if (mostrarToast) {
+      toast.error("Sua sessão expirou. Faça login novamente.");
+    }
+    if (redirect) {
+      router.push("/auth/signin");
+    }
+  };
+
   useEffect(() => {
+    // Registrar o callback de logout no interceptor da API
+    setLogoutCallback(() => logout(true));
+
     const verificarAuth = async () => {
       const storedToken = Cookies.get("token");
       if (storedToken) {
@@ -62,21 +83,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const atualizarUsuario = (usuario: Usuario) => {
     setUsuario(usuario);
-  };
-
-  const logout = (redirectToLogin: boolean = true) => {
-    limparSessao(false, redirectToLogin);
-  };
-
-  const limparSessao = (mostrarToast = false, redirect = true) => {
-    Cookies.remove("token");
-    setToken(null);
-    setUsuario(null);
-    if (mostrarToast) {
-    }
-    if (redirect) {
-      router.push("/auth/signin");
-    }
   };
 
   const atualizarFotoPerfil = (novaUrl: string) => {

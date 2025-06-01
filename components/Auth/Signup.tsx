@@ -24,9 +24,7 @@ import {
 } from "lucide-react";
 
 import "react-phone-input-2/lib/style.css";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import "@/styles/custom-datepicker.css";
+
 
 const Signup = () => {
   type Genero = "" | "MASCULINO" | "FEMININO" | "OUTRO";
@@ -103,23 +101,6 @@ const Signup = () => {
       }));
     }
   };
-
-  // Função específica para tratar mudanças de data
-  const handleDateChange = (date: Date | null) => {
-    if (date) {
-      const formattedDate = date.toISOString().split('T')[0];
-      setForm((prev) => ({
-        ...prev,
-        dataNascimento: formattedDate,
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        dataNascimento: "",
-      }));
-    }
-  };
-
   const buscarEndereco = async (cep: string) => {
     try {
       const cepLimpo = cep.replace(/\D/g, "");
@@ -143,7 +124,6 @@ const Signup = () => {
       console.error("Erro ao buscar endereço:", err);
     }
   };
-  // Função para validar idade mínima de 18 anos
   const validarIdade = (dataNascimento: string): boolean => {
     if (!dataNascimento) return false;
     
@@ -155,7 +135,6 @@ const Signup = () => {
     const mesNascimento = nascimento.getMonth();
     const diaNascimento = nascimento.getDate();
     
-    // Verifica se já fez aniversário este ano
     let idadeReal = idade;
     if (mesAtual < mesNascimento || (mesAtual === mesNascimento && diaAtual < diaNascimento)) {
       idadeReal--;
@@ -164,25 +143,21 @@ const Signup = () => {
     return idadeReal >= 18;
   };
 
-  // Função para validar email
   const validarEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  // Função para validar CPF
   const validarCPF = (cpf: string): boolean => {
     const cpfLimpo = cpf.replace(/\D/g, '');
     return cpfLimpo.length === 11;
   };
 
-  // Função para validar telefone
   const validarTelefone = (telefone: string): boolean => {
     const telefoneNumeros = telefone.replace(/\D/g, '');
     return telefoneNumeros.length >= 10;
   };
 
-  // Função para validar senha
   const validarSenha = (senha: string): boolean => {
     return senha.length >= 6;
   };
@@ -191,21 +166,18 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
   
-    // Validação de senhas
     if (form.senha !== form.confirmSenha) {
       toast.error("Senhas não coincidem. Verifique e tente novamente.");
       setLoading(false);
       return;
     }
 
-    // Validação de idade mínima
     if (!validarIdade(form.dataNascimento)) {
       toast.error("Você deve ter pelo menos 18 anos para se cadastrar.");
       setLoading(false);
       return;
     }
 
-    // Validação de campos obrigatórios
     if (!form.nome.trim() || !form.email.trim() || !form.senha.trim() || !form.cpf.trim() || !form.telefone.trim() || !form.dataNascimento) {
       toast.error("Por favor, preencha todos os campos obrigatórios.");
       setLoading(false);
@@ -250,9 +222,7 @@ const Signup = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-      {/* Background with Simple Animated Icons */}
       <div className="absolute inset-0 z-10">
-        {/* Animated Background Gradient */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
           animate={{
@@ -265,7 +235,6 @@ const Signup = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Simple Floating Particles */}
         {Array.from({ length: 15 }).map((_, i) => (
           <motion.div
             key={i}
@@ -289,7 +258,6 @@ const Signup = () => {
           />
         ))}
 
-        {/* Travel Icons with Simple Animations */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -433,7 +401,6 @@ const Signup = () => {
         </motion.div>
       </div>
 
-      {/* Loading Overlay */}
       {loading && (
         <motion.div 
           className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center"
@@ -446,13 +413,13 @@ const Signup = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
-          >
-            <motion.div
+          >            <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="inline-block"
+              className="flex items-center justify-center mb-4"
+              style={{ transformOrigin: 'center' }}
             >
-              <Loader2 className="h-12 w-12 text-primary mb-4" />
+              <Loader2 className="h-12 w-12 text-primary" />
             </motion.div>
             <p className="text-lg font-medium text-gray-700">Criando sua conta...</p>
             <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
@@ -467,13 +434,10 @@ const Signup = () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          {/* Glass Morphism Container */}
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
-            {/* Inner glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
             
             <div className="relative z-10">
-              {/* Header */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -490,7 +454,7 @@ const Signup = () => {
                 </p>
               </motion.div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">                {/* Campos principais */}
+              <form onSubmit={handleSubmit} className="space-y-6">              
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -507,7 +471,7 @@ const Signup = () => {
                       value={form.nome} 
                       onChange={handleChange} 
                       className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
-                      style={{ fontSize: '16px' }} // Previne zoom no iOS
+                      style={{ fontSize: '16px' }}
                     />
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>                  <div className="relative group">
@@ -527,7 +491,7 @@ const Signup = () => {
                           ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
                           : 'border-gray-200 focus:border-primary focus:ring-primary/20'
                       }`}
-                      style={{ fontSize: '16px' }} // Previne zoom no iOS
+                      style={{ fontSize: '16px' }}
                     />
                     {form.email && !validarEmail(form.email) && (
                       <p className="text-red-500 text-sm mt-1">
@@ -558,7 +522,7 @@ const Signup = () => {
                           ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
                           : 'border-gray-200 focus:border-primary focus:ring-primary/20'
                       }`}
-                      style={{ fontSize: '16px' }} // Previne zoom no iOS
+                      style={{ fontSize: '16px' }}
                     />
                     {form.senha && !validarSenha(form.senha) && (
                       <p className="text-red-500 text-sm mt-1">
@@ -585,7 +549,7 @@ const Signup = () => {
                           ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
                           : 'border-gray-200 focus:border-primary focus:ring-primary/20'
                       }`}
-                      style={{ fontSize: '16px' }} // Previne zoom no iOS
+                      style={{ fontSize: '16px' }}
                     />
                     {form.confirmSenha && form.senha !== form.confirmSenha && (
                       <p className="text-red-500 text-sm mt-1">
@@ -594,7 +558,7 @@ const Signup = () => {
                     )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
-                </motion.div>{/* CPF e Telefone */}
+                </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -618,7 +582,7 @@ const Signup = () => {
                           ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
                           : 'border-gray-200 focus:border-primary focus:ring-primary/20'
                       }`}
-                      style={{ fontSize: '16px' }} // Previne zoom no iOS
+                      style={{ fontSize: '16px' }}
                     />
                     {form.cpf && !validarCPF(form.cpf) && (
                       <p className="text-red-500 text-sm mt-1">
@@ -664,7 +628,7 @@ const Signup = () => {
                     )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
-                </motion.div>{/* Data de nascimento e Gênero */}
+                </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -673,23 +637,22 @@ const Signup = () => {
                 >                  <div className="relative group">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Data de Nascimento *
-                    </label>                    <DatePicker
-                      selected={form.dataNascimento ? new Date(form.dataNascimento) : null}
-                      onChange={handleDateChange}
-                      dateFormat="dd/MM/yyyy"
-                      placeholderText="Selecione sua data de nascimento"
-                      maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
-                      minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 100))}
-                      showYearDropdown
-                      showMonthDropdown
-                      dropdownMode="select"
-                      yearDropdownItemNumber={100}
-                      scrollableYearDropdown
-                      autoComplete="off"
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                      calendarClassName="shadow-2xl border-0"
-                      popperClassName="z-50"
-                      wrapperClassName="w-full"
+                    </label>
+                    <input
+                      type="date"
+                      name="dataNascimento"
+                      value={form.dataNascimento}
+                      onChange={handleChange}
+                      max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                      min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
+                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 group-hover:bg-white/80 ${
+                        form.dataNascimento && !validarIdade(form.dataNascimento) 
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                          : form.dataNascimento && validarIdade(form.dataNascimento)
+                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                      }`}
+                      style={{ fontSize: '16px' }}
                     />
                     {form.dataNascimento && !validarIdade(form.dataNascimento) && (
                       <p className="text-red-500 text-sm mt-1">
@@ -708,7 +671,7 @@ const Signup = () => {
                       value={form.genero} 
                       onChange={handleChange} 
                       className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 group-hover:bg-white/80"
-                      style={{ fontSize: '16px' }} // Previne zoom no iOS
+                      style={{ fontSize: '16px' }}
                     >
                       <option value="MASCULINO">Masculino</option>
                       <option value="FEMININO">Feminino</option>
@@ -718,7 +681,6 @@ const Signup = () => {
                   </div>
                 </motion.div>
 
-                {/* Botão para expandir Endereço */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -733,7 +695,6 @@ const Signup = () => {
                   </button>
                 </motion.div>
 
-                {/* Campos de Endereço expandido */}
                 <AnimatePresence>
                   {showAddress && (
                     <motion.div
@@ -760,7 +721,7 @@ const Signup = () => {
                             }}
                             placeholder="00000-000"
                             className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                            style={{ fontSize: '16px' }} // Previne zoom no iOS
+                            style={{ fontSize: '16px' }}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
@@ -775,7 +736,7 @@ const Signup = () => {
                             value={form.endereco.rua} 
                             onChange={handleChange} 
                             className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                            style={{ fontSize: '16px' }} // Previne zoom no iOS
+                            style={{ fontSize: '16px' }}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
@@ -790,7 +751,7 @@ const Signup = () => {
                             value={form.endereco.numero} 
                             onChange={handleChange} 
                             className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                            style={{ fontSize: '16px' }} // Previne zoom no iOS
+                            style={{ fontSize: '16px' }}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
@@ -805,7 +766,7 @@ const Signup = () => {
                             value={form.endereco.bairro} 
                             onChange={handleChange} 
                             className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                            style={{ fontSize: '16px' }} // Previne zoom no iOS
+                            style={{ fontSize: '16px' }}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
@@ -820,7 +781,7 @@ const Signup = () => {
                             value={form.endereco.cidade} 
                             onChange={handleChange} 
                             className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                            style={{ fontSize: '16px' }} // Previne zoom no iOS
+                            style={{ fontSize: '16px' }}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
@@ -835,7 +796,7 @@ const Signup = () => {
                             value={form.endereco.estado} 
                             onChange={handleChange} 
                             className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                            style={{ fontSize: '16px' }} // Previne zoom no iOS
+                            style={{ fontSize: '16px' }}
                           />
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
@@ -851,7 +812,7 @@ const Signup = () => {
                           value={form.endereco.complemento} 
                           onChange={handleChange} 
                           className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                          style={{ fontSize: '16px' }} // Previne zoom no iOS
+                          style={{ fontSize: '16px' }}
                         />
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                       </div>
@@ -879,7 +840,6 @@ const Signup = () => {
                   </span>
                 </motion.button>
 
-                {/* Login Link */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

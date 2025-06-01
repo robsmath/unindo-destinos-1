@@ -109,22 +109,12 @@ const MeusPets = () => {
             <div className="w-24 h-24 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <FaPaw className="w-12 h-12 text-primary" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-3">Nenhum pet cadastrado</h3>
-            <p className="text-gray-600 mb-8 leading-relaxed">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">Nenhum pet cadastrado</h3>            <p className="text-gray-600 mb-8 leading-relaxed">
               Cadastre seus companheiros de quatro patas para que outros viajantes saibam que você viaja em boa companhia!
             </p>
-            <motion.button
-              onClick={handleCadastrarPet}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white font-medium py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaPaw className="w-4 h-4" />
-              Cadastrar Primeiro Pet
-            </motion.button>
           </div>
         </motion.div>
-      )}      {/* Pets Grid */}
+      )}{/* Pets Grid */}
       {!loading && pets && pets.length > 0 && (
         <motion.div 
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
