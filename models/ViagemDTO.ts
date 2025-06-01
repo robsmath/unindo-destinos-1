@@ -27,10 +27,12 @@ export type CategoriaViagem = "NACIONAL" | "INTERNACIONAL";
 export interface ViagemDTO {
   id: number;
   destino: string;
-  dataInicio: string; // formato ISO: "2025-05-01"
-  dataFim: string;    // formato ISO: "2025-05-10"
+  dataInicio: string;
+  dataFim: string;
   estilo: EstiloViagem;
   status: StatusViagem;
   categoriaViagem: CategoriaViagem;
+  descricao?: string;
+  numeroMaximoParticipantes?: number;
   criadorViagemId?: number;
 }

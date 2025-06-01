@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface TypingEffectProps {
   texts: string[];
@@ -42,9 +44,8 @@ const TypingEffect: React.FC<TypingEffectProps> = ({
 
     return () => clearTimeout(timeout);
   }, [displayText, currentIndex, isDeleting, texts, speed, deleteSpeed, pauseTime]);
-
   return (
-    <span className="text-primary">
+    <span className="text-primary hero-typing-text">
       {displayText}
       <motion.span
         animate={{ opacity: [0, 1, 0] }}
@@ -60,7 +61,7 @@ const TypingEffect: React.FC<TypingEffectProps> = ({
 const FloatingElements = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Floating Icons */}
+      {/* Floating Icons - Responsivos */}
       <motion.div
         animate={{ 
           y: [0, -20, 0],
@@ -71,12 +72,11 @@ const FloatingElements = () => {
           repeat: Infinity,
           ease: "easeInOut"
         }}
-        className="absolute top-20 left-[10%] text-4xl"
+        className="absolute top-16 md:top-20 left-[5%] md:left-[10%] text-2xl md:text-4xl hidden sm:block"
       >
         ✈️
       </motion.div>
-      
-      <motion.div
+        <motion.div
         animate={{ 
           y: [0, 20, 0],
           rotate: [0, -10, 0]
@@ -87,7 +87,7 @@ const FloatingElements = () => {
           ease: "easeInOut",
           delay: 2
         }}
-        className="absolute top-32 right-[15%] text-3xl"
+        className="absolute top-20 md:top-28 right-[2%] md:right-[8%] lg:right-[12%] text-xl md:text-3xl hidden sm:block z-10"
       >
         🌍
       </motion.div>
@@ -103,7 +103,7 @@ const FloatingElements = () => {
           ease: "easeInOut",
           delay: 1
         }}
-        className="absolute bottom-40 left-[20%] text-3xl"
+        className="absolute bottom-32 md:bottom-40 left-[10%] md:left-[20%] text-xl md:text-3xl hidden md:block"
       >
         🗺️
       </motion.div>
@@ -119,12 +119,12 @@ const FloatingElements = () => {
           ease: "easeInOut",
           delay: 3
         }}
-        className="absolute bottom-32 right-[10%] text-4xl"
+        className="absolute bottom-24 md:bottom-32 right-[5%] md:right-[10%] text-2xl md:text-4xl hidden sm:block"
       >
         🎒
       </motion.div>
 
-      {/* Gradient Orbs */}
+      {/* Gradient Orbs - Menores em mobile */}
       <motion.div
         animate={{ 
           scale: [1, 1.2, 1],
@@ -135,7 +135,7 @@ const FloatingElements = () => {
           repeat: Infinity,
           ease: "easeInOut"
         }}
-        className="absolute top-10 right-20 w-32 h-32 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-full blur-xl"
+        className="absolute top-8 md:top-10 right-10 md:right-20 w-16 h-16 md:w-32 md:h-32 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-full blur-xl hidden sm:block"
       />
       
       <motion.div
@@ -149,44 +149,64 @@ const FloatingElements = () => {
           ease: "easeInOut",
           delay: 2
         }}
-        className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-br from-orange-500/20 to-primary/20 rounded-full blur-2xl"
+        className="absolute bottom-16 md:bottom-20 left-10 md:left-20 w-20 h-20 md:w-40 md:h-40 bg-gradient-to-br from-orange-500/20 to-primary/20 rounded-full blur-2xl hidden sm:block"
       />
     </div>
   );
 };
 
 const EnhancedHero = () => {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  
   const typingTexts = [
     "novas aventuras",
-    "companheiros de viagem",
+    "companheiros de viagem", 
     "destinos incríveis",
     "experiências únicas",
     "memórias inesquecíveis"
   ];
+  const handleComeceJornada = () => {
+    if (isAuthenticated) {
+      router.push('/profile');
+    } else {
+      router.push('/auth/signin');
+    }
+  };
 
+  const handleExplorarDestinos = () => {
+    if (isAuthenticated) {
+      router.push('/encontrar/viagens');
+    } else {
+      router.push('/auth/signin');
+    }
+  };
   return (
-    <div className="relative">
+    <div className="relative w-full hero-section">
       <FloatingElements />
       
-      <div className="relative z-10 text-center">
+      <div className="relative z-10 text-center px-4 py-8 md:py-12 hero-main-content">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+          className="hero-main-title font-bold mb-4 md:mb-6 leading-tight max-w-5xl mx-auto hero-content"
         >
-          <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent block mb-2 md:mb-0">
             Conectando você com
           </span>
-          <br />
-          <TypingEffect texts={typingTexts} />
+          <div className="hero-typing-container">
+            <div className="typing-effect-wrapper">
+              <TypingEffect texts={typingTexts} />
+            </div>
+          </div>
         </motion.h1>
         
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="text-xl md:text-2xl text-gray-600 mb-8 font-medium max-w-3xl mx-auto leading-relaxed"
+          className="hero-description text-gray-600 mb-6 md:mb-8 font-medium max-w-4xl mx-auto leading-relaxed px-2 hero-content"
         >
           Descubra o mundo através dos olhos de outros viajantes apaixonados. 
           Junte-se à maior comunidade de exploradores do Brasil.
@@ -196,19 +216,20 @@ const EnhancedHero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-        >
-          <motion.button
+          className="hero-buttons-container px-4"
+        >          <motion.button
+            onClick={handleComeceJornada}
             whileHover={{ 
               scale: 1.05,
               boxShadow: "0 20px 40px rgba(234, 88, 12, 0.3)"
             }}
             whileTap={{ scale: 0.95 }}
-            className="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-full shadow-lg transition-all duration-300 text-lg overflow-hidden"
+            className="group relative inline-flex items-center px-6 sm:px-8 py-3 md:py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-full shadow-lg transition-all duration-300 text-base md:text-lg overflow-hidden w-full sm:w-auto justify-center hero-interactive"
           >
             <span className="relative z-10 flex items-center">
-              Comece sua Jornada              <motion.svg 
-                className="ml-2 w-5 h-5" 
+              Comece sua Jornada
+              <motion.svg 
+                className="ml-2 w-4 h-4 md:w-5 md:h-5" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -224,18 +245,19 @@ const EnhancedHero = () => {
               transition={{ duration: 0.3 }}
             />
           </motion.button>
-          
-          <motion.button
+            <motion.button
+            onClick={handleExplorarDestinos}
             whileHover={{ 
               scale: 1.05,
               borderColor: "rgb(234, 88, 12)"
             }}
             whileTap={{ scale: 0.95 }}
-            className="group relative inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:border-primary hover:text-primary transition-all duration-300 text-lg overflow-hidden"
+            className="group relative inline-flex items-center px-6 sm:px-8 py-3 md:py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-full hover:border-primary hover:text-primary transition-all duration-300 text-base md:text-lg overflow-hidden w-full sm:w-auto justify-center hero-interactive"
           >
             <span className="relative z-10 flex items-center">
-              Explorar Destinos              <motion.svg 
-                className="ml-2 w-5 h-5" 
+              Explorar Destinos
+              <motion.svg 
+                className="ml-2 w-4 h-4 md:w-5 md:h-5" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -251,33 +273,31 @@ const EnhancedHero = () => {
               transition={{ duration: 0.3 }}
             />
           </motion.button>
-        </motion.div>
-
-        {/* Social Proof */}
+        </motion.div>        {/* Social Proof */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4, duration: 0.8 }}
-          className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500"
+          className="mt-8 md:mt-12 hero-social-proof text-xs sm:text-sm text-gray-500 px-4"
         >
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
+            <div className="flex -space-x-1 md:-space-x-2">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-orange-500 border-2 border-white"
+                  className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-primary to-orange-500 border-2 border-white"
                 />
               ))}
             </div>
-            <span>+5.000 viajantes ativos</span>
+            <span className="whitespace-nowrap">+5.000 viajantes ativos</span>
           </div>
           <div className="flex items-center gap-1">
             <span>⭐⭐⭐⭐⭐</span>
-            <span>4.9/5 avaliação</span>
+            <span className="whitespace-nowrap">4.9/5 avaliação</span>
           </div>
           <div className="flex items-center gap-2">
             <span>🌍</span>
-            <span>150+ países explorados</span>
+            <span className="whitespace-nowrap">150+ países explorados</span>
           </div>
         </motion.div>
       </div>

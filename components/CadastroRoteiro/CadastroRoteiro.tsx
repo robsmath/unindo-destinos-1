@@ -10,6 +10,7 @@ import {
   gerarRoteiroComIa,
   getRoteiroByViagemId,
   baixarRoteiroPdf,
+  clearRoteiroCache,
 } from "@/services/roteiroService";
 import { getViagemById } from "@/services/viagemService";
 import LoadingOverlay from "@/components/Common/LoadingOverlay";
@@ -61,20 +62,50 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   const [roteiroInexistente, setRoteiroInexistente] = useState(false);
   const [diasRoteiro, setDiasRoteiro] = useState([{ titulo: "", descricao: "" }]);
   const [observacoesFinais, setObservacoesFinais] = useState("");
-  const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");
-  const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
+  const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");  const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
   const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [souCriador, setSouCriador] = useState(false);
+  const [limiteGeracaoAtingido, setLimiteGeracaoAtingido] = useState(false);useEffect(() => {
+    // Configurar headers no-cache para esta página
+    if (typeof window !== 'undefined') {
+      // Desabilitar cache para esta página
+      const meta = document.createElement('meta');
+      meta.httpEquiv = 'Cache-Control';
+      meta.content = 'no-cache, no-store, must-revalidate';
+      document.head.appendChild(meta);
+      
+      const pragma = document.createElement('meta');
+      pragma.httpEquiv = 'Pragma';
+      pragma.content = 'no-cache';
+      document.head.appendChild(pragma);
 
-  useEffect(() => {
+      const expires = document.createElement('meta');
+      expires.httpEquiv = 'Expires';
+      expires.content = '0';
+      document.head.appendChild(expires);
+    }
+  }, []);  useEffect(() => {
     const fetchData = async () => {
       if (!viagemId) return;
+      
       try {
         setLoadingTela(true);
+        
+        // Limpar cache na primeira visita desta sessão
+        if (typeof window !== 'undefined') {
+          const refreshKey = `fresh_data_${viagemId}`;
+          const shouldRefresh = !sessionStorage.getItem(refreshKey);
+          
+          if (shouldRefresh) {
+            sessionStorage.setItem(refreshKey, 'true');
+            await clearRoteiroCache(Number(viagemId));
+          }
+        }
+        
         const viagemData = await getViagemById(Number(viagemId));
         setViagem(viagemData);
         setSouCriador(viagemData.criadorViagemId === usuario?.id);
-        
+          // Força dados frescos com timestamp único para evitar qualquer cache
         const roteiro = await getRoteiroByViagemId(Number(viagemId));
         if (roteiro) {
           setRoteiroId(roteiro.id);
@@ -88,16 +119,32 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
               : "R$ 0,00"
           );
           setTipoViagem(roteiro.tipoViagem || "CONFORTAVEL");
+          
+          // Verificar se atingiu o limite de 3 gerações
+          if (roteiro.tentativasGeracaoRoteiro && roteiro.tentativasGeracaoRoteiro >= 3) {
+            setLimiteGeracaoAtingido(true);
+          }
+          
           const resultado = parseDescricaoComObservacoes(roteiro.descricao || "");
           setDiasRoteiro(resultado.dias);
           setObservacoesFinais(resultado.observacoesFinais);
           setRoteiroInexistente(false);
         } else {
+          // Roteiro não existe (404) - isso é normal, mostra a mensagem amigável
           setRoteiroInexistente(true);
         }
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-        toast.error("Erro ao carregar dados da viagem");
+        console.error("Erro ao carregar dados da viagem:", error);
+        
+        // Verificar se é erro de roteiro (404) vs erro real da viagem
+        if (error?.response?.status === 404) {
+          // 404 do roteiro é normal, só marca como inexistente
+          setRoteiroInexistente(true);
+        } else {
+          // Só mostra toast para erros reais da viagem
+          toast.error("Erro ao carregar dados da viagem");
+          setRoteiroInexistente(true);
+        }
       } finally {
         setLoadingTela(false);
       }
@@ -224,8 +271,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
             <div className="flex gap-2">
               <button
                 onClick={async () => {
-                  toast.dismiss(id);
-                  try {
+                  toast.dismiss(id);                  try {
                     setLoading(true);
                     await deletarRoteiroByViagemId(Number(viagemId));
                     await gerarRoteiroComIa(Number(viagemId), { observacao, tipoViagem });
@@ -239,18 +285,33 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                               style: "currency",
                               currency: "BRL",
                             }).format(roteiro.valorEstimado)
-                          : "R$ 0,00"
-                      );
+                          : "R$ 0,00"                      );
                       setTipoViagem(roteiro.tipoViagem || "CONFORTAVEL");
+                      
+                      // Verificar se atingiu o limite de 3 gerações
+                      if (roteiro.tentativasGeracaoRoteiro && roteiro.tentativasGeracaoRoteiro >= 3) {
+                        setLimiteGeracaoAtingido(true);
+                      }
+                      
                       const resultado = parseDescricaoComObservacoes(roteiro.descricao || "");
                       setDiasRoteiro(resultado.dias);
                       setObservacoesFinais(resultado.observacoesFinais);
                       setModoCriacao("MANUAL");
                       setRoteiroInexistente(false);
                       toast.success("Roteiro gerado e preenchido com sucesso!");
+                    }} catch (error: any) {
+                    console.error("Erro ao substituir roteiro:", error);
+                      // Verificar se é erro de limite de geração
+                    if (error?.response?.data?.message?.includes("Limite máximo de 3 gerações de roteiro atingido")) {
+                      setLimiteGeracaoAtingido(true);
+                      toast.error("Limite máximo de 3 gerações atingido para esta viagem. Você só pode editar o roteiro manualmente agora.", {
+                        icon: <AlertTriangle className="text-red-600" />,
+                        duration: 6000,
+                      });
+                    } else if (error?.response?.status !== 404) {
+                      // Não mostrar toast para 404 - é normal após deletar o roteiro
+                      toast.error("Erro ao substituir o roteiro.");
                     }
-                  } catch {
-                    toast.error("Erro ao substituir o roteiro.");
                   } finally {
                     setLoading(false);
                   }
@@ -274,8 +335,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       return;
     }
 
-    setLoading(true);
-    try {
+    setLoading(true);    try {
       await gerarRoteiroComIa(Number(viagemId), { observacao, tipoViagem });
 
       const roteiroGerado = await getRoteiroByViagemId(Number(viagemId));
@@ -288,8 +348,13 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                 roteiroGerado.valorEstimado
               )
             : "R$ 0,00"
-        );
-        setTipoViagem(roteiroGerado.tipoViagem || "CONFORTAVEL");
+        );        setTipoViagem(roteiroGerado.tipoViagem || "CONFORTAVEL");
+        
+        // Verificar se atingiu o limite de 3 gerações
+        if (roteiroGerado.tentativasGeracaoRoteiro && roteiroGerado.tentativasGeracaoRoteiro >= 3) {
+          setLimiteGeracaoAtingido(true);
+        }
+        
         const resultado = parseDescricaoComObservacoes(roteiroGerado.descricao || "");
         setDiasRoteiro(resultado.dias);
         setObservacoesFinais(resultado.observacoesFinais);
@@ -299,14 +364,51 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         toast.success("Roteiro gerado e preenchido com sucesso!", {
           icon: <CheckCircle2 className="text-green-600" />,
         });
-      }
-    } catch (error) {
+      }} catch (error: any) {
       console.error("Erro ao gerar roteiro:", error);
-      toast.error("Erro ao gerar o roteiro. Tente novamente.", {
-        icon: <AlertTriangle className="text-red-600" />,
-      });
+        // Verificar se é erro de limite de geração
+      if (error?.response?.data?.message?.includes("Limite máximo de 3 gerações de roteiro atingido")) {
+        setLimiteGeracaoAtingido(true);
+        toast.error("Limite máximo de 3 gerações atingido para esta viagem. Você só pode editar o roteiro manualmente agora.", {
+          icon: <AlertTriangle className="text-red-600" />,
+          duration: 6000,
+        });
+      } else if (error?.response?.status !== 404) {
+        // Não mostrar toast para 404 - pode ser normal se o roteiro não foi gerado ainda
+        toast.error("Erro ao gerar o roteiro. Tente novamente.", {
+          icon: <AlertTriangle className="text-red-600" />,
+        });
+      }
     } finally {
       setLoading(false);
+    }
+  };  const forcarLimpezaCompleta = async () => {
+    if (typeof window !== 'undefined') {
+      try {
+        // Limpar apenas os dados relacionados ao roteiro
+        const keysToRemove = [
+          `roteiro_cache_${viagemId}`,
+          `fresh_data_${viagemId}`,
+          `roteiro_data_${viagemId}`
+        ];
+        
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          localStorage.removeItem(key);
+        });
+        
+        // Limpar cache do roteiro específico
+        await clearRoteiroCache(Number(viagemId));
+        
+        // Aguardar um pouco e recarregar
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+        
+      } catch (error) {
+        console.error('Erro ao limpar cache:', error);
+        toast.error('Erro ao limpar cache');
+      }
     }
   };
 
@@ -318,7 +420,22 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
 
     try {
       setLoadingPdf(true);
-      await baixarRoteiroPdf(roteiroId);
+      const blob = await baixarRoteiroPdf(roteiroId);
+      
+      // Criar URL temporária para o blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Criar elemento de link temporário para download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `roteiro-${viagem?.destino || 'viagem'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpar recursos
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
       toast.success("PDF baixado com sucesso!");
     } catch (error) {
       console.error("Erro ao baixar PDF:", error);
@@ -334,25 +451,158 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         {loading && <LoadingOverlay />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen overflow-hidden">
-        {/* Background animado */}
-        <div className="absolute inset-0 bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
+      <div className="relative min-h-screen overflow-hidden">        {/* Background animado */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
           <motion.div
             className="absolute inset-0"
             animate={{
               background: [
-                "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))",
-                "linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08))",
-                "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))"
+                "linear-gradient(45deg, rgba(234, 88, 12, 0.08), rgba(251, 146, 60, 0.12), rgba(249, 115, 22, 0.08))",
+                "linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(234, 88, 12, 0.12), rgba(251, 146, 60, 0.08))",
+                "linear-gradient(45deg, rgba(234, 88, 12, 0.08), rgba(251, 146, 60, 0.12), rgba(249, 115, 22, 0.08))"
               ]
             }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
+
+          {/* Simple Floating Particles */}
+          {Array.from({ length: 15 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+              }}
+              animate={{ 
+                y: [0, -100, 0],
+                x: [0, Math.random() * 30 - 15, 0],
+                opacity: [0, 0.6, 0],
+                scale: [0, 1, 0]
+              }}
+              transition={{ 
+                duration: 8 + Math.random() * 4,
+                repeat: Infinity,
+                delay: Math.random() * 8,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+
+          {/* Route/Travel Icons with Smooth Animations */}
+          <motion.div
+            className="absolute top-32 right-16"
+            animate={{ 
+              y: [0, -20, 0],
+              rotate: [0, 10, 0]
+            }}
+            transition={{ 
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <MapPin className="w-8 h-8 text-red-500/30 drop-shadow-lg" />
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-40 left-20"
+            animate={{ 
+              y: [0, -15, 0],
+              rotate: [0, -8, 0]
+            }}
+            transition={{ 
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5
+            }}
+          >
+            <Calendar className="w-7 h-7 text-blue-500/30 drop-shadow-lg" />
+          </motion.div>
+
+          <motion.div
+            className="absolute top-48 left-40"
+            animate={{ 
+              y: [0, -10, 0],
+              x: [0, 8, 0]
+            }}
+            transition={{ 
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+          >
+            <Target className="w-6 h-6 text-purple-500/30 drop-shadow-lg" />
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-40 right-24"
+            animate={{ 
+              y: [0, 12, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ 
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2
+            }}
+          >
+            <FileText className="w-7 h-7 text-green-500/30 drop-shadow-lg" />
+          </motion.div>
+
+          <motion.div
+            className="absolute top-64 right-40"
+            animate={{ 
+              y: [0, -12, 0],
+              rotate: [0, 15, 0]
+            }}
+            transition={{ 
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+          >
+            <Clock className="w-6 h-6 text-orange-500/30 drop-shadow-lg" />
+          </motion.div>
+
+          <motion.div
+            className="absolute top-36 right-64"
+            animate={{ 
+              y: [0, -18, 0],
+              rotate: [0, -12, 0]
+            }}
+            transition={{ 
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Settings className="w-8 h-8 text-gray-500/30 drop-shadow-lg" />
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-32 left-48"
+            animate={{ 
+              y: [0, -8, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.8
+            }}          >
+            <Wand2 className="w-6 h-6 text-pink-500/30 drop-shadow-lg" />
+          </motion.div>
         </div>
 
         {/* Header */}
-        <div className="relative z-20 bg-white/80 backdrop-blur-xl shadow-sm border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="relative z-20 bg-white/80 backdrop-blur-xl shadow-sm border-b border-white/20 pt-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <motion.button
@@ -364,9 +614,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                   <ArrowLeft className="w-5 h-5 text-gray-700" />
                 </motion.button>
                 
-                <div className="flex items-center gap-3">
-                  <motion.div 
-                    className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg"
+                <div className="flex items-center gap-3">                  <motion.div 
+                    className="p-3 bg-gradient-to-r from-orange-500 to-primary rounded-2xl shadow-lg"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.5 }}
@@ -425,10 +674,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                 <motion.div 
                   className="relative mb-6"
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-full flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 text-blue-600" />
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}                >
+                  <div className="w-16 h-16 bg-gradient-to-r from-orange-500/20 to-primary/20 rounded-full flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 text-primary" />
                   </div>
                 </motion.div>
                 <motion.p 
@@ -502,14 +750,13 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                       >
                         <CheckCircle2 className="w-6 h-6 text-emerald-600" />
                       </motion.div>
-                      <div>
-                        <motion.h3 
+                      <div>                        <motion.h3 
                           className="font-semibold text-emerald-900 mb-1"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.6, delay: 0.3 }}
                         >
-                          Roteiro criado com sucesso!
+                          {souCriador ? "Roteiro criado com sucesso!" : "Roteiro visualizado com sucesso!"}
                         </motion.h3>
                         <motion.p 
                           className="text-emerald-700"
@@ -517,15 +764,16 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.6, delay: 0.4 }}
                         >
-                          Seu roteiro personalizado está pronto. Você pode editá-lo, baixar em PDF ou compartilhar com outros participantes.
+                          {souCriador 
+                            ? "Seu roteiro personalizado está pronto. Você pode editá-lo, baixar em PDF ou compartilhar com outros participantes."
+                            : "Você pode visualizar o roteiro, baixar em PDF ou enviar para seu e-mail. Como participante, você tem acesso limitado de edição."
+                          }
                         </motion.p>
                       </div>
                     </div>
                   </motion.div>
-                )}
-
-                {/* Grid principal */}
-                <div className="grid lg:grid-cols-3 gap-8">
+                )}                {/* Grid principal */}
+                <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
                   {/* Configurações do roteiro */}
                   <motion.div 
                     className="lg:col-span-2 bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 overflow-hidden"
@@ -533,31 +781,29 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                   >
-                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
+                    <div className="bg-gradient-to-r from-orange-500 to-primary px-4 sm:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <Settings className="w-5 h-5 text-white" />
-                        <h2 className="text-lg font-semibold text-white">Configurações do Roteiro</h2>
+                        <h2 className="text-base sm:text-lg font-semibold text-white">Configurações do Roteiro</h2>
                       </div>
                     </div>
 
-                    <div className="p-6 space-y-6">
+                    <div className="p-4 sm:p-6 space-y-6">
                       {/* Modo de criação */}
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <Wand2 className="w-4 h-4" />
                           Modo de Criação
                         </label>
-                        <div className="grid grid-cols-2 gap-3">
-                          <motion.button
+                        <div className="grid grid-cols-2 gap-3">                          <motion.button
                             onClick={() => setModoCriacao("MANUAL")}
-                            disabled={!souCriador || roteiroInexistente}
+                            disabled={!souCriador}
                             whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                            whileTap={{ scale: 0.98 }}                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                               modoCriacao === "MANUAL"
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                ? "border-primary bg-orange-50 text-primary"
                                 : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                            } ${(!souCriador || roteiroInexistente) ? "opacity-50 cursor-not-allowed" : ""}`}
+                            } ${!souCriador ? "opacity-50 cursor-not-allowed" : ""}`}
                           >
                             <div className="flex flex-col items-center gap-2">
                               <Pencil className="w-5 h-5" />
@@ -569,10 +815,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                             onClick={() => setModoCriacao("IA")}
                             disabled={!souCriador}
                             whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                            whileTap={{ scale: 0.98 }}                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                               modoCriacao === "IA"
-                                ? "border-purple-500 bg-purple-50 text-purple-700"
+                                ? "border-orange-400 bg-orange-50 text-orange-700"
                                 : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                             } ${!souCriador ? "opacity-50 cursor-not-allowed" : ""}`}
                           >
@@ -595,33 +840,39 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           onChange={(e) => setObservacao(e.target.value)}
                           disabled={!souCriador}
                           placeholder="Descreva suas preferências para o roteiro..."
-                          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-24 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary resize-none h-24 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                      </div>
-
-                      {/* Tipo de viagem */}
+                      </div>                      {/* Tipo de viagem */}
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <Target className="w-4 h-4" />
                           Tipo de Viagem
                         </label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {(["ECONOMICA", "CONFORTAVEL", "LUXO"] as TipoViagem[]).map((tipo) => (
-                            <motion.button
-                              key={tipo}
-                              onClick={() => setTipoViagem(tipo)}
-                              disabled={!souCriador}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
-                                tipoViagem === tipo
-                                  ? "border-blue-500 bg-blue-50 text-blue-700"
-                                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                              } ${!souCriador ? "opacity-50 cursor-not-allowed" : ""}`}
-                            >
-                              <span className="font-medium text-sm">{tipo}</span>
-                            </motion.button>
-                          ))}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {(["ECONOMICA", "CONFORTAVEL", "LUXO"] as TipoViagem[]).map((tipo) => {
+                            const labels = {
+                              ECONOMICA: "Econômica",
+                              CONFORTAVEL: "Confortável", 
+                              LUXO: "Luxo"
+                            };
+                            
+                            return (
+                              <motion.button
+                                key={tipo}
+                                onClick={() => setTipoViagem(tipo)}
+                                disabled={!souCriador}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className={`p-3 sm:p-2 rounded-xl border-2 transition-all duration-200 text-center ${
+                                  tipoViagem === tipo
+                                    ? "border-primary bg-orange-50 text-primary"
+                                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                                } ${!souCriador ? "opacity-50 cursor-not-allowed" : ""}`}
+                              >
+                                <span className="font-medium text-sm">{labels[tipo]}</span>
+                              </motion.button>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -637,46 +888,65 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           onChange={(e) => setValorEstimado(formatarValor(e.target.value))}
                           disabled={!souCriador || modoCriacao === "IA"}
                           placeholder="R$ 0,00"
-                          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                      </div>
-
-                      {/* Botões de ação para configuração */}
+                      </div>                      {/* Botões de ação para configuração */}
                       {souCriador && (
-                        <div className="flex gap-3 pt-4">
-                          {modoCriacao === "IA" ? (
-                            <motion.button
-                              onClick={gerarComIA}
-                              disabled={loading}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl px-6 py-3 font-medium transition-all duration-200 disabled:opacity-50"
-                            >
-                              {loading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                              ) : (
-                                <Sparkles className="h-5 w-5" />
-                              )}
-                              {loading ? "Gerando..." : "Gerar com IA"}
-                            </motion.button>
-                          ) : (
-                            !roteiroInexistente && (
-                              <motion.button
-                                onClick={salvarRoteiroManual}
-                                disabled={loadingSalvar}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-6 py-3 font-medium transition-all duration-200 disabled:opacity-50"
-                              >
-                                {loadingSalvar ? (
-                                  <Loader2 className="h-5 w-5 animate-spin" />
-                                ) : (
-                                  <Save className="h-5 w-5" />
-                                )}
-                                {loadingSalvar ? "Salvando..." : "Salvar Roteiro"}
-                              </motion.button>
-                            )
+                        <div className="flex flex-col gap-3 pt-4">
+                          {limiteGeracaoAtingido && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                              <div className="flex items-center gap-2 text-amber-800">
+                                <AlertTriangle className="h-5 w-5" />
+                                <span className="text-sm font-medium">
+                                  Limite de gerações atingido (3/3)
+                                </span>
+                              </div>
+                              <p className="text-sm text-amber-700 mt-1">
+                                Você não pode mais gerar roteiros com IA para esta viagem. Use a edição manual.
+                              </p>
+                            </div>
                           )}
+                          
+                          <div className="flex gap-3">
+                            {modoCriacao === "IA" ? (
+                              <motion.button
+                                onClick={gerarComIA}
+                                disabled={loading || limiteGeracaoAtingido}
+                                whileHover={!limiteGeracaoAtingido ? { scale: 1.02 } : {}}
+                                whileTap={!limiteGeracaoAtingido ? { scale: 0.98 } : {}}
+                                className={`flex-1 flex items-center justify-center gap-3 rounded-xl px-6 py-3 font-medium transition-all duration-200 ${
+                                  limiteGeracaoAtingido 
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                    : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
+                                } disabled:opacity-50`}
+                              >
+                                {loading ? (
+                                  <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : limiteGeracaoAtingido ? (
+                                  <AlertTriangle className="h-5 w-5" />
+                                ) : (
+                                  <Sparkles className="h-5 w-5" />
+                                )}
+                                {loading ? "Gerando..." : limiteGeracaoAtingido ? "Limite Atingido" : "Gerar com IA"}
+                              </motion.button>
+                            ) : (
+                              !roteiroInexistente && (
+                                <motion.button
+                                  onClick={salvarRoteiroManual}
+                                  disabled={loadingSalvar}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}                                  className="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl px-6 py-3 font-medium transition-all duration-200 disabled:opacity-50"
+                                >
+                                  {loadingSalvar ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                  ) : (
+                                    <Save className="h-5 w-5" />
+                                  )}
+                                  {loadingSalvar ? "Salvando..." : "Salvar Roteiro"}
+                                </motion.button>
+                              )
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -690,9 +960,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     transition={{ duration: 0.6, delay: 0.4 }}
                   >
                     {viagem && (
-                      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6">
-                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <Calendar className="w-5 h-5 text-blue-600" />
+                      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6">                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Calendar className="w-5 h-5 text-primary" />
                           Informações da Viagem
                         </h3>
                         <div className="space-y-3 text-sm">
@@ -718,66 +987,76 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
 
                     {/* Ações do roteiro */}
                     {!roteiroInexistente && (
-                      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6">
-                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <Settings className="w-5 h-5 text-purple-600" />
+                      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6">                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Settings className="w-5 h-5 text-primary" />
                           Ações do Roteiro
-                        </h3>
-                        <div className="space-y-3">
+                        </h3>                        <div className="space-y-3">
                           <motion.button
                             onClick={baixarPdf}
                             disabled={loadingPdf}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-3 font-medium transition-all duration-200 disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-3 sm:px-4 py-3 font-medium transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
                           >
                             {loadingPdf ? (
-                              <Loader2 className="h-5 w-5 animate-spin" />
+                              <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                             ) : (
-                              <Download className="h-5 w-5" />
+                              <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                             )}
                             {loadingPdf ? "Baixando..." : "Baixar PDF"}
+                          </motion.button>                          <motion.button
+                            onClick={() => setMostrarModalEmail(true)}
+                            disabled={loadingEmail}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-primary hover:bg-orange-600 text-white rounded-xl px-3 sm:px-4 py-3 font-medium transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                          >
+                            {loadingEmail ? (
+                              <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+                            )}
+                            {loadingEmail ? "Enviando..." : "Enviar por Email"}
                           </motion.button>
-
-                          {souCriador && (
-                            <motion.button
-                              onClick={() => setMostrarModalEmail(true)}
-                              disabled={loadingEmail}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-3 font-medium transition-all duration-200 disabled:opacity-50"
-                            >
-                              {loadingEmail ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                              ) : (
-                                <Send className="h-5 w-5" />
-                              )}
-                              {loadingEmail ? "Enviando..." : "Enviar por Email"}
-                            </motion.button>
-                          )}
                         </div>
                       </div>
-                    )}
-
-                    {/* Dicas */}
-                    <div className="bg-gradient-to-br from-blue-50/80 to-purple-50/80 backdrop-blur-xl rounded-3xl border border-blue-100/50 p-6 shadow-lg">
+                    )}                    {/* Dicas */}
+                    <div className="bg-gradient-to-br from-orange-50/80 to-amber-50/80 backdrop-blur-xl rounded-3xl border border-orange-100/50 p-6 shadow-lg">
                       <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-blue-600" />
+                        <Sparkles className="w-5 h-5 text-primary" />
                         Dicas
                       </h3>
                       <div className="space-y-3 text-sm text-gray-600">
                         <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                           <p>Use a IA para gerar um roteiro base e depois edite manualmente</p>
                         </div>
                         <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
                           <p>Inclua horários e locais específicos nas descrições</p>
                         </div>
                         <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div className="w-1.5 h-1.5 bg-orange-300 rounded-full mt-2 flex-shrink-0"></div>
                           <p>Compartilhe o PDF com todos os participantes</p>
                         </div>
+                        
+                        {/* Botão de limpeza de cache para situações especiais */}
+                        {roteiroInexistente && (
+                          <div className="mt-4 pt-3 border-t border-orange-200/50">
+                            <p className="text-xs text-gray-500 mb-2">
+                              Roteiro não aparece atualizado?
+                            </p>
+                            <motion.button
+                              onClick={forcarLimpezaCompleta}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200"
+                            >
+                              <Settings className="h-3 w-3" />
+                              Forçar Atualização
+                            </motion.button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -790,43 +1069,48 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.6 }}
-                  >
-                    <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4">
-                      <div className="flex items-center justify-between">
+                  >                    <div className="bg-gradient-to-r from-orange-500 to-primary px-4 sm:px-6 py-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <Pencil className="w-5 h-5 text-white" />
-                          <h2 className="text-lg font-semibold text-white">Editor de Roteiro</h2>
+                          <h2 className="text-base sm:text-lg font-semibold text-white">Editor de Roteiro</h2>
                         </div>
                         <motion.button
                           onClick={adicionarDia}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-xl transition-all duration-200"
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-xl transition-all duration-200 text-sm"
                         >
                           <Plus className="w-4 h-4" />
-                          Adicionar Dia
-                        </motion.button>
-                      </div>
+                          <span className="hidden sm:inline">Adicionar Dia</span>
+                          <span className="sm:hidden">Adicionar</span>
+                        </motion.button>                      </div>
                     </div>
 
-                    <div className="p-6 space-y-6">
+                    <div className="p-4 sm:p-6 space-y-6">
                       {/* Dias do roteiro */}
                       <div className="space-y-4">
                         <AnimatePresence>
-                          {diasRoteiro.map((dia, index) => (
-                            <motion.div
+                          {diasRoteiro.map((dia, index) => (                            <motion.div
                               key={index}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: 20 }}
                               transition={{ duration: 0.3 }}
-                              className="bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-200/50"
+                              className="bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200/50"
                             >
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                  <Clock className="w-4 h-4 text-gray-500" />
-                                  Dia {index + 1}
-                                </h4>
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                                    index % 3 === 0 ? "bg-primary" : 
+                                    index % 3 === 1 ? "bg-orange-400" : "bg-orange-300"
+                                  }`}>
+                                    {index + 1}
+                                  </div>
+                                  <h4 className="font-medium text-gray-900">
+                                    Dia {index + 1}
+                                  </h4>
+                                </div>
                                 {diasRoteiro.length > 1 && (
                                   <motion.button
                                     onClick={() => removerDia(index)}
@@ -839,19 +1123,19 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                                 )}
                               </div>
                               
-                              <div className="space-y-3">
+                              <div className="space-y-4">
                                 <input
                                   type="text"
                                   value={dia.titulo}
                                   onChange={(e) => atualizarDia(index, "titulo", e.target.value)}
                                   placeholder="Título do dia (ex: Dia 1 - Centro Histórico)"
-                                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base"
                                 />
                                 <textarea
                                   value={dia.descricao}
                                   onChange={(e) => atualizarDia(index, "descricao", e.target.value)}
                                   placeholder="Descrição detalhada do dia..."
-                                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none h-32"
+                                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary resize-none h-32 sm:h-40 text-sm sm:text-base"
                                 />
                               </div>
                             </motion.div>
@@ -864,12 +1148,11 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <FileText className="w-4 h-4" />
                           Observações Finais
-                        </label>
-                        <textarea
+                        </label>                        <textarea
                           value={observacoesFinais}
                           onChange={(e) => setObservacoesFinais(e.target.value)}
                           placeholder="Observações gerais sobre a viagem..."
-                          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none h-24"
+                          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary resize-none h-24"
                         />
                       </div>
                     </div>
@@ -879,16 +1162,15 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
             )}
           </AnimatePresence>
         </div>
-      </div>
-
-      {/* Modal de envio por email */}
+      </div>      {/* Modal de envio por email */}
       <AnimatePresence>
-        {mostrarModalEmail && roteiroId && (
+        {mostrarModalEmail && roteiroId !== null && (
           <EnviarRoteiroModal
             aberto={mostrarModalEmail}
             onClose={() => setMostrarModalEmail(false)}
             roteiroId={roteiroId}
             viagemId={Number(viagemId)}
+            souCriador={souCriador}
           />
         )}
       </AnimatePresence>

@@ -36,7 +36,7 @@ type AcaoResposta = {
 
 const CentralSolicitacoes = () => {
   const { invalidateCache } = useCacheInvalidation();
-  const { imagensViagens } = usePerfil();
+  const { imagensViagens, recarregarViagens } = usePerfil();
   const {
     data: solicitacoes,
     loading: carregando,
@@ -63,14 +63,15 @@ const CentralSolicitacoes = () => {
 
   useEffect(() => {
     carregar();
-  }, []);
-  const aceitar = async (s: SolicitacaoParticipacaoDTO) => {
+  }, []);  const aceitar = async (s: SolicitacaoParticipacaoDTO) => {
     setResposta({ id: s.id, tipo: "ACEITAR" });
     try {
       await aprovarSolicitacao(s.id);
       toast.success("Solicitação aprovada!");
       refreshData();
       invalidateCache(["viagens"]);
+      // Recarregar as viagens do usuário diretamente para garantir que a nova viagem apareça
+      await recarregarViagens();
     } catch {
       toast.error("Erro ao aprovar solicitação");
     } finally {
@@ -142,10 +143,10 @@ const CentralSolicitacoes = () => {
         return null;
     }
   };
-
-  const renderCard = (s: SolicitacaoParticipacaoDTO, index: number) => (    <motion.li
+  const renderCard = (s: SolicitacaoParticipacaoDTO, index: number) => (
+    <motion.li
       key={s.id}
-      className={`group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-lg p-6 transition-all duration-300 hover:shadow-lg overflow-hidden ${
+      className={`group bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-lg p-4 sm:p-6 transition-all duration-300 hover:shadow-lg overflow-hidden ${
         s.status === "APROVADA"
           ? "border-green-300/50 bg-gradient-to-r from-green-50/80 to-emerald-50/80"
           : s.status === "RECUSADA"
@@ -157,36 +158,40 @@ const CentralSolicitacoes = () => {
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileHover={{ y: -1 }}
     >
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Content Section */}
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 space-y-3 sm:space-y-4">
           {/* User Header */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-              {s.outroUsuarioNome.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300">
-                {s.outroUsuarioNome}
-              </h3>
-              <p className="text-sm text-gray-500 flex items-center gap-1">
-                <Mail className="w-3 h-3" />
-                {s.outroUsuarioEmail}
-              </p>
+          <div className="flex items-start sm:items-center flex-col sm:flex-row gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
+                {s.outroUsuarioNome.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300 text-sm sm:text-base truncate">
+                  {s.outroUsuarioNome}
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 truncate">
+                  <Mail className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{s.outroUsuarioEmail}</span>
+                </p>
+              </div>
             </div>
             
             {/* Status Badge */}
             {s.status !== "PENDENTE" && (
-              <div className="ml-auto">
+              <div className="flex-shrink-0">
                 {s.status === "APROVADA" ? (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                    <CheckCircle className="w-4 h-4" />
-                    Aprovada
+                  <div className="flex items-center gap-2 px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-medium">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Aprovada</span>
+                    <span className="sm:hidden">✓</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                    <X className="w-4 h-4" />
-                    Recusada
+                  <div className="flex items-center gap-2 px-2 sm:px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs sm:text-sm font-medium">
+                    <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Recusada</span>
+                    <span className="sm:hidden">✗</span>
                   </div>
                 )}
               </div>
@@ -194,18 +199,26 @@ const CentralSolicitacoes = () => {
           </div>
 
           {/* Message Content */}
-          <div className="bg-gray-50/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
-            <p className="text-gray-700 leading-relaxed">{renderMensagem(s)}</p>
+          <div className="bg-gray-50/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-200/50 space-y-3">
+            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{renderMensagem(s)}</p>
+            
+            {/* Custom Message from User */}
+            {s.mensagem && (
+              <div className="bg-white/60 rounded-lg p-3 border-l-4 border-primary/30">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Mensagem:</p>
+                <p className="text-sm sm:text-base text-gray-800 italic">"{s.mensagem}"</p>
+              </div>
+            )}
             
             {/* Trip Details */}
-            <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="font-medium">{s.destino}</span>
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                <span className="font-medium truncate">{s.destino}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4 text-primary" />
-                <span>
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                <span className="truncate">
                   {new Date(s.dataInicio).toLocaleDateString()} - {new Date(s.dataFim).toLocaleDateString()}
                 </span>
               </div>
@@ -213,16 +226,17 @@ const CentralSolicitacoes = () => {
           </div>
 
           {/* Action Buttons Row */}
-          <div className="flex gap-3">            <motion.button
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <motion.button
               onClick={() => setPerfilAbertoId(s.outroUsuarioId)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 text-sm"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
               <User className="w-4 h-4" />
-              Ver Perfil
+              <span>Ver Perfil</span>
             </motion.button>
-              <motion.button
+            <motion.button
               onClick={() => {
                 setCarregandoViagemId(s.viagemId);
                 setTimeout(() => {
@@ -230,7 +244,7 @@ const CentralSolicitacoes = () => {
                   setCarregandoViagemId(null);
                 }, 200);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-medium transition-colors duration-200"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-medium transition-colors duration-200 text-sm"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
@@ -239,19 +253,18 @@ const CentralSolicitacoes = () => {
               ) : (
                 <MapPin className="w-4 h-4" />
               )}
-              Ver Viagem
+              <span>Ver Viagem</span>
             </motion.button>
           </div>
-        </div>
-
-        {/* Actions Section */}
+        </div>        {/* Actions Section */}
         {s.status === "PENDENTE" && (
-          <div className="flex flex-col gap-3 lg:min-w-[140px]">
+          <div className="flex flex-col gap-2 sm:gap-3 lg:min-w-[140px]">
             {["CONVITE_RECEBIDO", "SOLICITACAO_RECEBIDA"].includes(s.tipo) && (
-              <>                <motion.button
+              <>
+                <motion.button
                   onClick={() => aceitar(s)}
                   disabled={resposta?.id === s.id && resposta?.tipo === "ACEITAR"}
-                  className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  className="group relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden text-sm"
                   whileHover={{ scale: resposta?.id === s.id ? 1 : 1.01 }}
                   whileTap={{ scale: resposta?.id === s.id ? 1 : 0.99 }}
                 >
@@ -264,13 +277,14 @@ const CentralSolicitacoes = () => {
                     ) : (
                       <Check className="w-4 h-4" />
                     )}
-                    Aceitar
+                    <span className="hidden sm:inline">Aceitar</span>
+                    <span className="sm:hidden">✓</span>
                   </span>
                 </motion.button>
-                  <motion.button
+                <motion.button
                   onClick={() => recusar(s)}
                   disabled={resposta?.id === s.id && resposta?.tipo === "RECUSAR"}
-                  className="group relative bg-gradient-to-r from-red-500 to-rose-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  className="group relative bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden text-sm"
                   whileHover={{ scale: resposta?.id === s.id ? 1 : 1.01 }}
                   whileTap={{ scale: resposta?.id === s.id ? 1 : 0.99 }}
                 >
@@ -283,16 +297,18 @@ const CentralSolicitacoes = () => {
                     ) : (
                       <X className="w-4 h-4" />
                     )}
-                    Recusar
+                    <span className="hidden sm:inline">Recusar</span>
+                    <span className="sm:hidden">✗</span>
                   </span>
                 </motion.button>
               </>
             )}
             
-            {["CONVITE_ENVIADO", "SOLICITACAO_ENVIADA"].includes(s.tipo) && (              <motion.button
+            {["CONVITE_ENVIADO", "SOLICITACAO_ENVIADA"].includes(s.tipo) && (
+              <motion.button
                 onClick={() => cancelar(s)}
                 disabled={resposta?.id === s.id && resposta?.tipo === "CANCELAR"}
-                className="group relative bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                className="group relative bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden text-sm"
                 whileHover={{ scale: resposta?.id === s.id ? 1 : 1.01 }}
                 whileTap={{ scale: resposta?.id === s.id ? 1 : 0.99 }}
               >
@@ -305,7 +321,8 @@ const CentralSolicitacoes = () => {
                   ) : (
                     <Clock className="w-4 h-4" />
                   )}
-                  Cancelar
+                  <span className="hidden sm:inline">Cancelar</span>
+                  <span className="sm:hidden">⏳</span>
                 </span>
               </motion.button>
             )}

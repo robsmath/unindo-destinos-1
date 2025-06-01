@@ -9,6 +9,7 @@ import {
 } from "@headlessui/react";
 import { getViagemById } from "@/services/viagemService";
 import { getPreferenciaByViagemId } from "@/services/preferenciasService";
+import { getParticipantesDaViagem } from "@/services/viagemService";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import {
   PreferenciasDTO,
@@ -51,7 +52,8 @@ import {
   Laptop,
   Briefcase,
   Dog,
-  Settings
+  Settings,
+  FileText
 } from "lucide-react";
 
 interface Props {
@@ -112,13 +114,14 @@ export default function ViagemDetalhesModal({
   imagemViagem,
 }: Props) {  const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
+  const [participantes, setParticipantes] = useState<any[]>([]);
   const [imagem, setImagem] = useState<string>("");
-  const [carregando, setCarregando] = useState(false);  useEffect(() => {
+  const [carregando, setCarregando] = useState(false);useEffect(() => {
     if (open) {
-      carregarDados();
-    } else {
+      carregarDados();    } else {
       setViagem(null);
       setPreferencias(null);
+      setParticipantes([]);
       setImagem("");
     }
   }, [open]);
@@ -134,7 +137,13 @@ export default function ViagemDetalhesModal({
       setViagem(dadosViagem);
 
       const dadosPreferencias = await getPreferenciaByViagemId(viagemId);
-      setPreferencias(dadosPreferencias);      if (!imagemViagem) {
+      setPreferencias(dadosPreferencias);
+
+      // Carregar participantes para contar
+      const dadosParticipantes = await getParticipantesDaViagem(viagemId);
+      setParticipantes(dadosParticipantes);
+
+      if (!imagemViagem) {
         setImagem("/images/common/beach.jpg");
       }
     } catch (err) {
@@ -230,7 +239,35 @@ export default function ViagemDetalhesModal({
                         
                         <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
                           {viagem.categoriaViagem === "INTERNACIONAL" ? "Internacional" : "Nacional"}
-                        </span>
+                        </span>                      </div>
+
+                      {/* Informações da Viagem */}
+                      <div className="space-y-4 mb-6">
+                        {viagem.descricao && (
+                          <div className="space-y-3">
+                            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                              <FileText className="w-5 h-5 text-primary" />
+                              Descrição
+                            </h3>
+                            <div className="p-4 bg-gray-50 rounded-xl">
+                              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                {viagem.descricao}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <Users className="w-5 h-5 text-primary" />
+                            <div>
+                              <span className="text-sm font-medium text-gray-700">Participantes</span>
+                              <p className="text-lg font-semibold text-gray-800">
+                                {participantes.length} de {viagem.numeroMaximoParticipantes || "∞"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Seção de Preferências */}

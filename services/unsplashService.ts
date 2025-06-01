@@ -10,16 +10,13 @@ interface UnsplashResponse {
   results: UnsplashPhoto[];
 }
 
-// Cache simples em memória para evitar requisições desnecessárias
 const imageCache = new Map<string, string>();
 
-export const getImage = async (destino: string, tipoViagem: string): Promise<string | null> => {
+export const getImage = async (destino: string, categoriaViagem: string): Promise<string | null> => {
   if (!destino) return null;
 
-  // Criar chave de cache
-  const cacheKey = `${destino}-${tipoViagem}`;
+  const cacheKey = `${destino}-${categoriaViagem}`;
   
-  // Verificar se já temos a imagem em cache
   if (imageCache.has(cacheKey)) {
     return imageCache.get(cacheKey)!;
   }
@@ -27,7 +24,7 @@ export const getImage = async (destino: string, tipoViagem: string): Promise<str
   try {
     let query = destino;
 
-    if (tipoViagem === "INTERNACIONAL") {
+    if (categoriaViagem === "INTERNACIONAL") {
       query += " travel landscape";
     } else {
       query += " Brasil landscape";
@@ -50,7 +47,6 @@ export const getImage = async (destino: string, tipoViagem: string): Promise<str
 
     const photo = response.data.results[0];
     if (photo?.urls?.regular) {
-      // Salvar no cache
       imageCache.set(cacheKey, photo.urls.regular);
       return photo.urls.regular;
     }

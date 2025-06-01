@@ -48,12 +48,10 @@ import { AnimatePresence, motion } from "framer-motion";
 const EncontrePessoas = () => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-
   const [filtros, setFiltros] = useState<UsuarioFiltroDTO>({
     genero: "",
     idadeMin: "",
     idadeMax: "",
-    valorMedioMin: "",
     valorMedioMax: "",
     petFriendly: undefined,
     aceitaCriancas: undefined,
@@ -77,13 +75,6 @@ const EncontrePessoas = () => {
   const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-
-  const [valorMedioMinInput, setValorMedioMinInput] = useState(
-    filtros.valorMedioMin !== null && filtros.valorMedioMin !== undefined
-      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(filtros.valorMedioMin as number)
-      : ""
-  );
-
   const [valorMedioMaxInput, setValorMedioMaxInput] = useState(
     filtros.valorMedioMax !== null && filtros.valorMedioMax !== undefined
       ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(filtros.valorMedioMax as number)
@@ -94,16 +85,13 @@ const EncontrePessoas = () => {
     const carregarPreferenciasDiretamente = async () => {
       try {
         const prefs = await getPreferenciasDoUsuario();
-        if (!prefs) return;
-
-        setFiltros((prev) => ({
+        if (!prefs) return;        setFiltros((prev) => ({
           ...prev,
           genero: ["MASCULINO", "FEMININO", "OUTRO", "NAO_BINARIO"].includes(prefs.generoPreferido)
             ? (prefs.generoPreferido as UsuarioFiltroDTO["genero"])
             : "",
           idadeMin: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : "",
           idadeMax: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : "",
-          valorMedioMin: typeof prefs.valorMedioViagem === "number" ? prefs.valorMedioViagem : "",
           valorMedioMax: "",
           petFriendly: prefs.petFriendly,
           aceitaCriancas: prefs.aceitaCriancas,
@@ -188,20 +176,12 @@ const EncontrePessoas = () => {
     };
     return iconMap[tipo] || Car;
   };
-
   const buscar = async () => {
     const idadeMin = filtros.idadeMin;
     const idadeMax = filtros.idadeMax;
-    const valorMin = filtros.valorMedioMin;
-    const valorMax = filtros.valorMedioMax;
 
     if (idadeMin !== "" && idadeMax !== "" && Number(idadeMin) > Number(idadeMax)) {
       toast.warning("A idade mínima não pode ser maior que a idade máxima.");
-      return;
-    }
-
-    if (valorMin !== "" && valorMax !== "" && Number(valorMin) > Number(valorMax)) {
-      toast.warning("O valor mínimo não pode ser maior que o valor máximo.");
       return;
     }
 
@@ -211,7 +191,6 @@ const EncontrePessoas = () => {
         genero: filtros.genero || null,
         idadeMin: filtros.idadeMin || null,
         idadeMax: filtros.idadeMax || null,
-        valorMedioMin: filtros.valorMedioMin || null,
         valorMedioMax: filtros.valorMedioMax || null,
         tipoAcomodacao: filtros.tipoAcomodacao,
         tipoTransporte: filtros.tipoTransporte,
@@ -234,13 +213,11 @@ const EncontrePessoas = () => {
       setLoading(false);
     }
   };
-
   const limparFiltros = () => {
     setFiltros({
       genero: "",
       idadeMin: "",
       idadeMax: "",
-      valorMedioMin: "",
       valorMedioMax: "",
       petFriendly: undefined,
       aceitaCriancas: undefined,
@@ -253,7 +230,6 @@ const EncontrePessoas = () => {
       nome: "",
       email: "",
     });
-    setValorMedioMinInput("");
     setValorMedioMaxInput("");
   };
 
@@ -275,9 +251,8 @@ const EncontrePessoas = () => {
       setUsuarioCarregandoId(null);
     }
   };
-
   const handleValorMedioChange = (
-    campo: "valorMedioMin" | "valorMedioMax",
+    campo: "valorMedioMax",
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const raw = e.target.value.replace(/\D/g, "");
@@ -288,43 +263,226 @@ const EncontrePessoas = () => {
         ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)
         : "";
 
-    if (campo === "valorMedioMin") {
-      setValorMedioMinInput(formatado);
-    } else {
-      setValorMedioMaxInput(formatado);
-    }
+    setValorMedioMaxInput(formatado);
 
     setFiltros((prev) => ({
       ...prev,
       [campo]: valor === "" ? "" : Number(valor),
     }));
   };
-
   // --- MODERNIZAÇÃO VISUAL ABAIXO ---
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-      {/* Gradiente animado e orbes */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/10 to-primary/5 pointer-events-none"
-        animate={{
-          background: [
-            "linear-gradient(45deg, rgba(234, 88, 12, 0.03), rgba(249, 115, 22, 0.03), rgba(234, 88, 12, 0.03))",
-            "linear-gradient(135deg, rgba(249, 115, 22, 0.03), rgba(234, 88, 12, 0.03), rgba(249, 115, 22, 0.03))",
-            "linear-gradient(45deg, rgba(234, 88, 12, 0.03), rgba(249, 115, 22, 0.03), rgba(234, 88, 12, 0.03))",
-          ],
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
-        animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-orange-500/15 to-primary/15 rounded-full blur-2xl pointer-events-none"
-        animate={{ y: [0, 20, 0], scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-      />
+      {/* Background Effects */}
+      <div className="absolute inset-0">
+        {/* Gradient overlay */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
+          animate={{
+            background: [
+              "linear-gradient(45deg, rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05))",
+              "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05))",
+              "linear-gradient(45deg, rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05))"
+            ]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Floating particles */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+            }}
+            animate={{ 
+              y: [0, -90, 0],
+              x: [0, Math.random() * 30 - 15, 0],
+              opacity: [0, 0.6, 0],
+              scale: [0, 1, 0]
+            }}
+            transition={{ 
+              duration: 8 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 8,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+
+        {/* Animated icons */}
+        <motion.div
+          className="absolute top-32 right-16"
+          animate={{ 
+            y: [0, -18, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <User className="w-8 h-8 text-blue-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-40 left-20"
+          animate={{ 
+            y: [0, -15, 0],
+            rotate: [0, -8, 0]
+          }}
+          transition={{ 
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5
+          }}
+        >
+          <MapPin className="w-7 h-7 text-gray-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-48 left-40"
+          animate={{ 
+            y: [0, -10, 0],
+            x: [0, 8, 0]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5
+          }}
+        >
+          <Heart className="w-6 h-6 text-red-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-40 right-24"
+          animate={{ 
+            y: [0, 12, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        >
+          <Users className="w-7 h-7 text-yellow-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-64 right-40"
+          animate={{ 
+            y: [0, -12, 0],
+            rotate: [0, 15, 0]
+          }}
+          transition={{ 
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        >
+          <Search className="w-6 h-6 text-green-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-36 right-64"
+          animate={{ 
+            y: [0, -20, 0],
+            scale: [1, 1.2, 1]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <Filter className="w-8 h-8 text-purple-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-32 left-48"
+          animate={{ 
+            y: [0, -8, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.8
+          }}
+        >
+          <Baby className="w-6 h-6 text-indigo-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-72 left-24"
+          animate={{ 
+            rotate: [0, 360],
+            scale: [1, 1.3, 1]
+          }}
+          transition={{ 
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.8
+          }}
+        >
+          <SlidersHorizontal className="w-5 h-5 text-teal-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute top-16 left-56"
+          animate={{ 
+            y: [0, -14, 0],
+            rotate: [0, -12, 0]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2.5
+          }}
+        >
+          <Wine className="w-6 h-6 text-purple-600/30 drop-shadow-lg" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-16 right-56"
+          animate={{ 
+            y: [0, 18, 0],
+            x: [0, -6, 0]
+          }}
+          transition={{ 
+            duration: 4.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.2
+          }}
+        >
+          <Hotel className="w-7 h-7 text-orange-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        {/* Gradient orbs */}
+        <motion.div
+          className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
+          animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-orange-500/15 to-primary/15 rounded-full blur-2xl pointer-events-none"
+          animate={{ y: [0, 20, 0], scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pt-32">
         <motion.div
@@ -498,30 +656,19 @@ const EncontrePessoas = () => {
                       onChange={handleChange}
                       className="border border-gray-300 rounded px-3 py-2 w-full"
                     />
-                  </div>
-                  {/* Valor Médio */}
+                  </div>                  {/* Valor Médio Máximo */}
                   <div>
                     <label className="text-sm text-gray-600 block mb-1">
-                      Valor Médio (Mín. - Máx.) (R$)
+                      Valor Médio Máximo (R$)
                     </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        name="valorMedioMin"
-                        placeholder="Mín."
-                        value={valorMedioMinInput}
-                        onChange={(e) => handleValorMedioChange("valorMedioMin", e)}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                      <input
-                        type="text"
-                        name="valorMedioMax"
-                        placeholder="Máx."
-                        value={valorMedioMaxInput}
-                        onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      name="valorMedioMax"
+                      placeholder="Valor máximo..."
+                      value={valorMedioMaxInput}
+                      onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
                   </div>
                 </div>
                 {/* Checkboxes */}

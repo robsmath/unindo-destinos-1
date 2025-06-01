@@ -15,6 +15,7 @@ interface EnviarRoteiroModalProps {
   onClose: () => void;
   roteiroId: number;
   viagemId: number;
+  souCriador?: boolean;
 }
 
 const EnviarRoteiroModal = ({
@@ -22,6 +23,7 @@ const EnviarRoteiroModal = ({
   onClose,
   roteiroId,
   viagemId,
+  souCriador = false,
 }: EnviarRoteiroModalProps) => {
   const [destino, setDestino] = useState<"CRIADOR" | "PARTICIPANTES" | "OUTRO" | null>(null);
   const [emailOutro, setEmailOutro] = useState("");
@@ -143,9 +145,7 @@ const EnviarRoteiroModal = ({
 
             <p className="text-gray-600 mb-6 text-center">
               Escolha para quem deseja enviar este roteiro por e-mail
-            </p>
-
-            <div className="space-y-4">
+            </p>            <div className="space-y-4">
               {/* Opção: Para o meu e-mail */}
               <motion.label
                 whileHover={{ scale: 1.02 }}
@@ -174,61 +174,78 @@ const EnviarRoteiroModal = ({
                 <span className="font-medium">Para o meu e-mail</span>
               </motion.label>
 
-              {/* Opção: Para participantes */}
-              <motion.label
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                  destino === "PARTICIPANTES"
-                    ? "border-purple-500 bg-purple-50/80 shadow-lg"
-                    : "border-gray-200 hover:border-gray-300 bg-white/60"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="destinoEmail"
-                  value="PARTICIPANTES"
-                  checked={destino === "PARTICIPANTES"}
-                  onChange={() => setDestino("PARTICIPANTES")}
-                  className="sr-only"
-                />
-                <div className={`p-2 rounded-xl ${
-                  destino === "PARTICIPANTES" 
-                    ? "bg-purple-500 text-white" 
-                    : "bg-gray-100 text-gray-500"
-                }`}>
-                  <Users className="h-5 w-5" />
-                </div>
-                <span className="font-medium">Para todos os participantes da viagem</span>
-              </motion.label>
+              {/* Opção: Para participantes - apenas para criadores */}
+              {souCriador && (
+                <motion.label
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                    destino === "PARTICIPANTES"
+                      ? "border-purple-500 bg-purple-50/80 shadow-lg"
+                      : "border-gray-200 hover:border-gray-300 bg-white/60"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="destinoEmail"
+                    value="PARTICIPANTES"
+                    checked={destino === "PARTICIPANTES"}
+                    onChange={() => setDestino("PARTICIPANTES")}
+                    className="sr-only"
+                  />
+                  <div className={`p-2 rounded-xl ${
+                    destino === "PARTICIPANTES" 
+                      ? "bg-purple-500 text-white" 
+                      : "bg-gray-100 text-gray-500"
+                  }`}>
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <span className="font-medium">Para todos os participantes da viagem</span>
+                </motion.label>
+              )}
 
-              {/* Opção: Para outro e-mail */}
-              <motion.label
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                  destino === "OUTRO"
-                    ? "border-pink-500 bg-pink-50/80 shadow-lg"
-                    : "border-gray-200 hover:border-gray-300 bg-white/60"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="destinoEmail"
-                  value="OUTRO"
-                  checked={destino === "OUTRO"}
-                  onChange={() => setDestino("OUTRO")}
-                  className="sr-only"
-                />
-                <div className={`p-2 rounded-xl ${
-                  destino === "OUTRO" 
-                    ? "bg-pink-500 text-white" 
-                    : "bg-gray-100 text-gray-500"
-                }`}>
-                  <Mail className="h-5 w-5" />
+              {/* Opção: Para outro e-mail - apenas para criadores */}
+              {souCriador && (
+                <motion.label
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${
+                    destino === "OUTRO"
+                      ? "border-pink-500 bg-pink-50/80 shadow-lg"
+                      : "border-gray-200 hover:border-gray-300 bg-white/60"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="destinoEmail"
+                    value="OUTRO"
+                    checked={destino === "OUTRO"}
+                    onChange={() => setDestino("OUTRO")}
+                    className="sr-only"
+                  />
+                  <div className={`p-2 rounded-xl ${
+                    destino === "OUTRO" 
+                      ? "bg-pink-500 text-white" 
+                      : "bg-gray-100 text-gray-500"
+                  }`}>
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <span className="font-medium">Para outro e-mail</span>
+                </motion.label>
+              )}
+
+              {/* Mensagem informativa para participantes */}
+              {!souCriador && (
+                <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <User className="h-5 w-5 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-800">Opção Limitada</span>
+                  </div>
+                  <p className="text-sm text-blue-700">
+                    Como participante desta viagem, você pode enviar o roteiro apenas para o seu e-mail.
+                  </p>
                 </div>
-                <span className="font-medium">Para outro e-mail</span>
-              </motion.label>
+              )}
 
               {/* Detalhes das opções selecionadas */}
               <AnimatePresence mode="wait">

@@ -2,6 +2,17 @@ const CACHE_NAME = 'unindo-destinos-v1.0.0';
 const STATIC_CACHE_NAME = 'unindo-destinos-static-v1.0.0';
 const DYNAMIC_CACHE_NAME = 'unindo-destinos-dynamic-v1.0.0';
 
+// Recursos que nunca devem ser cacheados
+const NO_CACHE_ROUTES = [
+  '/viagens/cadastrarRoteiro',
+  'cadastrarRoteiro'
+];
+
+// Função para verificar se a URL deve ser excluída do cache
+function shouldSkipCache(url) {
+  return NO_CACHE_ROUTES.some(route => url.includes(route));
+}
+
 // Recursos estáticos para cache
 const STATIC_ASSETS = [
   '/',
@@ -90,6 +101,12 @@ self.addEventListener('fetch', (event) => {
 
   // Ignorar chrome-extension e outros protocolos
   if (!url.startsWith('http')) return;
+  
+  // Verificar se deve pular cache para rotas específicas
+  if (shouldSkipCache(url)) {
+    return; // Deixa a requisição passar normalmente sem cache
+  }
+  
   // Ignorar APIs externas de imagens para evitar interferência
   if (url.includes('unsplash.com') || 
       url.includes('images.unsplash.com')) {
@@ -310,5 +327,36 @@ async function cleanupCaches() {
     oldCaches.map(cacheName => caches.delete(cacheName))
   );
 }
+
+// Listener para mensagens do cliente para limpeza de cache específico
+self.addEventListener('message', (event) => {
+  const { data } = event;
+  
+  if (data && data.action === 'CLEAR_CACHE') {
+    const { url } = data;
+    
+    // Limpar cache específico para URL
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          return caches.open(cacheName).then((cache) => {
+            return cache.delete(url);
+          });
+        })
+      );
+    }).then(() => {
+      console.log('[SW] Cache cleared for URL:', url);
+      // Responder ao cliente que o cache foi limpo
+      event.ports[0]?.postMessage({ success: true });
+    }).catch((error) => {
+      console.error('[SW] Error clearing cache:', error);
+      event.ports[0]?.postMessage({ success: false, error });
+    });
+  }
+  
+  if (data && data.action === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 console.log('[SW] Service Worker loaded successfully');

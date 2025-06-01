@@ -35,8 +35,7 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
     const novasImagens: { [key: number]: string } = {};
     
     await Promise.all(
-      viagensLista.map(async ({ viagem }) => {
-        try {
+      viagensLista.map(async ({ viagem }) => {        try {
           const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
           const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
@@ -84,7 +83,6 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
   }, [isAuthenticated, carregado, atualizarUsuario, carregarImagens, logout]);  const atualizarViagens = useCallback(async () => {
-    // Se já temos viagens carregadas, não precisa recarregar
     if (viagens.length > 0 && carregado) {
       return;
     }
@@ -112,7 +110,6 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Se já temos dados do usuário, não precisa recarregar (exceto se forçado)
     if (usuario && carregado && !forcar) {
       return;
     }
@@ -140,7 +137,6 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Se já temos preferências carregadas, não precisa recarregar (exceto se forçado)
     if (preferencias && carregado && !forcar) {
       return;
     }

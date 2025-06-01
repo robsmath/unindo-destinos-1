@@ -36,20 +36,16 @@ const Footer = () => {
       icon: "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
       href: "#"
     }
-  ];
-
-  const quickLinks = [
+  ];  const quickLinks = [
     { name: "Home", href: "/" },
-    { name: "Encontrar Pessoas", href: "/encontrar" },
-    { name: "Viagens", href: "/viagens" },
-    { name: "Pets", href: "/pets" }
+    { name: "Minhas Viagens", href: "/profile?tab=viagens" },
+    { name: "Minhas Preferências", href: "/profile?tab=preferencias" },
+    { name: "Encontrar Pessoas", href: "/encontrar/pessoas" },
+    { name: "Encontrar Viagens", href: "/encontrar/viagens" }
   ];
-
   const supportLinks = [
-    { name: "Central de Solicitações", href: "/central-solicitacoes" },
-    { name: "FAQ", href: "#" },
-    { name: "Política de Privacidade", href: "#" },
-    { name: "Termos de Uso", href: "#" }
+    { name: "FAQ", href: "/faq" },
+    { name: "Termos de Uso", href: "/termos-de-uso" }
   ];
 
   return (
@@ -120,13 +116,12 @@ const Footer = () => {
                       filter: "brightness(1.2) drop-shadow(0 0 20px rgba(234, 88, 12, 0.3))"
                     }}
                     transition={{ duration: 0.3 }}
-                  >
-                    <Image
+                  >                    <Image
                       width={140}
                       height={60}
                       src="/images/logo/unindo-destinos-logo.png"
                       alt="Unindo Destinos"
-                      className="brightness-0 invert transition-all duration-300 relative z-10"
+                      className="transition-all duration-300 relative z-10"
                     />
                   </motion.div>
                 </Link>

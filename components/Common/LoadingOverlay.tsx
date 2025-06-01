@@ -5,9 +5,9 @@ import { Loader2, MapPin, Plane, Clock, CheckCircle } from "lucide-react";
 
 const frases = [
   { text: "Gerando seu roteiro de viagem...", icon: Plane, color: "from-blue-500 to-cyan-500" },
-  { text: "Isso pode levar alguns segundos...", icon: Clock, color: "from-purple-500 to-pink-500" },
-  { text: "Aguarde mais um pouquinho...", icon: Loader2, color: "from-orange-500 to-red-500" },
-  { text: "Está quase pronto!", icon: CheckCircle, color: "from-green-500 to-emerald-500" },
+  { text: "Analisando preferências...", icon: Clock, color: "from-purple-500 to-pink-500" },
+  { text: "Buscando melhores destinos...", icon: MapPin, color: "from-orange-500 to-red-500" },
+  { text: "Finalizando detalhes...", icon: CheckCircle, color: "from-green-500 to-emerald-500" },
 ];
 
 const LoadingOverlay = () => {
@@ -16,21 +16,19 @@ const LoadingOverlay = () => {
   useEffect(() => {
     const intervalo = setInterval(() => {
       setFraseAtual((prev) => (prev + 1) % frases.length);
-    }, 2500);
+    }, 3000);
     return () => clearInterval(intervalo);
   }, []);
-
   const fraseInfo = frases[fraseAtual];
   const IconeAtual = fraseInfo.icon;
-
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-white/90 backdrop-blur-xl z-50 flex flex-col items-center justify-center text-center px-4"
+      className="fixed inset-0 bg-white/95 backdrop-blur-xl z-50 flex items-center justify-center overflow-hidden"
     >
-      {/* Fundo animado com gradiente */}
       <motion.div
         className="absolute inset-0"
         animate={{
@@ -46,112 +44,125 @@ const LoadingOverlay = () => {
           repeat: Infinity,
           ease: "linear",
         }}
-        style={{ opacity: 0.1 }}
+        style={{ opacity: 0.05 }}
       />
+      
+      <div className="relative z-10 w-full max-w-sm mx-auto px-6 flex flex-col items-center justify-center text-center min-h-screen">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={fraseAtual}
+            initial={{ scale: 0, rotate: -180, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            exit={{ scale: 0, rotate: 180, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.6, damping: 12 }}
+            className="mb-8 flex justify-center"
+          >
+            <div className={`p-4 rounded-3xl bg-gradient-to-r ${fraseInfo.color} shadow-xl`}>
+              <IconeAtual className="h-10 w-10 text-white" />
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
-      {/* Container principal */}
-      <div className="relative z-10 max-w-md w-full">
-        {/* Ícone animado */}
-        <motion.div
-          key={fraseAtual}
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          exit={{ scale: 0, rotate: 180 }}
-          transition={{ type: "spring", duration: 0.8 }}
-          className="mb-8 flex justify-center"
-        >
-          <div className={`p-6 rounded-3xl bg-gradient-to-r ${fraseInfo.color} shadow-2xl`}>
-            <IconeAtual className="h-12 w-12 text-white animate-pulse" />
-          </div>
-        </motion.div>
-
-        {/* Spinner principal */}
         <motion.div
           className="relative mb-8 flex justify-center"
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
         >
-          <div className="w-20 h-20 border-4 border-transparent rounded-full">
-            <div className={`w-full h-full border-4 border-t-transparent rounded-full bg-gradient-to-r ${fraseInfo.color} animate-spin`}></div>
+          <div className="w-16 h-16 rounded-full border-4 border-gray-200">
+            <div className={`w-full h-full border-4 border-t-transparent rounded-full bg-gradient-to-r ${fraseInfo.color}`}></div>
           </div>
         </motion.div>
 
-        {/* Pontos de progresso */}
-        <div className="flex justify-center space-x-2 mb-8">
+        <div className="flex justify-center space-x-3 mb-8">
           {frases.map((_, index) => (
             <motion.div
               key={index}
               className={`w-3 h-3 rounded-full transition-all duration-500 ${
                 index === fraseAtual 
-                  ? `bg-gradient-to-r ${fraseInfo.color} shadow-lg scale-125` 
+                  ? `bg-gradient-to-r ${fraseInfo.color} shadow-lg` 
                   : "bg-gray-300"
               }`}
-              animate={index === fraseAtual ? { scale: [1, 1.2, 1] } : {}}
-              transition={{ duration: 0.5, repeat: Infinity }}
+              animate={index === fraseAtual ? { 
+                scale: [1, 1.3, 1],
+                opacity: [0.7, 1, 0.7]
+              } : { 
+                scale: 1,
+                opacity: 0.5
+              }}
+              transition={{ 
+                duration: 1, 
+                repeat: index === fraseAtual ? Infinity : 0,
+                ease: "easeInOut"
+              }}
             />
           ))}
         </div>
 
-        {/* Texto da frase */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={fraseAtual}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <h2 className={`text-2xl font-bold mb-2 bg-gradient-to-r ${fraseInfo.color} bg-clip-text text-transparent`}>
-              {fraseInfo.text}
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Estamos preparando a melhor experiência para você!
-            </p>
-          </motion.div>
-        </AnimatePresence>
+        <div className="mb-8 h-24 flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={fraseAtual}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="text-center w-full"
+            >
+              <h2 className={`text-xl sm:text-2xl font-bold mb-2 bg-gradient-to-r ${fraseInfo.color} bg-clip-text text-transparent`}>
+                {fraseInfo.text}
+              </h2>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Estamos preparando a melhor experiência!
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-        {/* Barra de progresso animada */}
-        <div className="mt-8 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden mb-4">
           <motion.div
-            className={`h-full bg-gradient-to-r ${fraseInfo.color} rounded-full`}
-            initial={{ width: "0%" }}
-            animate={{ width: `${((fraseAtual + 1) / frases.length) * 100}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            className={`h-full rounded-full bg-gradient-to-r ${fraseInfo.color}`}
+            animate={{ 
+              x: ["-100%", "100%"] 
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            style={{ width: "50%" }}
           />
         </div>
 
-        {/* Percentual */}
         <motion.p
           key={fraseAtual}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-sm text-gray-500 mt-3 font-medium"
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="text-sm text-gray-500 font-medium"
         >
-          {Math.round(((fraseAtual + 1) / frases.length) * 100)}% concluído
+          Processando...
         </motion.p>
-      </div>
-
-      {/* Efeitos de partículas */}
+      </div>      
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-white rounded-full opacity-20"
+            className="absolute w-1 h-1 bg-white rounded-full opacity-30"
             animate={{
               x: [0, Math.random() * 100 - 50],
               y: [0, Math.random() * 100 - 50],
               scale: [1, 1.5, 1],
-              opacity: [0.2, 0.8, 0.2],
+              opacity: [0.3, 0.7, 0.3],
             }}
             transition={{
-              duration: 4 + Math.random() * 2,
+              duration: 3 + (i * 0.5),
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: i * 0.3,
+              ease: "easeInOut"
             }}
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: `${15 + (i * 12)}%`,
+              top: `${25 + (i * 10)}%`,
             }}
           />
         ))}

@@ -24,7 +24,8 @@ import {
   Globe,
   Map,
   Compass,
-  Luggage
+  Luggage,
+  MessageCircle
 } from "lucide-react";
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { useAuth } from "@/app/context/AuthContext";
@@ -43,14 +44,15 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [loading, setLoading] = useState(false);
   const [cidadeInternacional, setCidadeInternacional] = useState("");
   const [consultaImagem, setConsultaImagem] = useState<{ [key: number]: string }>({});
-  const [paisSelecionado, setPaisSelecionado] = useState("");
-  const [form, setForm] = useState<Omit<ViagemDTO, "id" | "criadorViagemId">>({
+  const [paisSelecionado, setPaisSelecionado] = useState("");  const [form, setForm] = useState<Omit<ViagemDTO, "id" | "criadorViagemId">>({
     destino: "",
     dataInicio: "",
     dataFim: "",
     estilo: "AVENTURA",
     status: "PENDENTE",
-    categoriaViagem: "NACIONAL"
+    descricao: "",
+    categoriaViagem: "NACIONAL",
+    numeroMaximoParticipantes: undefined
   });
   
   const [preferencias, setPreferencias] = useState<PreferenciasDTO>({
@@ -76,8 +78,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [cidades, setCidades] = useState<string[]>([]);
 
   const id = viagemId ? Number(viagemId) : null;
-  
-  useEffect(() => {
+    useEffect(() => {
     const buscarImagem = async () => {
       if (form.destino) {
         const urlImagem = await fetchImagemPaisagemDestino(form.destino, form.categoriaViagem);
@@ -95,8 +96,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       }
     }
   }, [id]);
-  
-  useEffect(() => {
+    useEffect(() => {
     const fetchDados = async () => {
       if (form.categoriaViagem === "NACIONAL") {
         const estadosRes = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
@@ -111,7 +111,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     fetchDados();
     setCidades([]);
   }, [form.categoriaViagem]);
-
   useEffect(() => {
     const fetchCidades = async () => {
       if (form.categoriaViagem === "NACIONAL" && estado) {
@@ -132,15 +131,14 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     const carregarViagem = async () => {
       if (id) {
         try {
-          const viagem = await getViagemById(id);
-  
-          setForm({
+          const viagem = await getViagemById(id);          setForm({
             destino: viagem.destino,
             dataInicio: viagem.dataInicio,
             dataFim: viagem.dataFim,
             estilo: viagem.estilo,
             status: viagem.status,
-            categoriaViagem: viagem.categoriaViagem ?? "NACIONAL",
+            categoriaViagem: viagem.categoriaViagem ?? "NACIONAL", // Mantido para compatibilidade com API
+            descricao: viagem.descricao || "",
           });
   
           if (viagem.categoriaViagem === "NACIONAL") {
@@ -157,7 +155,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             );
           
             setCidadeInternacional(cidadeParte || "");
-            setPaisSelecionado(paisIngles || ""); // <-- linha nova
+            setPaisSelecionado(paisIngles || "");
           
             setForm(prev => ({
               ...prev,
@@ -165,9 +163,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
               destino: `${cidadeParte} - ${paisesTraduzidos[paisIngles || ""] || paisParte}`,
             }));
           }
-          
-  
-          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
+                const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
           const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
           setImagemDestino(imagem || "/images/common/beach.jpg");
 
@@ -192,15 +188,49 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   }, [id]);
   
 
-  if (!hasMounted) return null;
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  if (!hasMounted) return null;  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    let processedValue: string | number | undefined = value;
+    
+    // Tratamento especial para número máximo de participantes
+    if (name === "numeroMaximoParticipantes") {
+      if (value === "" || value === "0") {
+        processedValue = undefined;
+      } else {
+        processedValue = parseInt(value, 10);
+      }
+    }
+    
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue,
     }));
-  };  const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  };
+
+  // Handler específico para número de participantes - aceita apenas inteiros
+  const handleParticipantesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    
+    // Permite apenas números inteiros (sem decimais)
+    if (value === "" || /^[1-9]\d*$/.test(value)) {
+      const processedValue = value === "" ? undefined : parseInt(value, 10);
+      setForm((prev) => ({
+        ...prev,
+        numeroMaximoParticipantes: processedValue,
+      }));
+    }
+    // Se não é um número inteiro válido, não atualiza o campo
+  };// Handler específico para textarea de descrição
+  const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      descricao: value,
+    }));
+  };
+
+  const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, type } = e.target;
     const value = type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
     
@@ -276,7 +306,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           toast.success("Preferências salvas com sucesso!", { position: "top-center" });
         } catch (prefError) {
           console.error("Erro ao salvar preferências:", prefError);
-          // Não bloquear o fluxo se houver erro nas preferências
           toast.warning("Viagem salva, mas houve um problema ao salvar as preferências.");
         }
 
@@ -287,8 +316,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     } finally {
       setLoading(false);
     }
-  };
-  const fetchImagemPaisagemDestino = async (destino: string, categoriaViagem: string): Promise<string> => {
+  };  const fetchImagemPaisagemDestino = async (destino: string, categoriaViagem: string): Promise<string> => {
     try {
       const descricaoCustom = id ? localStorage.getItem(`imagemCustom-${id}`) : null;
       const imagem = await getImage(descricaoCustom || destino, categoriaViagem);
@@ -301,9 +329,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-      {/* Background with Simple Animated Icons */}
       <div className="absolute inset-0 z-10">
-        {/* Animated Background Gradient */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
           animate={{
@@ -316,7 +342,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Simple Floating Particles */}
         {Array.from({ length: 15 }).map((_, i) => (
           <motion.div
             key={i}
@@ -340,7 +365,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           />
         ))}
 
-        {/* Travel Icons with Smooth Animations */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -452,7 +476,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
         </motion.div>
       </div>
 
-      {/* Loading Overlay */}
       {loading && (
         <motion.div 
           className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center"
@@ -470,24 +493,18 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
           </motion.div>
         </motion.div>
-      )}
-
-      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 py-16">
+      )}      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 pt-32">
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
-          {/* Form Container */}
           <motion.div
             initial={{ opacity: 0, x: -30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex-1 lg:max-w-4xl"
           >
-            {/* Glass Morphism Container */}
             <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 lg:p-12 relative overflow-hidden">
-              {/* Inner glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
               
               <div className="relative z-10">
-                {/* Header */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -517,7 +534,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                 </motion.div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Travel Type Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -527,9 +543,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     <div className="flex items-center gap-2 mb-4">
                       <Globe className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-semibold text-gray-800">Tipo de Viagem</h3>
-                    </div>
-
-                    <div className="relative group">
+                    </div>                    <div className="relative group">
                       <select
                         name="categoriaViagem"
                         value={form.categoriaViagem}
@@ -545,11 +559,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                         <option value="INTERNACIONAL">Internacional</option>
                       </select>
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-                    </div>
-                    <p className="text-sm text-gray-500">Escolha se a viagem será dentro do Brasil ou para outro país.</p>
-                  </motion.div>
+                    </div>                    <p className="text-sm text-gray-500">Escolha se a viagem será dentro do Brasil ou para outro país.</p>                  </motion.div>
 
-                  {/* Destination Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -559,9 +570,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     <div className="flex items-center gap-2 mb-4">
                       <MapPin className="h-5 w-5 text-primary" />
                       <h3 className="text-lg font-semibold text-gray-800">Destino</h3>
-                    </div>
-
-                    {/* International Destination */}
+                    </div>                  
                     {form.categoriaViagem === "INTERNACIONAL" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="relative group">
@@ -606,9 +615,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
                       </div>
-                    )}
-
-                    {/* National Destination */}
+                    )}                  
                     {form.categoriaViagem === "NACIONAL" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="relative group">
@@ -652,7 +659,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                       </div>
                     )}
 
-                    {/* Generated Destination Display */}
                     {form.destino && (
                       <div className="p-4 bg-green-50 border border-green-200 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
@@ -664,7 +670,29 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     )}
                   </motion.div>
 
-                  {/* Dates Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.55, duration: 0.6 }}
+                    className="space-y-4"
+                  >                    <div className="flex items-center gap-2 mb-4">
+                      <MessageCircle className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-gray-800">Descrição da Viagem</h3>
+                    </div>
+
+                    <div className="relative group">
+                      <textarea
+                        name="descricao"
+                        value={form.descricao}
+                        onChange={handleDescricaoChange}
+                        placeholder="Descreva brevemente a sua viagem, compartilhe detalhes interessantes ou expectativas..."
+                        className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 resize-none h-32"
+                      />
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                    </div>
+                    <p className="text-sm text-gray-500">Uma breve descrição da sua viagem ajudará os outros viajantes a conhecer melhor o seu plano.</p>
+                  </motion.div>
+
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -699,19 +727,42 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                           className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 group-hover:bg-white/80"
                         />
                         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-                      </div>
-                    </div>
+                      </div>                    </div>
                     <p className="text-sm text-gray-500">Defina o período da sua viagem.</p>
                   </motion.div>
 
-                  {/* Style and Status Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.65, duration: 0.6 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <Luggage className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-gray-800">Número de Participantes</h3>
+                    </div>                    <div className="relative group">
+                      <input
+                        type="number"
+                        name="numeroMaximoParticipantes"
+                        value={form.numeroMaximoParticipantes || ""}
+                        onChange={handleParticipantesChange}
+                        placeholder="Número máximo de participantes (opcional)"
+                        min="1"
+                        max="50"
+                        step="1"
+                        className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                      />
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                    </div>
+                    <p className="text-sm text-gray-500">Defina quantas pessoas podem participar da sua viagem. Aceita apenas números inteiros de 1 a 50 (deixe em branco para sem limite).</p>
+                  </motion.div>
+
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7, duration: 0.6 }}
                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
                   >
-                    {/* Travel Style */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-4">
                         <Heart className="h-5 w-5 text-primary" />
@@ -742,7 +793,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                       <p className="text-sm text-gray-500">Qual o estilo principal da viagem.</p>
                     </div>
 
-                    {/* Travel Status */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 mb-4">
                         <Settings className="h-5 w-5 text-primary" />
@@ -765,7 +815,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                             : "Pendente ⏳"}
                         </p>
 
-                        {/* Status Action Buttons */}
                         {(form.status !== "EM_ANDAMENTO" && form.status !== "CONCLUIDA" && form.status !== "CANCELADA") && (
                           <div className="flex gap-2">
                             {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (
@@ -794,7 +843,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     </div>
                   </motion.div>
 
-                  {/* Preferences Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -859,7 +907,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     </AnimatePresence>
                   </motion.div>
 
-                  {/* Action Buttons */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -916,7 +963,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             </div>
           </motion.div>
 
-          {/* Image Preview Sidebar */}
           <motion.div
             initial={{ opacity: 0, x: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -924,7 +970,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             className="w-full lg:w-80 xl:w-96"
           >
             <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 relative overflow-hidden sticky top-8">
-              {/* Inner glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
               
               <div className="relative z-10 space-y-4">
@@ -933,7 +978,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                   <h3 className="text-lg font-semibold text-gray-800">Prévia do Destino</h3>
                 </div>
 
-                {/* Image Container */}
                 <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-gray-100">
                   <motion.img
                     key={imagemDestino}
@@ -947,7 +991,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                   />
                 </div>
 
-                {/* Custom Image Search */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-gray-700">
                     Personalizar imagem do destino
@@ -972,9 +1015,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     type="button"
                     onClick={async () => {
                       const descricaoFinal = consultaImagem[1] || form.destino;
-                      if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);
-
-                      const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
+                      if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);                      const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
                       setImagemDestino(novaImagem || "/images/common/beach.jpg");
                     }}
                     whileHover={{ scale: 1.02 }}

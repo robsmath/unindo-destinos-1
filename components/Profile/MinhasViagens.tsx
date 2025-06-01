@@ -33,7 +33,6 @@ const MinhasViagens = () => {
   const [loadingCadastrar, setLoadingCadastrar] = useState(false);
   const [loadingActions, setLoadingActions] = useState<{[key: string]: boolean}>({});
 
-  // Função para formatar o status
   const formatarStatus = (status: string): string => {
     const statusMap: { [key: string]: string } = {
       "RASCUNHO": "Rascunho",
@@ -47,7 +46,6 @@ const MinhasViagens = () => {
     return statusMap[status] || status;
   };
 
-  // Registra callback para invalidação do cache
   useEffect(() => {
     const invalidateCallback = () => {
       recarregarViagens();
@@ -117,7 +115,6 @@ const MinhasViagens = () => {
       setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
     }
   };
-
   const handleSairDaViagem = async (id: number) => {
     const actionKey = `leave-${id}`;
     setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
@@ -136,7 +133,7 @@ const MinhasViagens = () => {
     try {
       await sairDaViagem(id);
       toast.success("Você saiu da viagem.");
-      router.push("/profile?tab=viagens");
+      await recarregarViagens(); 
     } catch (error) {
       toast.error("Erro ao sair da viagem. Tente novamente.");
     } finally {
@@ -152,7 +149,6 @@ const MinhasViagens = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        {/* Header Section */}
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-2">
             <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
@@ -162,7 +158,6 @@ const MinhasViagens = () => {
           <p className="text-gray-600">Gerencie todas as suas aventuras e descobertas</p>
         </div>
 
-        {/* Modern Filter Section */}
         <motion.div 
           className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/30 p-6 shadow-xl"
           initial={{ opacity: 0, y: 10 }}
@@ -216,7 +211,6 @@ const MinhasViagens = () => {
           </div>
         </motion.div>
 
-        {/* Content Section */}
         {viagensOrdenadas.length === 0 ? (
           <motion.div 
             className="text-center py-12"
@@ -246,7 +240,7 @@ const MinhasViagens = () => {
                 transition={{ delay: index * 0.02 }}
                 whileHover={{ y: -1 }}
                 onClick={() => setViagemSelecionadaId(viagem.id)}
-              >{/* Image Section */}
+              >
                 <div className="relative h-48 overflow-hidden">                  <SmartImage
                     src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
                     alt={viagem.destino}
@@ -256,10 +250,8 @@ const MinhasViagens = () => {
                     fallbackSrc="/images/common/beach.jpg"
                   />
                   
-                  {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                   
-                  {/* Status Badge */}
                   <div className="absolute top-4 left-4">
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border border-white/30 ${
@@ -279,7 +271,6 @@ const MinhasViagens = () => {
                     </span>
                   </div>
 
-                  {/* Creator Badge */}
                   {!criador && (
                     <div className="absolute top-4 right-4">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary/80 text-white backdrop-blur-sm border border-white/30">
@@ -289,7 +280,6 @@ const MinhasViagens = () => {
                   )}
                 </div>
 
-                {/* Content Section */}
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">
                     {viagem.destino}
@@ -300,7 +290,6 @@ const MinhasViagens = () => {
                     {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} - {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
                   </p>
 
-                  {/* Action Buttons */}
                   <div className="flex justify-between items-center gap-3">
                     <div className="flex gap-2">                      <motion.button
                         onClick={(e) => {
@@ -380,7 +369,6 @@ const MinhasViagens = () => {
           </motion.div>
         )}
 
-        {/* Modern CTA Button */}
         <motion.div 
           className="text-center"
           initial={{ opacity: 0, y: 10 }}
@@ -396,7 +384,6 @@ const MinhasViagens = () => {
             whileTap={{ scale: 0.99 }}
             disabled={loadingCadastrar}
           >
-            {/* Animated Background */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               initial={{ x: '-100%' }}
@@ -416,7 +403,6 @@ const MinhasViagens = () => {
         </motion.div>
       </motion.div>
 
-      {/* Modal de detalhes da viagem */}
       {viagemSelecionadaId && (
         <ViagemDetalhesModal
           viagemId={viagemSelecionadaId}

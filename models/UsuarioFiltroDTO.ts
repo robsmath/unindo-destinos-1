@@ -7,7 +7,6 @@ export interface UsuarioFiltroDTO {
   idadeMin?: number | "";
   idadeMax?: number | "";
 
-  valorMedioMin?: number | "";
   valorMedioMax?: number | "";
 
   petFriendly?: boolean;

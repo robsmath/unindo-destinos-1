@@ -106,11 +106,10 @@ const Header = () => {
     <motion.header
       initial="initial"
       animate="animate"
-      variants={headerVariants}
-      className={`fixed left-0 top-0 z-50 w-full transition-all duration-500 ${
+      variants={headerVariants}      className={`fixed left-0 top-0 z-50 w-full transition-all duration-500 ${
         stickyMenu
-          ? "bg-white/80 backdrop-blur-xl py-3 shadow-2xl border-b border-white/20 dark:bg-black/80 dark:border-white/10"
-          : "bg-white/60 backdrop-blur-lg py-5 dark:bg-black/60"
+          ? "bg-white/80 backdrop-blur-xl py-2 shadow-2xl border-b border-white/20 dark:bg-black/80 dark:border-white/10"
+          : "bg-white/60 backdrop-blur-lg py-4 dark:bg-black/60"
       }`}
       role="banner"
       aria-label="Navegação principal"
@@ -148,29 +147,27 @@ const Header = () => {
               whileHover={{ scale: 1.1 }}
               transition={{ duration: 0.3 }}
               aria-hidden={true}
-            />
-            <Image
+            />            <Image
               src="/images/logo/unindo-destinos-logo.png"
               alt="Unindo Destinos - Logo"
-              width={140}
-              height={40}
+              width={120}
+              height={35}
               className="dark:hidden transition-all duration-300 hover:scale-105 relative z-10"
               priority
             />
             <Image
               src="/images/logo/unindo-destinos-logo.png"
               alt="Unindo Destinos - Logo"
-              width={140}
-              height={40}
+              width={120}
+              height={35}
               className="hidden dark:block transition-all duration-300 hover:scale-105 relative z-10"
               priority
             />
           </Link>
         </motion.div>
 
-        {/* Enhanced Nav Menu */}
-        <nav 
-          className="hidden xl:flex items-center gap-2"
+        {/* Enhanced Nav Menu */}        <nav 
+          className="hidden xl:flex items-center gap-1"
           role="navigation"
           aria-label="Menu principal"
         >
@@ -185,8 +182,7 @@ const Header = () => {
                 className="relative"
               >
                 <Link
-                  href={menuItem.path}
-                  className={`relative px-6 py-3 text-base font-medium tracking-wide transition-all duration-300 rounded-full group ${
+                  href={menuItem.path}                  className={`relative px-5 py-2 text-sm font-medium tracking-wide transition-all duration-300 rounded-full group ${
                     pathUrl === menuItem.path
                       ? "text-white"
                       : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
