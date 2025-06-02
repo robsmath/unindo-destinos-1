@@ -587,3 +587,101 @@ pre {
     pointer-events: auto !important;
   }
 }
+
+/* Chat Components Z-Index and Positioning Fixes */
+.chat-dropdown-overlay {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.chat-modal-overlay {
+  z-index: 999999 !important;
+  position: fixed !important;
+  isolation: isolate;
+}
+
+/* Ensure chat components are above header */
+.chat-dropdown-mobile {
+  top: 5rem !important;
+  z-index: 999999 !important;
+}
+
+.chat-dropdown-desktop {
+  z-index: 9999 !important;
+}
+
+/* Prevent chat from being covered by other elements */
+.chat-private-modal {
+  z-index: 999999 !important;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Chat Components Styling */
+.chat-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+  isolation: isolate;
+}
+
+.chat-private-modal {
+  z-index: 999999 !important;
+  position: relative !important;
+  isolation: isolate;
+  width: 100% !important;
+  max-width: 28rem !important;
+  max-height: 90vh !important;
+  background: white !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  overflow: hidden !important;
+}
+
+.chat-dropdown-mobile {
+  position: fixed !important;
+  top: 5rem !important;
+  left: 1rem !important;
+  right: 1rem !important;
+  z-index: 999999 !important;
+  max-height: calc(100vh - 6rem) !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0.75rem !important;
+}
+
+.chat-dropdown-desktop {
+  position: absolute !important;
+  right: 0 !important;
+  top: 100% !important;
+  margin-top: 0.5rem !important;
+  width: 20rem !important;
+  max-height: 24rem !important;
+  z-index: 9999 !important;
+}
+
+/* Mobile specific improvements */
+@media (max-width: 768px) {
+  .chat-modal-mobile {
+    margin: 1rem !important;
+    max-height: 85vh !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: none !important;
+  }
+  
+  .chat-dropdown-mobile {
+    top: 5rem !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    max-height: calc(100vh - 8rem) !important;
+  }
+}

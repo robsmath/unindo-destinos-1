@@ -260,9 +260,7 @@ const ParticipantesViagem = () => {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
         />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-c-1390 px-4 md:px-8 2xl:px-0 pt-32 pb-20">
+      </div>      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pt-24 pb-16">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -272,12 +270,12 @@ const ParticipantesViagem = () => {
         >
           <motion.button
             onClick={() => router.back()}
-            className="group flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/90"
-            whileHover={{ scale: 1.02, x: -5 }}
+            className="group inline-flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-primary/20 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:bg-white hover:border-primary/30"
+            whileHover={{ scale: 1.02, x: -3 }}
             whileTap={{ scale: 0.98 }}
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600 group-hover:text-primary transition-colors duration-300" />
-            <span className="text-gray-700 font-medium group-hover:text-primary transition-colors duration-300">
+            <ArrowLeft className="w-4 h-4 text-primary group-hover:text-primary/80 transition-colors duration-300" />
+            <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors duration-300">
               Voltar
             </span>
           </motion.button>
@@ -288,23 +286,23 @@ const ParticipantesViagem = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm border border-primary/20 shadow-md mb-6"
           >
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-gray-600">Participantes</span>
+            <span className="text-sm font-medium text-gray-700">Participantes</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-orange-500 to-primary bg-clip-text text-transparent mb-6"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-orange-500 to-primary bg-clip-text text-transparent mb-4"
           >
             Participantes da Viagem
           </motion.h1>
@@ -313,36 +311,34 @@ const ParticipantesViagem = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4"
+            className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4"
           >
             Conheça todos os viajantes que farão parte desta aventura incrível
           </motion.p>
-        </motion.div>
-
-        {/* Loading State */}
+        </motion.div>{/* Loading State */}
         {carregando && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center min-h-[400px]"
+            className="flex flex-col items-center justify-center min-h-[300px]"
           >
             <div className="relative">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full"
+                className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full"
               />
               <motion.div
                 animate={{ rotate: -360 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-2 w-12 h-12 border-4 border-orange-500/20 border-b-orange-500 rounded-full"
+                className="absolute inset-1 w-10 h-10 border-3 border-orange-500/20 border-b-orange-500 rounded-full"
               />
             </div>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 text-gray-600 font-medium"
+              className="mt-4 text-gray-600 font-medium text-sm"
             >
               Carregando participantes...
             </motion.p>
@@ -355,36 +351,35 @@ const ParticipantesViagem = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            {participantes.length === 0 ? (
+          >            {participantes.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6 }}
-                className="text-center py-20"
+                className="text-center py-12"
               >
-                <div className="max-w-md mx-auto">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="max-w-sm mx-auto">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
                     Nenhum participante encontrado
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-sm text-gray-600">
                     Esta viagem ainda não possui participantes cadastrados.
                   </p>
                 </div>
               </motion.div>            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 justify-items-center">
                 {participantesOrdenados.map((usuario, index) => (
                   <motion.div
                     key={usuario.id}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="w-full"
+                    className="w-full max-w-sm"
                   >                    <ParticipanteCard
                       participante={usuario}
                       viagemId={Number(id)}
@@ -395,11 +390,9 @@ const ParticipantesViagem = () => {
                   </motion.div>
                 ))}
               </div>
-            )}          </motion.div>
+            )}</motion.div>
         )}
-      </div>
-
-      {/* Modal do Chat */}
+      </div>      {/* Modal do Chat */}
       <AnimatePresence>
         {chatAberto && participanteSelecionado && (
           <motion.div
@@ -408,21 +401,19 @@ const ParticipantesViagem = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={handleCloseChat}
-          >            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="relative w-full max-w-md h-[600px] bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 400 }}
+              className="relative w-full max-w-md h-[70vh] max-h-[600px] bg-white rounded-2xl shadow-2xl border border-white/20 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Componente do Chat - sem header duplicado */}
-              <div className="h-full">
-                <ChatPrivado 
-                  usuarioId={participanteSelecionado.id}
-                  onFechar={handleCloseChat}
-                />
-              </div>
+              <ChatPrivado 
+                usuarioId={participanteSelecionado.id}
+                onFechar={handleCloseChat}
+              />
             </motion.div>
           </motion.div>
         )}

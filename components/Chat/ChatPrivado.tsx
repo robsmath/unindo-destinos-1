@@ -164,7 +164,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
     grupos[data].push(mensagem);
     return grupos;
   }, {} as Record<string, MensagemDTO[]>);
-
   if (carregando) {
     return (
       <motion.div
@@ -185,13 +184,12 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
     );
   }
 
-  return (
-    <motion.div
+  return (    <motion.div
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="flex flex-col h-full max-h-[600px] md:max-h-[700px] bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 overflow-hidden backdrop-blur-xl"
+      className="flex flex-col h-full bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 overflow-hidden backdrop-blur-xl"
     >
       {/* Header do Chat */}
       <motion.div

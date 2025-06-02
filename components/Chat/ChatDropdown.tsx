@@ -6,6 +6,7 @@ import { MessageCircle, User, X } from 'lucide-react';
 import { buscarRemetentesComMensagensNaoLidas, marcarConversaComoVisualizada } from '@/services/mensagemService';
 import { RemetenteComMensagensDTO } from '@/models/RemetenteComMensagensDTO';
 import ChatPrivado from './ChatPrivado';
+import Portal from '@/components/Common/Portal';
 
 interface ChatDropdownProps {
   isOpen: boolean;
@@ -20,7 +21,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
   const [chatAberto, setChatAberto] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<RemetenteComMensagensDTO | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -29,6 +29,13 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Fechar dropdown quando chat modal abre
+  useEffect(() => {
+    if (chatAberto) {
+      onClose();
+    }
+  }, [chatAberto, onClose]);
 
   useEffect(() => {
     if (isOpen) {
@@ -49,11 +56,10 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
       setLoading(false);
     }
   };
-
   const handleOpenChat = async (remetente: RemetenteComMensagensDTO) => {
     setUsuarioSelecionado(remetente);
     setChatAberto(true);
-    onClose();
+    // onClose() será chamado automaticamente pelo useEffect
     try {
       await marcarConversaComoVisualizada(remetente.usuarioId);
       await fetchRemetentes();
@@ -92,18 +98,18 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
               className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
             />
           )}
-        </motion.button>
-
-        <AnimatePresence>
+        </motion.button>        <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className={`${
-                isMobile ? 'fixed inset-0 top-0 w-full h-full rounded-none' : 'absolute right-0 mt-2 w-80 max-h-96'
-              } z-[9999] bg-white/95 backdrop-blur-lg rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden`}
+                isMobile
+                  ? 'chat-dropdown-mobile fixed top-20 left-4 right-4 max-h-[calc(100vh-6rem)] w-auto h-auto rounded-xl'
+                  : 'chat-dropdown-desktop absolute right-0 top-full mt-2 w-80 max-h-96'
+              } z-[999999] bg-white/95 backdrop-blur-lg rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden`}
             >
               <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-primary/5 to-orange-500/5 flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800 flex items-center gap-2">
@@ -115,7 +121,7 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
                 </button>
               </div>
 
-              <div className="max-h-[calc(100%-60px)] overflow-y-auto">
+              <div className={`${isMobile ? 'max-h-[calc(100vh-12rem)]' : 'max-h-[calc(100%-60px)]'} overflow-y-auto`}>
                 {loading ? (
                   <div className="p-6 text-center">
                     <motion.div
@@ -172,31 +178,36 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-
-      {/* Chat privado modal */}
-      <AnimatePresence>
-        {chatAberto && usuarioSelecionado && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={handleCloseChat}
-          >
+      </div>      {/* Chat modal alinhado ao topo - RENDERIZADO NO BODY */}
+      <Portal>
+        <AnimatePresence>
+          {chatAberto && usuarioSelecionado && (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
-              transition={{ type: "spring", damping: 25, stiffness: 400 }}
-              className="relative w-full max-w-md h-[600px] bg-white rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="chat-modal-overlay fixed inset-0 z-[999999] flex justify-center items-start bg-black/50 backdrop-blur-sm overflow-y-auto"
+              onClick={handleCloseChat}
+              style={{ isolation: 'isolate' }}
             >
-              <ChatPrivado usuarioId={usuarioSelecionado.usuarioId} onFechar={handleCloseChat} />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 50 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 50 }}
+                transition={{ type: "spring", damping: 25, stiffness: 400 }}
+                className={`chat-private-modal w-full ${
+                  isMobile 
+                    ? 'chat-modal-mobile max-w-none h-[calc(100vh-2rem)] mt-4 mx-4 mb-4' 
+                    : 'max-w-md h-[calc(100vh-4rem)] mt-8 mb-8'
+                } bg-white rounded-3xl shadow-2xl border border-white/20 overflow-hidden`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ChatPrivado usuarioId={usuarioSelecionado.usuarioId} onFechar={handleCloseChat} />
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   );
 }
