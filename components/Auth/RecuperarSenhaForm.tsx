@@ -225,31 +225,33 @@ export default function RecuperarSenhaForm() {
       {/* Loading Overlay */}
       {enviando && (
         <motion.div 
-          className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div 
-            className="text-center p-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20"
+            className="text-center p-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 max-w-sm w-full"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="inline-block"
-            >
-              <Loader2 className="h-12 w-12 text-primary mb-4" />
-            </motion.div>
-            <p className="text-lg font-medium text-gray-700">Enviando e-mail...</p>
-            <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
+            <div className="flex items-center justify-center mb-4">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-12 h-12 flex items-center justify-center"
+              >
+                <Loader2 className="w-12 h-12 text-primary" />
+              </motion.div>
+            </div>
+            <p className="text-lg font-semibold text-gray-800 mb-2">Enviando e-mail...</p>
+            <p className="text-sm text-gray-600">Aguarde um momento</p>
           </motion.div>
         </motion.div>
       )}
 
-      <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 pt-24 pb-8">
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -257,7 +259,7 @@ export default function RecuperarSenhaForm() {
           className="w-full max-w-md"
         >
           {/* Glass Morphism Container */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 relative overflow-hidden">
             {/* Inner glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
             
@@ -267,26 +269,26 @@ export default function RecuperarSenhaForm() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-center mb-8"
+                className="text-center mb-6 sm:mb-8"
               >
                 <motion.div 
-                  className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary to-orange-500 rounded-2xl mb-4"
+                  className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-primary to-orange-500 rounded-2xl mb-3 sm:mb-4"
                   whileHover={{ scale: 1.05, rotate: 5 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Mail className="w-8 h-8 text-white" />
+                  <Mail className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                 </motion.div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
                   <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
                     Recuperar Senha
                   </span>
                 </h1>
-                <p className="text-gray-600 text-lg">
+                <p className="text-gray-600 text-base sm:text-lg">
                   Digite seu e-mail para receber um link de recuperação
                 </p>
               </motion.div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                 {/* Modern Input Field */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -315,7 +317,7 @@ export default function RecuperarSenhaForm() {
                   transition={{ delay: 0.5, duration: 0.6 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-lg relative overflow-hidden"
+                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-base sm:text-lg relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 hover:opacity-100 transition-opacity duration-300"
@@ -331,11 +333,11 @@ export default function RecuperarSenhaForm() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="text-center pt-6 border-t border-gray-200/50"
+                  className="text-center pt-4 sm:pt-6 border-t border-gray-200/50"
                 >
                   <Link 
                     href="/auth/signin" 
-                    className="inline-flex items-center text-primary hover:text-orange-500 transition-colors duration-200 font-medium hover:underline"
+                    className="inline-flex items-center text-primary hover:text-orange-500 transition-colors duration-200 font-medium hover:underline text-sm sm:text-base"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Voltar para o login

@@ -260,62 +260,72 @@ const ParticipantesViagem = () => {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
         />
-      </div>      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pt-24 pb-16">
-        {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <motion.button
-            onClick={() => router.back()}
-            className="group inline-flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-primary/20 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:bg-white hover:border-primary/30"
-            whileHover={{ scale: 1.02, x: -3 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <ArrowLeft className="w-4 h-4 text-primary group-hover:text-primary/80 transition-colors duration-300" />
-            <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors duration-300">
-              Voltar
-            </span>
-          </motion.button>
-        </motion.div>
-
-        {/* Header Section */}
+      </div>      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pt-16 pb-16">
+        {/* Header Section Integrado */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="mb-8"
         >
+          {/* Back Button integrado */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm border border-primary/20 shadow-md mb-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-6"
           >
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-gray-700">Participantes</span>
+            <motion.button
+              onClick={() => router.back()}
+              className="group inline-flex items-center gap-3 px-5 py-3 bg-white/95 backdrop-blur-md border border-primary/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white hover:border-primary/20"
+              whileHover={{ scale: 1.02, x: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full flex items-center justify-center group-hover:from-primary/20 group-hover:to-orange-500/20 transition-all duration-300">
+                <ArrowLeft className="w-4 h-4 text-primary transition-all duration-300" />
+              </div>
+              <span className="text-sm font-semibold text-gray-700 group-hover:text-primary transition-colors duration-300">
+                Voltar para Viagem
+              </span>
+            </motion.button>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-orange-500 to-primary bg-clip-text text-transparent mb-4"
-          >
-            Participantes da Viagem
-          </motion.h1>
+          {/* Badge e Título mais próximos */}
+          <div className="text-center">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 backdrop-blur-sm shadow-sm mb-4"
+            >
+              <Users className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">
+                {participantes.length} {participantes.length === 1 ? 'Participante' : 'Participantes'}
+              </span>
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4"
-          >
-            Conheça todos os viajantes que farão parte desta aventura incrível
-          </motion.p>
-        </motion.div>{/* Loading State */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent mb-3"
+            >
+              Companheiros de Viagem
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="text-sm sm:text-base text-gray-600 max-w-xl mx-auto"
+            >
+              Conecte-se e converse com seus companheiros de aventura
+            </motion.p>
+          </div>
+        </motion.div>
+
+        {/* Loading State */}
         {carregando && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -356,31 +366,42 @@ const ParticipantesViagem = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6 }}
-                className="text-center py-12"
+                className="text-center py-16"
               >
-                <div className="max-w-sm mx-auto">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Nenhum participante encontrado
+                <div className="max-w-md mx-auto">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center shadow-lg"
+                  >
+                    <Users className="w-12 h-12 text-gray-400" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">
+                    Ainda não há participantes
                   </h3>
-                  <p className="text-sm text-gray-600">
-                    Esta viagem ainda não possui participantes cadastrados.
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Esta viagem ainda não possui participantes cadastrados. Seja o primeiro a se juntar a esta aventura!
                   </p>
                 </div>
-              </motion.div>            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 justify-items-center">
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center">
                 {participantesOrdenados.map((usuario, index) => (
                   <motion.div
                     key={usuario.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ 
+                      duration: 0.6, 
+                      delay: index * 0.08,
+                      type: "spring",
+                      damping: 25,
+                      stiffness: 300
+                    }}
                     className="w-full max-w-sm"
-                  >                    <ParticipanteCard
+                  >
+                    <ParticipanteCard
                       participante={usuario}
                       viagemId={Number(id)}
                       usuarioEhCriador={usuarioEhCriador}

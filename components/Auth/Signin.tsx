@@ -261,31 +261,33 @@ const Signin = () => {
       {/* Loading Overlay */}
       {loading && (
         <motion.div 
-          className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div 
-            className="text-center p-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20"
+            className="text-center p-6 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 max-w-sm w-full"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
-          >            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="flex items-center justify-center mb-4"
-              style={{ transformOrigin: 'center' }}
-            >
-              <Loader2 className="h-12 w-12 text-primary" />
-            </motion.div>
-            <p className="text-lg font-medium text-gray-700">Entrando em sua conta...</p>
-            <p className="text-sm text-gray-500 mt-2">Aguarde um momento</p>
+          >
+            <div className="flex items-center justify-center mb-4">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-12 h-12 flex items-center justify-center"
+              >
+                <Loader2 className="w-12 h-12 text-primary" />
+              </motion.div>
+            </div>
+            <p className="text-lg font-semibold text-gray-800 mb-2">Entrando em sua conta...</p>
+            <p className="text-sm text-gray-600">Aguarde um momento</p>
           </motion.div>
         </motion.div>
       )}
 
-      <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 pt-24 pb-8">
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -293,7 +295,7 @@ const Signin = () => {
           className="w-full max-w-md"
         >
           {/* Glass Morphism Container */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 relative overflow-hidden">
             {/* Inner glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
             
@@ -303,25 +305,25 @@ const Signin = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-center mb-8"
+                className="text-center mb-6 sm:mb-8"
               >
-                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
                   <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
                     Bem-vindo de volta
                   </span>
                 </h1>
-                <p className="text-gray-600 text-lg">
+                <p className="text-gray-600 text-base sm:text-lg">
                   Entre em sua conta e continue sua jornada
                 </p>
               </motion.div>
 
-              <form onSubmit={handleLogin} className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
                 {/* Modern Input Fields */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
-                  className="space-y-6"
+                  className="space-y-4 sm:space-y-6"
                 >
                   <div className="relative group">
                     <input
@@ -383,7 +385,7 @@ const Signin = () => {
                   transition={{ delay: 0.6, duration: 0.6 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-lg relative overflow-hidden"
+                  className="w-full py-3 sm:py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-base sm:text-lg relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 hover:opacity-100 transition-opacity duration-300"
@@ -399,9 +401,9 @@ const Signin = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.7 }}
-                  className="text-center pt-6 border-t border-gray-200/50"
+                  className="text-center pt-4 sm:pt-6 border-t border-gray-200/50"
                 >
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm sm:text-base">
                     Não tem uma conta?{" "}
                     <Link 
                       href="/auth/signup" 

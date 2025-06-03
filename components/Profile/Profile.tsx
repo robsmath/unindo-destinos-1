@@ -32,6 +32,9 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [abasCarregadas, setAbasCarregadas] = useState<Set<number>>(new Set());
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const tabs = [
     { label: "Dados Pessoais", param: "dados" },
@@ -39,7 +42,9 @@ const Profile = () => {
     { label: "Minhas Preferências", param: "preferencias" },
     { label: "Meus Pets", param: "pets" },
     { label: "Central de Solicitações", param: "solicitacoes" },
-  ];  useEffect(() => {
+  ];
+
+  useEffect(() => {
     if (!isAuthenticated) {
       router.push("/auth/signin");
     } else {
@@ -59,7 +64,9 @@ const Profile = () => {
         setSelectedIndex(tabIndex);
       }
     }
-  }, [searchParams]);  const handleTabChange = async (index: number) => {
+  }, [searchParams]);
+
+  const handleTabChange = async (index: number) => {
     setSelectedIndex(index);
     const tab = tabs[index];
     
@@ -70,9 +77,10 @@ const Profile = () => {
     // Só precisamos marcar a aba como carregada
     setAbasCarregadas(prev => new Set(prev).add(index));
   };
+
   // Função para comprimir imagem
   const compressImage = (file: File): Promise<File> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
@@ -98,7 +106,12 @@ const Profile = () => {
         canvas.width = width;
         canvas.height = height;
         
-        ctx?.drawImage(img, 0, 0, width, height);
+        if (!ctx) {
+          reject(new Error('Não foi possível criar o contexto do canvas'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
         
         canvas.toBlob(
           (blob) => {
@@ -109,7 +122,7 @@ const Profile = () => {
               });
               resolve(compressedFile);
             } else {
-              resolve(file);
+              reject(new Error('Falha ao comprimir a imagem'));
             }
           },
           'image/jpeg',
@@ -117,6 +130,7 @@ const Profile = () => {
         );
       };
       
+      img.onerror = () => reject(new Error('Erro ao carregar a imagem'));
       img.src = URL.createObjectURL(file);
     });
   };
@@ -136,22 +150,69 @@ const Profile = () => {
       return;
     }
 
+    // Mostrar modal de confirmação
+    setPendingFile(file);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!pendingFile) return;
+
+    setShowConfirmModal(false);
     setUploading(true);
+    
+    const loadingToast = toast.loading('Processando sua foto...');
 
     try {
-      const finalFile = file.size > 2 * 1024 * 1024 ? await compressImage(file) : file;
-      
+      // Converter para Blob para garantir compatibilidade com iOS
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (reader.result instanceof ArrayBuffer) {
+            const blob = new Blob([reader.result], { type: pendingFile.type });
+            resolve(blob);
+          } else {
+            reject(new Error('Falha ao processar a imagem'));
+          }
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(pendingFile);
+      });
+
+      // Comprimir a imagem se necessário
+      let finalFile: File;
+      if (pendingFile.size > 2 * 1024 * 1024) {
+        finalFile = await compressImage(pendingFile);
+      } else {
+        // Converter Blob para File se não precisar comprimir
+        finalFile = new File([blob], pendingFile.name, {
+          type: pendingFile.type,
+          lastModified: Date.now()
+        });
+      }
+
       const imageUrl = await uploadFotoPerfil(finalFile);
       atualizarFotoPerfil(imageUrl);
-      toast.success('Foto atualizada com sucesso!');
+      toast.success('Foto atualizada com sucesso!', {
+        id: loadingToast,
+        duration: 3000,
+      });
     } catch (error) {
       console.error("Erro ao fazer upload da foto:", error);
-      toast.error('Erro ao enviar foto. Tente novamente.');
+      toast.error('Erro ao enviar foto. Tente novamente.', {
+        id: loadingToast,
+        duration: 3000,
+      });
     } finally {
       setUploading(false);
+      setPendingFile(null);
     }
   };
-  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+
+  const handleCancelUpload = () => {
+    setShowConfirmModal(false);
+    setPendingFile(null);
+  };
 
   const handleAvatarClick = () => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -168,13 +229,21 @@ const Profile = () => {
     
     if (fileInputRef.current) {
       if (useCamera) {
-        fileInputRef.current.setAttribute('capture', 'user');
+        fileInputRef.current.setAttribute('accept', 'image/*');
+        fileInputRef.current.setAttribute('capture', 'environment');
       } else {
+        fileInputRef.current.setAttribute('accept', 'image/*');
         fileInputRef.current.removeAttribute('capture');
       }
-      fileInputRef.current.click();
+      
+      // Pequeno delay para garantir que as alterações foram aplicadas
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 100);
     }
-  };return (
+  };
+
+  return (
     <CacheInvalidationProvider>
       <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">        {/* Background Effects */}
         <div className="absolute inset-0">
@@ -417,57 +486,120 @@ const Profile = () => {
 
                   {/* Modal de Opções de Foto para Mobile */}
                   <AnimatePresence>
+                    {showConfirmModal && (
+                      <motion.div
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={handleCancelUpload}
+                      >
+                        <motion.div
+                          className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl border border-gray-100"
+                          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                          animate={{ scale: 1, opacity: 1, y: 0 }}
+                          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="text-center mb-6">
+                            <motion.div
+                              className="w-16 h-16 bg-gradient-to-r from-orange-500 to-primary rounded-full flex items-center justify-center mx-auto mb-4"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ delay: 0.2, type: "spring", damping: 20, stiffness: 300 }}
+                            >
+                              <FaCamera className="w-8 h-8 text-white" />
+                            </motion.div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">Alterar Foto de Perfil</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                              <span className="font-medium text-orange-600">Atenção:</span> Ao trocar sua foto de perfil, 
+                              a foto anterior será <span className="font-medium">permanentemente substituída</span> e não 
+                              poderá ser recuperada. A nova foto será salva automaticamente.
+                            </p>
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <motion.button
+                              onClick={handleCancelUpload}
+                              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-2xl transition-all duration-200 border border-gray-200"
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              Cancelar
+                            </motion.button>
+                            
+                            <motion.button
+                              onClick={handleConfirmUpload}
+                              className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90 text-white font-medium rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              Continuar
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+
                     {showPhotoOptions && (
                       <motion.div
-                        className="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setShowPhotoOptions(false)}
                       >
                         <motion.div
-                          className="bg-white rounded-t-3xl w-full max-w-sm p-6 space-y-4"
-                          initial={{ y: 300 }}
-                          animate={{ y: 0 }}
-                          exit={{ y: 300 }}
+                          className="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-gray-100 overflow-hidden"
+                          initial={{ y: 300, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: 300, opacity: 0 }}
+                          transition={{ type: "spring", damping: 25, stiffness: 300 }}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="text-center mb-6">
-                            <h3 className="text-lg font-semibold text-gray-800">Escolha uma opção</h3>
-                            <p className="text-sm text-gray-600">Como deseja adicionar sua foto?</p>
+                          <div className="p-6 border-b border-gray-100">
+                            <h3 className="text-lg font-bold text-gray-800 text-center">Escolha uma opção</h3>
+                            <p className="text-sm text-gray-600 text-center mt-1">Como deseja adicionar sua foto?</p>
                           </div>
                           
-                          <motion.button
-                            onClick={() => handlePhotoOption(true)}
-                            className="w-full flex items-center gap-4 p-4 bg-primary/10 rounded-2xl text-primary hover:bg-primary/20 transition-colors"
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaCamera className="w-6 h-6" />
-                            <div className="text-left">
-                              <div className="font-medium">Tirar Foto</div>
-                              <div className="text-sm opacity-80">Usar câmera do dispositivo</div>
-                            </div>
-                          </motion.button>
+                          <div className="p-4 space-y-3">
+                            <motion.button
+                              onClick={() => handlePhotoOption(true)}
+                              className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 rounded-2xl text-primary hover:from-primary/20 hover:to-orange-500/20 transition-all duration-200"
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <div className="w-12 h-12 bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center">
+                                <FaCamera className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="text-left">
+                                <div className="font-semibold">Tirar Foto</div>
+                                <div className="text-sm opacity-80">Usar câmera do dispositivo</div>
+                              </div>
+                            </motion.button>
+                            
+                            <motion.button
+                              onClick={() => handlePhotoOption(false)}
+                              className="w-full flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                                <ImageIcon className="w-5 h-5 text-gray-600" />
+                              </div>
+                              <div className="text-left">
+                                <div className="font-semibold">Escolher da Galeria</div>
+                                <div className="text-sm opacity-80">Selecionar foto existente</div>
+                              </div>
+                            </motion.button>
+                          </div>
                           
-                          <motion.button
-                            onClick={() => handlePhotoOption(false)}
-                            className="w-full flex items-center gap-4 p-4 bg-gray-100 rounded-2xl text-gray-700 hover:bg-gray-200 transition-colors"
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <ImageIcon className="w-6 h-6" />
-                            <div className="text-left">
-                              <div className="font-medium">Escolher da Galeria</div>
-                              <div className="text-sm opacity-80">Selecionar foto existente</div>
-                            </div>
-                          </motion.button>
-                          
-                          <motion.button
-                            onClick={() => setShowPhotoOptions(false)}
-                            className="w-full p-3 text-gray-500 text-center border-t border-gray-200 mt-4"
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            Cancelar
-                          </motion.button>
+                          <div className="p-4 border-t border-gray-100">
+                            <motion.button
+                              onClick={() => setShowPhotoOptions(false)}
+                              className="w-full p-3 text-gray-500 font-medium text-center hover:text-gray-700 transition-colors duration-200"
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              Cancelar
+                            </motion.button>
+                          </div>
                         </motion.div>
                       </motion.div>
                     )}
