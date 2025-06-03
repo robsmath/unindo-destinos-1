@@ -78,60 +78,276 @@ const Profile = () => {
     setAbasCarregadas(prev => new Set(prev).add(index));
   };
 
-  // Função para comprimir imagem
-  const compressImage = (file: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
+  // Função para detectar se é iOS
+  const isIOS = () => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  };
+
+  // Função para detectar formatos HEIC/HEIF do iPhone
+  const isHeicFile = (file: File): boolean => {
+    const heicExtensions = ['.heic', '.heif', '.HEIC', '.HEIF'];
+    const heicMimeTypes = ['image/heic', 'image/heif'];
+    
+    const hasHeicExtension = heicExtensions.some(ext => file.name.toLowerCase().endsWith(ext.toLowerCase()));
+    const hasHeicMimeType = heicMimeTypes.includes(file.type.toLowerCase());
+    
+    return hasHeicExtension || hasHeicMimeType;
+  };
+
+  // Função para verificar se o arquivo é uma imagem válida
+  const isValidImageFile = (file: File): boolean => {
+    const validImageTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'
+    ];
+    
+    // No iOS, também aceitar HEIC/HEIF
+    if (isIOS()) {
+      validImageTypes.push('image/heic', 'image/heif');
+    }
+    
+    // Verificar por tipo MIME
+    if (validImageTypes.includes(file.type.toLowerCase())) {
+      return true;
+    }
+    
+    // Verificar por extensão (fallback para alguns casos onde o tipo MIME não é detectado)
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    if (isIOS()) {
+      validExtensions.push('.heic', '.heif');
+    }
+    
+    const hasValidExtension = validExtensions.some(ext => 
+      file.name.toLowerCase().endsWith(ext.toLowerCase())
+    );
+    
+    return hasValidExtension;
+  };
+
+  // Função para extrair e aplicar orientação EXIF (especialmente importante para iPhone)
+  const getExifOrientation = (file: File): Promise<number> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+        const dataView = new DataView(arrayBuffer);
         
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = (height * MAX_WIDTH) / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = (width * MAX_HEIGHT) / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        if (!ctx) {
-          reject(new Error('Não foi possível criar o contexto do canvas'));
+        // Verificar se é JPEG
+        if (dataView.getUint16(0, false) !== 0xFFD8) {
+          resolve(1); // Sem orientação específica
           return;
         }
-
-        ctx.drawImage(img, 0, 0, width, height);
         
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              reject(new Error('Falha ao comprimir a imagem'));
+        let offset = 2;
+        let marker;
+        
+        while (offset < dataView.byteLength) {
+          marker = dataView.getUint16(offset, false);
+          offset += 2;
+          
+          if (marker === 0xFFE1) { // Marker EXIF
+            const exifLength = dataView.getUint16(offset, false);
+            const exifStart = offset + 2;
+            
+            // Procurar por orientação
+            if (dataView.getUint32(exifStart, false) === 0x45786966) { // "Exif"
+              const tiffStart = exifStart + 6;
+              const littleEndian = dataView.getUint16(tiffStart, false) === 0x4949;
+              
+              const ifdOffset = dataView.getUint32(tiffStart + 4, littleEndian);
+              const tagCount = dataView.getUint16(tiffStart + ifdOffset, littleEndian);
+              
+              for (let i = 0; i < tagCount; i++) {
+                const tagOffset = tiffStart + ifdOffset + 2 + (i * 12);
+                const tag = dataView.getUint16(tagOffset, littleEndian);
+                
+                if (tag === 0x0112) { // Tag de orientação
+                  const orientation = dataView.getUint16(tagOffset + 8, littleEndian);
+                  resolve(orientation);
+                  return;
+                }
+              }
             }
-          },
-          'image/jpeg',
-          0.8
-        );
+            break;
+          } else {
+            offset += dataView.getUint16(offset, false);
+          }
+        }
+        
+        resolve(1); // Orientação padrão
       };
       
-      img.onerror = () => reject(new Error('Erro ao carregar a imagem'));
-      img.src = URL.createObjectURL(file);
+      reader.onerror = () => resolve(1);
+      reader.readAsArrayBuffer(file.slice(0, 64 * 1024)); // Ler apenas os primeiros 64KB
+    });
+  };
+
+  // Função para aplicar rotação baseada na orientação EXIF
+  const applyExifRotation = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, img: HTMLImageElement, orientation: number) => {
+    const { width, height } = canvas;
+    
+    switch (orientation) {
+      case 2:
+        // Flip horizontal
+        ctx.translate(width, 0);
+        ctx.scale(-1, 1);
+        break;
+      case 3:
+        // Rotação 180°
+        ctx.translate(width, height);
+        ctx.rotate(Math.PI);
+        break;
+      case 4:
+        // Flip vertical
+        ctx.translate(0, height);
+        ctx.scale(1, -1);
+        break;
+      case 5:
+        // Rotação 90° + flip horizontal
+        ctx.rotate(Math.PI / 2);
+        ctx.scale(1, -1);
+        break;
+      case 6:
+        // Rotação 90° horário
+        canvas.width = height;
+        canvas.height = width;
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(0, -height);
+        break;
+      case 7:
+        // Rotação 90° + flip vertical
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(width, -height);
+        ctx.scale(-1, 1);
+        break;
+      case 8:
+        // Rotação 90° anti-horário
+        canvas.width = height;
+        canvas.height = width;
+        ctx.rotate(-Math.PI / 2);
+        ctx.translate(-width, 0);
+        break;
+      default:
+        // Sem rotação (orientação 1)
+        break;
+    }
+  };
+
+  // Função melhorada para comprimir imagem com tratamento especial para iOS
+  const compressImage = async (file: File): Promise<File> => {
+    console.log('📱 Iniciando compressão para:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      isIOS: isIOS(),
+      isHeic: isHeicFile(file)
+    });
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        // Obter orientação EXIF (especialmente importante para iPhone)
+        const orientation = await getExifOrientation(file);
+        console.log('🔄 Orientação EXIF detectada:', orientation);
+        
+        img.onload = () => {
+          try {
+            // Configurações mais agressivas para iPhone
+            const MAX_WIDTH = isIOS() ? 1000 : 1200;
+            const MAX_HEIGHT = isIOS() ? 1000 : 1200;
+            const QUALITY = isIOS() ? 0.7 : 0.8;
+            
+            let { width, height } = img;
+            
+            // Redimensionar mantendo proporção
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height = (height * MAX_WIDTH) / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width = (width * MAX_HEIGHT) / height;
+                height = MAX_HEIGHT;
+              }
+            }
+            
+            // Ajustar canvas para orientação
+            if (orientation >= 5 && orientation <= 8) {
+              canvas.width = height;
+              canvas.height = width;
+            } else {
+              canvas.width = width;
+              canvas.height = height;
+            }
+            
+            if (!ctx) {
+              throw new Error('❌ Não foi possível criar contexto do canvas');
+            }
+
+            // Aplicar correção de orientação EXIF
+            applyExifRotation(canvas, ctx, img, orientation);
+            
+            // Desenhar imagem com as dimensões corretas
+            const drawWidth = orientation >= 5 && orientation <= 8 ? height : width;
+            const drawHeight = orientation >= 5 && orientation <= 8 ? width : height;
+            
+            ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
+            
+            // Converter para blob JPEG (forçar JPEG para compatibilidade)
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  console.log('✅ Compressão bem-sucedida:', {
+                    originalSize: file.size,
+                    compressedSize: blob.size,
+                    reduction: `${Math.round((1 - blob.size / file.size) * 100)}%`,
+                    finalDimensions: `${canvas.width}x${canvas.height}`
+                  });
+                  
+                  const compressedFile = new File([blob], 
+                    file.name.replace(/\.[^/.]+$/, '.jpg'), // Forçar extensão .jpg
+                    {
+                      type: 'image/jpeg', // Forçar tipo JPEG
+                      lastModified: Date.now(),
+                    }
+                  );
+                  resolve(compressedFile);
+                } else {
+                  throw new Error('❌ Falha ao comprimir a imagem');
+                }
+              },
+              'image/jpeg', // Sempre forçar JPEG
+              QUALITY
+            );
+          } catch (error) {
+            console.error('❌ Erro durante processamento da imagem:', error);
+            reject(error);
+          }
+        };
+        
+        img.onerror = (error) => {
+          console.error('❌ Erro ao carregar imagem:', error);
+          reject(new Error('Erro ao carregar a imagem para processamento'));
+        };
+        
+        // Criar URL da imagem
+        const imageUrl = URL.createObjectURL(file);
+        img.src = imageUrl;
+        
+        // Limpar URL após uso
+        img.onload = (originalOnload => function() {
+          URL.revokeObjectURL(imageUrl);
+          return originalOnload?.call(this);
+        })(img.onload);
+        
+      } catch (error) {
+        console.error('❌ Erro na compressão:', error);
+        reject(error);
+      }
     });
   };
 
@@ -139,14 +355,43 @@ const Profile = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione apenas arquivos de imagem.');
+    console.log('📸 Upload iniciado:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      userAgent: navigator.userAgent,
+      isIOS: isIOS(),
+      isHeic: isHeicFile(file)
+    });
+
+    // Verificar se é arquivo de imagem válido
+    if (!isValidImageFile(file)) {
+      console.error('❌ Arquivo não é uma imagem válida:', {
+        type: file.type,
+        name: file.name,
+        isIOS: isIOS()
+      });
+      
+      let errorMsg = 'Por favor, selecione apenas arquivos de imagem válidos.';
+      if (isIOS()) {
+        errorMsg += ' Formatos aceitos: JPEG, PNG, HEIC, HEIF.';
+      } else {
+        errorMsg += ' Formatos aceitos: JPEG, PNG, WebP.';
+      }
+      
+      toast.error(errorMsg);
       return;
     }
 
-    const MAX_SIZE_MB = 10;
+    // Verificar tamanho (mais permissivo para iPhone)
+    const MAX_SIZE_MB = isIOS() ? 20 : 10; // iPhone pode ter fotos muito maiores
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      toast.error(`Arquivo muito grande. Limite de ${MAX_SIZE_MB}MB.`);
+      console.error('❌ Arquivo muito grande:', {
+        size: file.size,
+        maxSize: MAX_SIZE_MB * 1024 * 1024,
+        isIOS: isIOS()
+      });
+      toast.error(`Foto muito grande. Limite de ${MAX_SIZE_MB}MB.`);
       return;
     }
 
@@ -161,47 +406,57 @@ const Profile = () => {
     setShowConfirmModal(false);
     setUploading(true);
     
-    const loadingToast = toast.loading('Processando sua foto...');
+    const loadingToast = toast.loading('Processando sua foto...', {
+      duration: 15000 // Mais tempo para processar fotos do iPhone
+    });
 
     try {
-      // Converter para Blob para garantir compatibilidade com iOS
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (reader.result instanceof ArrayBuffer) {
-            const blob = new Blob([reader.result], { type: pendingFile.type });
-            resolve(blob);
-          } else {
-            reject(new Error('Falha ao processar a imagem'));
-          }
-        };
-        reader.onerror = () => reject(reader.error);
-        reader.readAsArrayBuffer(pendingFile);
+      console.log('🚀 Iniciando processamento do arquivo...');
+      
+      // Sempre comprimir/processar a imagem (especialmente importante para iPhone)
+      const processedFile = await compressImage(pendingFile);
+      
+      console.log('📤 Enviando arquivo processado:', {
+        name: processedFile.name,
+        size: processedFile.size,
+        type: processedFile.type
       });
 
-      // Comprimir a imagem se necessário
-      let finalFile: File;
-      if (pendingFile.size > 2 * 1024 * 1024) {
-        finalFile = await compressImage(pendingFile);
-      } else {
-        // Converter Blob para File se não precisar comprimir
-        finalFile = new File([blob], pendingFile.name, {
-          type: pendingFile.type,
-          lastModified: Date.now()
-        });
-      }
-
-      const imageUrl = await uploadFotoPerfil(finalFile);
+      const imageUrl = await uploadFotoPerfil(processedFile);
+      
+      console.log('✅ Upload concluído com sucesso:', imageUrl);
+      
       atualizarFotoPerfil(imageUrl);
       toast.success('Foto atualizada com sucesso!', {
         id: loadingToast,
         duration: 3000,
       });
+      
     } catch (error) {
-      console.error("Erro ao fazer upload da foto:", error);
-      toast.error('Erro ao enviar foto. Tente novamente.', {
+      console.error("💥 Erro detalhado no upload:", {
+        error,
+        fileName: pendingFile?.name,
+        fileSize: pendingFile?.size,
+        fileType: pendingFile?.type,
+        isIOS: isIOS(),
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
+      
+      let errorMessage = 'Erro ao enviar foto. Tente novamente.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Network')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+        } else if (error.message.includes('size') || error.message.includes('large')) {
+          errorMessage = 'Foto muito grande. Tente com uma foto menor.';
+        } else if (error.message.includes('format') || error.message.includes('type')) {
+          errorMessage = 'Formato de foto não suportado. Use JPEG ou PNG.';
+        }
+      }
+      
+      toast.error(errorMessage, {
         id: loadingToast,
-        duration: 3000,
+        duration: 5000,
       });
     } finally {
       setUploading(false);
@@ -217,7 +472,7 @@ const Profile = () => {
   const handleAvatarClick = () => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (isMobile) {
+    if (isMobile || isIOS()) {
       setShowPhotoOptions(true);
     } else {
       fileInputRef.current?.click();
@@ -228,15 +483,26 @@ const Profile = () => {
     setShowPhotoOptions(false);
     
     if (fileInputRef.current) {
-      if (useCamera) {
-        fileInputRef.current.setAttribute('accept', 'image/*');
-        fileInputRef.current.setAttribute('capture', 'environment');
+      // Configurações específicas para iOS
+      if (isIOS()) {
+        if (useCamera) {
+          fileInputRef.current.setAttribute('accept', 'image/*');
+          fileInputRef.current.setAttribute('capture', 'environment');
+        } else {
+          // Para galeria no iOS, aceitar HEIC também
+          fileInputRef.current.setAttribute('accept', 'image/*,image/heic,image/heif');
+          fileInputRef.current.removeAttribute('capture');
+        }
       } else {
-        fileInputRef.current.setAttribute('accept', 'image/*');
-        fileInputRef.current.removeAttribute('capture');
+        if (useCamera) {
+          fileInputRef.current.setAttribute('accept', 'image/*');
+          fileInputRef.current.setAttribute('capture', 'environment');
+        } else {
+          fileInputRef.current.setAttribute('accept', 'image/*');
+          fileInputRef.current.removeAttribute('capture');
+        }
       }
       
-      // Pequeno delay para garantir que as alterações foram aplicadas
       setTimeout(() => {
         fileInputRef.current?.click();
       }, 100);
@@ -245,7 +511,8 @@ const Profile = () => {
 
   return (
     <CacheInvalidationProvider>
-      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">        {/* Background Effects */}
+      <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
+        {/* Background Effects */}
         <div className="absolute inset-0">
           {/* Animated Gradient Background */}
           <motion.div
@@ -433,7 +700,9 @@ const Profile = () => {
                   </h1>
                   <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                     Gerencie suas informações, viagens e preferências em um só lugar
-                  </p>                  {/* Enhanced Avatar Section */}
+                  </p>
+
+                  {/* Enhanced Avatar Section */}
                   <motion.div 
                     className="relative inline-block"
                     whileHover={{ scale: 1.02 }}
@@ -451,7 +720,8 @@ const Profile = () => {
                         </div>
                       </div>
                       
-                      {/* Upload Overlay */}                      {uploading && (
+                      {/* Upload Overlay */}
+                      {uploading && (
                         <motion.div 
                           className="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-full"
                           initial={{ opacity: 0 }}
@@ -473,7 +743,9 @@ const Profile = () => {
                         transition={{ duration: 0.15 }}
                       >
                         <FaCamera size={18} />
-                      </motion.button>                      <input
+                      </motion.button>
+
+                      <input
                         type="file"
                         accept="image/*"
                         capture="user"
@@ -484,7 +756,7 @@ const Profile = () => {
                     </div>
                   </motion.div>
 
-                  {/* Modal de Opções de Foto para Mobile */}
+                  {/* Modal de Confirmação */}
                   <AnimatePresence>
                     {showConfirmModal && (
                       <motion.div
@@ -540,6 +812,7 @@ const Profile = () => {
                       </motion.div>
                     )}
 
+                    {/* Modal de Opções de Foto */}
                     {showPhotoOptions && (
                       <motion.div
                         className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4"
