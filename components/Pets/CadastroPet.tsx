@@ -28,16 +28,9 @@ interface CadastroPetProps {
   petId?: number;
 }
 
-interface ValidationErrors {
-  nome?: string;
-  porte?: string;
-  dataNascimento?: string;
-}
-
 const CadastroPet = ({ petId }: CadastroPetProps) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [pet, setPet] = useState<PetDTO>({
     nome: "",
     raca: "",
@@ -50,48 +43,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
-
-  const validateField = (fieldName: string, value: string): string => {
-    switch (fieldName) {
-      case 'nome':
-        if (!value.trim()) return 'Nome do pet é obrigatório';
-        if (value.trim().length < 2) return 'Nome deve ter pelo menos 2 caracteres';
-        return '';
-      case 'porte':
-        if (!value.trim()) return 'Porte é obrigatório';
-        return '';
-      case 'dataNascimento':
-        if (!value.trim()) return '';
-        const hoje = new Date();
-        const nascimento = new Date(value);
-        if (nascimento >= hoje) return 'Data de nascimento deve ser anterior à data atual';
-        return '';
-      default:
-        return '';
-    }
-  };
-
-  // Função para validar todos os campos
-  const validateAllFields = (petData: PetDTO): ValidationErrors => {
-    const errors: ValidationErrors = {};
-    
-    const nomeError = validateField('nome', petData.nome);
-    if (nomeError) errors.nome = nomeError;
-    
-    const porteError = validateField('porte', petData.porte);
-    if (porteError) errors.porte = porteError;
-    
-    if (petData.dataNascimento) {
-      const dataError = validateField('dataNascimento', petData.dataNascimento);
-      if (dataError) errors.dataNascimento = dataError;
-    }
-    
-    return errors;
-  };
-
   useEffect(() => {
     const carregarPet = async () => {
       if (petId) {
@@ -105,30 +57,12 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
       }
     };
     carregarPet();
-  }, [petId, router]);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  }, [petId, router]);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setPet((prev) => ({ ...prev, [name]: value }));
-    
-    setTouchedFields(prev => new Set([...prev, name]));
-    
-    const error = validateField(name, value);
-    setValidationErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
   };
-
   const handleSelectChange = (field: string, value: string) => {
     setPet((prev) => ({ ...prev, [field]: value }));
-    
-    setTouchedFields(prev => new Set([...prev, field]));
-    
-    const error = validateField(field, value);
-    setValidationErrors(prev => ({
-      ...prev,
-      [field]: error
-    }));
   };
   // Função para comprimir imagem
   const compressImage = (file: File): Promise<File> => {
@@ -235,19 +169,12 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
       }
       fileInputRef.current.click();
     }
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validar todos os campos
-    const errors = validateAllFields(pet);
-    setValidationErrors(errors);
-
-    if (Object.keys(errors).length > 0) {
-      toast.error("Por favor, corrija os erros no formulário");
+    if (!pet.nome) {
+      toast.error("Por favor, digite o nome do pet");
       return;
     }
-
     setSaving(true);
     try {
       if (petId) {
@@ -501,39 +428,13 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Nome do Pet <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Input
+            <div className="relative">              <Input
                 name="nome"
                 value={pet.nome}
                 onChange={handleChange}
                 placeholder="Digite o nome do seu pet"
-                className={`pl-4 pr-10 h-12 text-base border-2 transition-all duration-300 ${
-                  touchedFields.has('nome') && validationErrors.nome
-                    ? 'border-red-300 focus:border-red-500 bg-red-50'
-                    : touchedFields.has('nome') && !validationErrors.nome && pet.nome
-                    ? 'border-green-300 focus:border-green-500 bg-green-50'
-                    : 'border-gray-200 focus:border-primary'
-                }`}
-              />
-              {touchedFields.has('nome') && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  {validationErrors.nome ? (
-                    <FaTimes className="text-red-500" />
-                  ) : pet.nome ? (
-                    <FaCheck className="text-green-500" />
-                  ) : null}
-                </div>
-              )}
-            </div>
-            {touchedFields.has('nome') && validationErrors.nome && (
-              <motion.p 
-                className="text-red-500 text-sm mt-1"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                {validationErrors.nome}
-              </motion.p>
-            )}
+                className="pl-4 pr-10 h-12 text-base border-2 border-gray-200 focus:border-primary transition-all duration-300"
+              />            </div>
           </motion.div>
 
           {/* Raça */}
@@ -563,18 +464,11 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Porte <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Select 
+            <div className="relative">              <Select 
                 value={pet.porte} 
                 onValueChange={(value) => handleSelectChange("porte", value)}
               >
-                <SelectTrigger className={`h-12 text-base border-2 transition-all duration-300 ${
-                  touchedFields.has('porte') && validationErrors.porte
-                    ? 'border-red-300 focus:border-red-500 bg-red-50'
-                    : touchedFields.has('porte') && !validationErrors.porte && pet.porte
-                    ? 'border-green-300 focus:border-green-500 bg-green-50'
-                    : 'border-gray-200 focus:border-primary'
-                }`}>
+                <SelectTrigger className="h-12 text-base border-2 border-gray-200 focus:border-primary transition-all duration-300">
                   <SelectValue placeholder="Selecione o porte" />
                 </SelectTrigger>
                 <SelectContent>
@@ -597,26 +491,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
                     </div>
                   </SelectItem>
                 </SelectContent>
-              </Select>
-              {touchedFields.has('porte') && (
-                <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-                  {validationErrors.porte ? (
-                    <FaTimes className="text-red-500" />
-                  ) : pet.porte ? (
-                    <FaCheck className="text-green-500" />
-                  ) : null}
-                </div>
-              )}
-            </div>
-            {touchedFields.has('porte') && validationErrors.porte && (
-              <motion.p 
-                className="text-red-500 text-sm mt-1"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                {validationErrors.porte}
-              </motion.p>
-            )}
+              </Select>            </div>
           </motion.div>
 
           {/* Sexo */}
@@ -657,47 +532,17 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           >
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Data de Nascimento
-            </label>            <div className="relative">
-              <Input
+            </label>            <div className="relative">              <Input
                 type="date"
                 value={pet.dataNascimento}
                 onChange={(e) => {
                   const value = e.target.value;
                   setPet((prev) => ({ ...prev, dataNascimento: value }));
-                  
-                  // Marcar campo como tocado
-                  setTouchedFields(prev => new Set([...prev, 'dataNascimento']));
-                  
-                  // Validar campo em tempo real
-                  const error = validateField('dataNascimento', value);
-                  setValidationErrors(prev => ({
-                    ...prev,
-                    dataNascimento: error
-                  }));
                 }}
                 max={new Date().toISOString().split('T')[0]}
-                className={`w-full h-12 text-base ${
-                  touchedFields.has('dataNascimento') && validationErrors.dataNascimento
-                    ? 'border-red-500 focus:border-red-500'
-                    : ''
-                }`}
+                className="w-full h-12 text-base border-2 border-gray-200 focus:border-primary transition-all duration-300"
                 style={{ fontSize: '16px' }}
-              />
-              {touchedFields.has('dataNascimento') && validationErrors.dataNascimento && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <FaTimes className="text-red-500" />
-                </div>
-              )}
-            </div>
-            {touchedFields.has('dataNascimento') && validationErrors.dataNascimento && (
-              <motion.p 
-                className="text-red-500 text-sm mt-1"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                {validationErrors.dataNascimento}
-              </motion.p>
-            )}
+              />            </div>
           </motion.div>
         </div>
 
@@ -754,10 +599,9 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-        >
-          <Button 
+        >          <Button 
             type="submit" 
-            disabled={saving || Object.keys(validationErrors).length > 0}
+            disabled={saving}
             className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <AnimatePresence mode="wait">
@@ -785,19 +629,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </Button>
-          
-          {Object.keys(validationErrors).length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg"
-            >
-              <p className="text-red-700 text-sm font-medium text-center">
-                Por favor, corrija os erros no formulário antes de continuar
-              </p>
-            </motion.div>
-          )}        </motion.div>
+          </Button></motion.div>
       </motion.form>
 
       {/* Modal de Opções de Foto para Mobile */}
