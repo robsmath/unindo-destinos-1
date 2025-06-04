@@ -3,12 +3,11 @@
 import { Fragment, useState } from "react";
 import { Dialog, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
 import { motion } from "framer-motion";
-import { X, AlertTriangle, Send, Upload, FileImage } from "lucide-react";
+import { X, AlertTriangle, Send } from "lucide-react";
 import { MotivoDenuncia, motivosDenunciaOptions } from "@/models/MotivoDenuncia";
 import { DenunciaDTO } from "@/models/DenunciaDTO";
 import { registrarDenuncia } from "@/services/denunciaService";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 
 interface Props {
   isOpen: boolean;
@@ -27,37 +26,16 @@ export default function DenunciaModal({
 }: Props) {
   const [motivo, setMotivo] = useState<MotivoDenuncia | "">("");
   const [descricao, setDescricao] = useState("");
-  const [foto, setFoto] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const resetForm = () => {
     setMotivo("");
     setDescricao("");
-    setFoto(null);
   };
 
   const handleClose = () => {
     resetForm();
     onClose();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        toast.error("Por favor, selecione apenas arquivos de imagem");
-        return;
-      }
-      
-      // Validar tamanho (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("O arquivo deve ter no máximo 5MB");
-        return;
-      }
-      
-      setFoto(file);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +53,6 @@ export default function DenunciaModal({
         motivo: motivo as MotivoDenuncia,
         descricao: descricao.trim(),
         denunciadoId: usuarioId,
-        foto: foto ? `upload_${Date.now()}.jpg` : undefined,
       };
 
       await registrarDenuncia(denunciaData);
@@ -120,8 +97,7 @@ export default function DenunciaModal({
               leaveFrom="opacity-100 scale-100 translate-y-0"
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
-              <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl transition-all">
-                
+              <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-gray-50 shadow-2xl transition-all border border-gray-200">
                 {/* Header */}
                 <div className="relative px-6 pt-6 pb-4">
                   <motion.button
@@ -195,51 +171,6 @@ export default function DenunciaModal({
                       <div className="text-xs text-gray-500 mt-1">
                         {descricao.length}/500 caracteres
                       </div>
-                    </div>
-
-                    {/* Upload de foto (opcional) */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Anexar evidência (opcional)
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          className="sr-only"
-                          id="foto-upload"
-                        />
-                        <label
-                          htmlFor="foto-upload"
-                          className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl hover:bg-gray-100 hover:border-gray-400 transition-all duration-200 cursor-pointer"
-                        >
-                          {foto ? (
-                            <>
-                              <FileImage className="w-4 h-4 text-green-600" />
-                              <span className="text-sm text-green-600 font-medium">
-                                {foto.name}
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-600">
-                                Clique para anexar uma imagem
-                              </span>
-                            </>
-                          )}
-                        </label>
-                      </div>
-                      {foto && (
-                        <button
-                          type="button"
-                          onClick={() => setFoto(null)}
-                          className="text-xs text-red-600 hover:text-red-700 mt-1"
-                        >
-                          Remover arquivo
-                        </button>
-                      )}
                     </div>
 
                   </div>

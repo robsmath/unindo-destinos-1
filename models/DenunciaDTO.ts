@@ -1,12 +1,11 @@
+import { MotivoDenuncia } from "./MotivoDenuncia";
+
 export interface DenunciaDTO {
-    id?: number;
-    motivo: string;
-    descricao: string;
-    data?: string;
-    foto?: string;
-    status?: boolean;
-    observacao?: string;
-    denuncianteId?: number;
-    denunciadoId: number;
-  }
-  
+  id?: number;
+  motivo: MotivoDenuncia;
+  descricao: string;
+  data?: string;
+  status?: boolean; 
+  observacao?: string;
+  denunciadoId: number;
+}

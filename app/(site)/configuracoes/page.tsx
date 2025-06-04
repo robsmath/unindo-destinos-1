@@ -285,23 +285,24 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-      {/* Fundo Animado 3D */}
-      <div className="absolute inset-0 z-10">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
+      {/* Background Effects */}
+      <div className="absolute inset-0">
+        {/* Gradient overlay */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
+          className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
           animate={{
             background: [
-              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))",
-              "linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08))",
-              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))"
+              "linear-gradient(45deg, rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05))",
+              "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05))",
+              "linear-gradient(45deg, rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05))"
             ]
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Partículas flutuantes */}
-        {Array.from({ length: 15 }).map((_, i) => (
+        {/* Floating particles */}
+        {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
@@ -310,7 +311,7 @@ export default function ConfiguracoesPage() {
               left: `${Math.random() * 100}%`,
             }}
             animate={{ 
-              y: [0, -100, 0],
+              y: [0, -90, 0],
               x: [0, Math.random() * 30 - 15, 0],
               opacity: [0, 0.6, 0],
               scale: [0, 1, 0]
@@ -324,11 +325,11 @@ export default function ConfiguracoesPage() {
           />
         ))}
 
-        {/* Ícones flutuantes */}
+        {/* Animated icons */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
-            y: [0, -20, 0],
+            y: [0, -18, 0],
             rotate: [0, 10, 0]
           }}
           transition={{ 
@@ -343,8 +344,8 @@ export default function ConfiguracoesPage() {
         <motion.div
           className="absolute bottom-40 left-20"
           animate={{ 
-            y: [0, -18, 0],
-            rotate: [0, 15, 0]
+            y: [0, -15, 0],
+            rotate: [0, -8, 0]
           }}
           transition={{ 
             duration: 7,
@@ -353,7 +354,7 @@ export default function ConfiguracoesPage() {
             delay: 1.5
           }}
         >
-          <Shield className="w-9 h-9 text-green-500/30 drop-shadow-lg" />
+          <Shield className="w-7 h-7 text-green-500/30 drop-shadow-lg" />
         </motion.div>
 
         <motion.div
@@ -375,8 +376,8 @@ export default function ConfiguracoesPage() {
         <motion.div
           className="absolute bottom-40 right-24"
           animate={{ 
-            y: [0, 15, 0],
-            rotate: [0, -8, 0]
+            y: [0, 12, 0],
+            scale: [1, 1.1, 1]
           }}
           transition={{ 
             duration: 5,
@@ -392,7 +393,7 @@ export default function ConfiguracoesPage() {
           className="absolute top-64 right-40"
           animate={{ 
             y: [0, -12, 0],
-            rotate: [0, 10, 0]
+            rotate: [0, 15, 0]
           }}
           transition={{ 
             duration: 6,
@@ -401,22 +402,22 @@ export default function ConfiguracoesPage() {
             delay: 1
           }}
         >
-          <Bell className="w-8 h-8 text-indigo-500/30 drop-shadow-lg" />
+          <Bell className="w-6 h-6 text-indigo-500/30 drop-shadow-lg" />
         </motion.div>
 
         <motion.div
           className="absolute top-36 right-64"
           animate={{ 
             y: [0, -20, 0],
-            rotate: [0, 360, 0]
+            scale: [1, 1.2, 1]
           }}
           transition={{ 
-            duration: 10,
+            duration: 8,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         >
-          <Lock className="w-9 h-9 text-teal-500/30 drop-shadow-lg" />
+          <Lock className="w-8 h-8 text-teal-500/30 drop-shadow-lg" />
         </motion.div>
 
         <motion.div
@@ -434,96 +435,97 @@ export default function ConfiguracoesPage() {
         >
           <Users className="w-6 h-6 text-pink-500/30 drop-shadow-lg" />
         </motion.div>
+
+        <motion.div
+          className="absolute top-72 left-24"
+          animate={{ 
+            rotate: [0, 360],
+            scale: [1, 1.3, 1]
+          }}
+          transition={{ 
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.8
+          }}
+        >
+          <FileText className="w-5 h-5 text-cyan-500/30 drop-shadow-lg" />
+        </motion.div>
+
+        {/* Gradient orbs */}
+        <motion.div
+          className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
+          animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-orange-500/15 to-primary/15 rounded-full blur-2xl pointer-events-none"
+          animate={{ y: [0, 20, 0], scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
       </div>
 
-      <div className="relative z-20 min-h-screen py-16">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          
+      <div className="relative z-10 pt-20">
+        <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="text-center mb-12"
           >
-            <motion.button
-              onClick={() => router.back()}
-              className="group w-10 h-10 bg-white/95 backdrop-blur-md border border-primary/10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white hover:border-primary/20 flex items-center justify-center mb-6"
-              whileHover={{ scale: 1.1, x: -2 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <ArrowLeft className="w-4 h-4 text-primary transition-all duration-300" />
-            </motion.button>
-
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent mb-2">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 mb-4">
+              <Settings className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Configurações</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent mb-4 leading-tight">
               Configurações
             </h1>
-            <p className="text-gray-600">
-              Gerencie suas preferências e configurações de conta
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
+              Gerencie suas preferências, privacidade e configurações da conta
             </p>
           </motion.div>
 
-          <div className="grid lg:grid-cols-4 gap-8">
-            
-            {/* Sidebar */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="lg:col-span-1"
-            >
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 p-6 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-4">Categorias</h3>
-                <nav className="space-y-2">
-                  {abas.map((aba) => {
-                    const Icon = aba.icone;
-                    const isActive = abaAtiva === aba.id;
-                    
-                    return (
-                      <motion.button
-                        key={aba.id}
-                        onClick={() => setAbaAtiva(aba.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-                          isActive
-                            ? "bg-gradient-to-r from-primary/10 to-orange-500/10 text-primary border border-primary/20"
-                            : "text-gray-700 hover:bg-gray-50 hover:text-primary"
-                        }`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <Icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-gray-500"}`} />
-                        <div>
-                          <div className="font-medium text-sm">{aba.nome}</div>
-                          <div className="text-xs text-gray-500">{aba.descricao}</div>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-                </nav>
-              </div>
-            </motion.div>
-
-            {/* Conteúdo Principal */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="lg:col-span-3"
-            >
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 p-6 shadow-sm min-h-[500px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={abaAtiva}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
+          {/* Navigation Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-2 mb-8"
+          >
+            <div className="flex flex-wrap gap-2">
+              {abas.map((aba) => {
+                const IconeAba = aba.icone;
+                return (
+                  <motion.button
+                    key={aba.id}
+                    onClick={() => setAbaAtiva(aba.id)}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 flex-1 min-w-0 ${
+                      abaAtiva === aba.id
+                        ? "bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                    whileHover={{ scale: abaAtiva !== aba.id ? 1.02 : 1 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {renderConteudo()}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          </div>
+                    <IconeAba className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate text-sm sm:text-base">{aba.nome}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-8"
+          >
+            {renderConteudo()}
+          </motion.div>
         </div>
       </div>
-    </section>
+    </div>
   );
 } 

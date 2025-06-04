@@ -62,6 +62,7 @@ const EncontreViagens = () => {
   const [viagemDetalhesId, setViagemDetalhesId] = useState<number | null>(null);useEffect(() => {
     if (isAuthenticated === true) {
       setTimeout(() => setCarregandoTela(false), 300);
+      buscarViagensIniciais();
     }
 
     if (isAuthenticated === false) {
@@ -525,176 +526,188 @@ const EncontreViagens = () => {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pt-32">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-10"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
-            Encontre viagens incríveis
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Descubra aventuras únicas e participe de experiências inesquecíveis pelo mundo.
-          </p>
-        </motion.div>
+      <div className="relative z-10 py-16">
+        <div className="container mx-auto px-4">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 mb-4">
+              <Plane className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Encontre Viagens</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent mb-4 leading-tight">
+              Encontre Viagens Incríveis
+            </h1>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
+              Descubra aventuras únicas e participe de experiências inesquecíveis pelo mundo
+            </p>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6 mb-8"
-        >
-          <div className="flex flex-col gap-1 mb-4">
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <div className="flex flex-1 items-center border border-gray-300 rounded-xl px-4 py-3 bg-white/70">
-                <Search className="text-gray-500 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Buscar por destino, cidade, país..."
-                  value={filtros.destino}
-                  onChange={e => setFiltros(prev => ({ ...prev, destino: e.target.value }))}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      buscar();
-                    }
-                  }}
-                  className="w-full outline-none bg-transparent"
-                />
+          {/* Search Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-8"
+          >
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Buscar destino:
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    placeholder="Digite o destino, cidade, país..."
+                    value={filtros.destino}
+                    onChange={e => setFiltros(prev => ({ ...prev, destino: e.target.value }))}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        buscar();
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
               </div>
               <button
                 onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 whitespace-nowrap transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
               >
                 <SlidersHorizontal className="w-4 h-4" />
-                Filtros
-              </button>
-              <button
-                onClick={buscar}
-                className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-xl hover:shadow-lg shadow font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-2"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Buscando...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4" />
-                    Buscar Viagens
-                  </>
-                )}
+                Filtros Avançados
               </button>
             </div>
-            <p className="text-xs text-gray-500 ml-1">
-              Digite o destino e pressione <span className="font-semibold">Enter</span> ou clique em "Buscar Viagens".
-            </p>
-          </div>          
-          <AnimatePresence>
-            {mostrarFiltros && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4 }}
-                className="overflow-hidden bg-gray-50/80 rounded-xl p-6 border border-gray-200/50 mb-6 shadow-sm backdrop-blur-sm"
-              >                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Tipo do destino</label>                    <select
-                      name="categoriaViagem"
-                      value={filtros.categoriaViagem || ""}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-white/80 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                    >
-                      <option value="">Todos os tipos</option>
-                      <option value="NACIONAL">Nacional</option>
-                      <option value="INTERNACIONAL">Internacional</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Estilo</label>                    <select
-                      name="estiloViagem"
-                      value={filtros.estiloViagem || ""}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-white/80 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                    ><option value="">Todos os estilos</option>
-                      <option value="AVENTURA">🏔️ Aventura</option>
-                      <option value="CULTURA">🏛️ Cultura</option>
-                      <option value="FESTA">🎉 Festa</option>
-                      <option value="RELAXAMENTO">🏖️ Relaxamento</option>
-                      <option value="GASTRONOMIA">🍽️ Gastronomia</option>
-                      <option value="ECOTURISMO">🌿 Ecoturismo</option>
-                      <option value="NEGOCIOS">💼 Negócios</option>
-                      <option value="ROMANTICA">💕 Romântica</option>
-                      <option value="RELIGIOSA">⛪ Religiosa</option>
-                      <option value="COMPRAS">🛍️ Compras</option>
-                      <option value="PRAIA">🏝️ Praia</option>
-                      <option value="HISTORICA">🏰 Histórica</option>
-                      <option value="TECNOLOGIA">💻 Tecnologia</option>
-                      <option value="NAO_TENHO_PREFERENCIA">✈️ Sem Preferência</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Status</label>                    <select
-                      name="status"
-                      value={filtros.status || ""}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-white/80 focus:ring-2 focus:ring-primary focus:border-primary transition-all"                    ><option value="">Todos os status</option>
-                      <option value="PENDENTE">🟡 Pendente</option>
-                      <option value="CONFIRMADA">🔵 Confirmada</option>
-                    </select>
-                  </div>
-                </div>               
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (de)</label>
-                    <input
-                      type="date"
-                      name="dataInicio"
-                      value={filtros.dataInicio}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-white/80 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (até)</label>
-                    <input
-                      type="date"
-                      name="dataFim"
-                      value={filtros.dataFim}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-white/80 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                    />
-                  </div><div>
-                    <ValueSlider
-                      value={filtros.valorMedioMax || 0}
-                      onChange={handleValorMaximoChange}
-                      min={0}
-                      max={20000}
-                      step={100}
-                      label="Valor máximo por pessoa"
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Criador</label>
-                    <input
-                      type="text"
-                      name="criadorNome"
-                      placeholder="Nome do criador..."
-                      value={filtros.criadorNome}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-white/80 focus:ring-2 focus:ring-primary focus:border-primary transition-all"                    />
+            {/* Filtros Avançados */}
+            <AnimatePresence>
+              {mostrarFiltros && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-6 border-t border-gray-200 pt-6"
+                >
+                  {/* Linha 1: Tipo + Estilo + Status */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Tipo do destino */}
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">Tipo do destino</label>
+                      <select
+                        name="categoriaViagem"
+                        value={filtros.categoriaViagem || ""}
+                        onChange={handleChange}
+                        className="border border-gray-300 rounded px-3 py-2 w-full"
+                      >
+                        <option value="">Todos os tipos</option>
+                        <option value="NACIONAL">Nacional</option>
+                        <option value="INTERNACIONAL">Internacional</option>
+                      </select>
+                    </div>
+                    {/* Estilo */}
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">Estilo</label>
+                      <select
+                        name="estiloViagem"
+                        value={filtros.estiloViagem || ""}
+                        onChange={handleChange}
+                        className="border border-gray-300 rounded px-3 py-2 w-full"
+                      >
+                        <option value="">Todos os estilos</option>
+                        <option value="AVENTURA">🏔️ Aventura</option>
+                        <option value="CULTURA">🏛️ Cultura</option>
+                        <option value="FESTA">🎉 Festa</option>
+                        <option value="RELAXAMENTO">🏖️ Relaxamento</option>
+                        <option value="GASTRONOMIA">🍽️ Gastronomia</option>
+                        <option value="ECOTURISMO">🌿 Ecoturismo</option>
+                        <option value="NEGOCIOS">💼 Negócios</option>
+                        <option value="ROMANTICA">💕 Romântica</option>
+                        <option value="RELIGIOSA">⛪ Religiosa</option>
+                        <option value="COMPRAS">🛍️ Compras</option>
+                        <option value="PRAIA">🏝️ Praia</option>
+                        <option value="HISTORICA">🏰 Histórica</option>
+                        <option value="TECNOLOGIA">💻 Tecnologia</option>
+                        <option value="NAO_TENHO_PREFERENCIA">✈️ Sem Preferência</option>
+                      </select>
+                    </div>
+                    {/* Status */}
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">Status</label>
+                      <select
+                        name="status"
+                        value={filtros.status || ""}
+                        onChange={handleChange}
+                        className="border border-gray-300 rounded px-3 py-2 w-full"
+                      >
+                        <option value="">Todos os status</option>
+                        <option value="PENDENTE">🟡 Pendente</option>
+                        <option value="CONFIRMADA">🔵 Confirmada</option>
+                      </select>
+                    </div>
                   </div>
                   
-                  <div className="flex gap-3 mt-6">
+                  {/* Linha 2: Datas + Valor */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    {/* Data Inicial (de) */}
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">Data Inicial (de)</label>
+                      <input
+                        type="date"
+                        name="dataInicio"
+                        value={filtros.dataInicio}
+                        onChange={handleChange}
+                        className="border border-gray-300 rounded px-3 py-2 w-full"
+                      />
+                    </div>
+                    {/* Data Inicial (até) */}
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">Data Inicial (até)</label>
+                      <input
+                        type="date"
+                        name="dataFim"
+                        value={filtros.dataFim}
+                        onChange={handleChange}
+                        className="border border-gray-300 rounded px-3 py-2 w-full"
+                      />
+                    </div>
+                    {/* Valor máximo */}
+                    <div>
+                      <ValueSlider
+                        value={filtros.valorMedioMax || 0}
+                        onChange={handleValorMaximoChange}
+                        min={0}
+                        max={20000}
+                        step={100}
+                        label="Valor máximo por pessoa"
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Linha 3: Criador */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <label className="text-sm text-gray-600 block mb-1">Criador</label>
+                      <input
+                        type="text"
+                        name="criadorNome"
+                        placeholder="Nome do criador..."
+                        value={filtros.criadorNome}
+                        onChange={handleChange}
+                        className="border border-gray-300 rounded px-3 py-2 w-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Botões */}
+                  <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <button
                       onClick={buscar}
-                      className="flex-1 bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl hover:shadow-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
                       disabled={loading}
                     >
                       {loading ? (
@@ -705,23 +718,24 @@ const EncontreViagens = () => {
                       ) : (
                         <>
                           <Search className="w-4 h-4" />
-                          Buscar
+                          Buscar Viagens
                         </>
                       )}
                     </button>
                     <button
                       onClick={limparTodosFiltros}
-                      className="px-4 py-3 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors flex items-center gap-2"
+                      className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
                     >
                       <RefreshCw className="w-4 h-4" />
-                      Limpar
+                      Limpar filtros
                     </button>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
+          {/* Lista de viagens */}
           <div className="mt-8">
             {loading ? (
               <motion.div 
@@ -751,17 +765,114 @@ const EncontreViagens = () => {
               </motion.div>
             ) : (
               <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.1 }}
+                layout
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
               >
-                {viagens.map((viagem) => renderCardViagem(viagem))}
+                {viagens.map((viagem) => (
+                  <motion.div
+                    key={viagem.id}
+                    whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(234,88,12,0.10)" }}
+                    className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
+                    onClick={(e) => {
+                      const clicouNoBotao = (e.target as HTMLElement).closest("button");
+                      if (!clicouNoBotao) {
+                        abrirDetalhesViagem(viagem);
+                      }
+                    }}
+                  >
+                    <div>
+                      <div className="relative h-48 overflow-hidden rounded-xl mb-4">
+                        <SmartImage
+                          src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
+                          alt={`Viagem para ${viagem.destino}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        
+                        <div className="absolute top-3 left-3">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border border-white/30 ${getStatusColor(viagem.status)}`}>
+                            <Clock className="w-3 h-3 mr-1" />
+                            {viagem.status}
+                          </span>
+                        </div>
+
+                        <div className="absolute top-3 right-3">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-primary/80 text-white backdrop-blur-sm border border-white/30">
+                            {viagem.categoriaViagem === "NACIONAL" ? "Nacional" : "Internacional"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem]">
+                        {viagem.destino}
+                      </h3>
+                      
+                      <p className="text-sm text-gray-600 flex items-center gap-2 mb-3">
+                        <span className="text-lg">{getEstiloIcon(viagem.estiloViagem)}</span>
+                        {viagem.estiloViagem}
+                      </p>
+
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="truncate">
+                            {formatarData(viagem.dataInicio)} - {formatarData(viagem.dataFim)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="truncate">
+                            {viagem.valorMedioViagem ? `R$ ${viagem.valorMedioViagem.toLocaleString("pt-BR")}` : "Valor não informado"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="truncate">Criador: {formatarNomeCompleto(viagem.criadorNome)}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span>
+                            {viagem.numeroMaximoParticipantes 
+                              ? `${viagem.quantidadeParticipantes}/${viagem.numeroMaximoParticipantes} participantes`
+                              : `${viagem.quantidadeParticipantes} participantes`
+                            }
+                          </span>
+                        </div>
+                      </div>
+
+                      {viagem.descricao && (
+                        <div className="mt-3">
+                          <p className="text-sm text-gray-600 line-clamp-2 italic">
+                            "{viagem.descricao}"
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Ações */}
+                    <div className="mt-4">
+                      <button
+                        className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full transition-all duration-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          abrirSolicitacaoParticipacao(viagem);
+                        }}
+                      >
+                        <Plane className="w-4 h-4" />
+                        Solicitar Participação
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
               </motion.div>
             )}
           </div>
-        </motion.div>
-      </div>     
+        </div>
+      </div>
+
+      {/* Modais */}
       <ViagemCardModal
         viagem={viagemSelecionada}
         isOpen={modalAberto}

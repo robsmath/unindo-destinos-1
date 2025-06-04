@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { getMeusPets } from "@/services/petService";
+import { getMeusPets, deletarPet } from "@/services/petService";
 import { PetDTO } from "@/models/PetDTO";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { FaPaw, FaMars, FaVenus } from "react-icons/fa";
 import { Dog, Heart } from "lucide-react";
@@ -16,6 +16,7 @@ const MeusPets = () => {
   const router = useRouter();
   const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletandoPetId, setDeletandoPetId] = useState<number | null>(null);
   
   const { data: pets, loading, loadData } = useTabData<PetDTO[]>(async () => {
     try {
@@ -37,6 +38,25 @@ const MeusPets = () => {
 
   const handleEditarPet = (id: number) => {
     router.push(`/pets/editar/${id}`);
+  };
+
+  const handleDeletarPet = async (id: number, nome: string) => {
+    if (!confirm(`Tem certeza que deseja deletar o pet "${nome}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    setDeletandoPetId(id);
+    try {
+      await deletarPet(id);
+      toast.success(`Pet ${nome} deletado com sucesso!`);
+      // Recarregar a lista de pets
+      loadData();
+    } catch (error) {
+      console.error("Erro ao deletar pet:", error);
+      toast.error("Erro ao deletar pet. Tente novamente.");
+    } finally {
+      setDeletandoPetId(null);
+    }
   };
 
   const handleAbrirModal = (pet: PetDTO) => {
@@ -203,18 +223,40 @@ const MeusPets = () => {
                   </div>
                 </div>
 
-                {/* Quick Edit Button */}
-                <motion.button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditarPet(pet.id!);
-                  }}
-                  className="mt-3 w-full bg-gray-100 hover:bg-primary hover:text-white text-gray-700 text-sm py-2 px-4 rounded-2xl transition-all duration-200 opacity-0 group-hover:opacity-100"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Editar rapidamente
-                </motion.button>
+                {/* Action Buttons */}
+                <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  {/* Edit Button */}
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditarPet(pet.id!);
+                    }}
+                    className="flex-1 bg-gray-100 hover:bg-primary hover:text-white text-gray-700 text-sm py-2 px-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Editar
+                  </motion.button>
+
+                  {/* Delete Button */}
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletarPet(pet.id!, pet.nome);
+                    }}
+                    disabled={deletandoPetId === pet.id}
+                    className="flex-1 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm py-2 px-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    whileHover={deletandoPetId !== pet.id ? { scale: 1.02 } : {}}
+                    whileTap={deletandoPetId !== pet.id ? { scale: 0.98 } : {}}
+                  >
+                    {deletandoPetId === pet.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                    {deletandoPetId === pet.id ? "Deletando..." : "Deletar"}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           ))}

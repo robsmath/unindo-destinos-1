@@ -13,7 +13,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 
 import PhoneInput from "react-phone-input-2";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, EyeOff, Eye, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 interface ValidationErrors {
@@ -30,6 +30,8 @@ const PersonalDataForm = () => {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [announcements, setAnnouncements] = useState<string[]>([]);
+  const [showInvisibilityModal, setShowInvisibilityModal] = useState(false);
+  const [pendingInvisibilityValue, setPendingInvisibilityValue] = useState(false);
 
   const announceToScreenReader = (message: string) => {
     setAnnouncements(prev => [...prev, message]);
@@ -170,6 +172,34 @@ const PersonalDataForm = () => {
       setIsAddressLoading(false);
     }
   };
+
+  const handleInvisibilityChange = (newValue: boolean) => {
+    if (newValue && !userData?.invisivel) {
+      // Se está ativando a invisibilidade pela primeira vez, mostrar modal de confirmação
+      setPendingInvisibilityValue(newValue);
+      setShowInvisibilityModal(true);
+    } else {
+      // Se está desativando ou já estava invisível, aplicar diretamente
+      if (userData) {
+        setUserData({ ...userData, invisivel: newValue });
+      }
+    }
+  };
+
+  const confirmInvisibility = () => {
+    if (userData) {
+      setUserData({ ...userData, invisivel: pendingInvisibilityValue });
+    }
+    setShowInvisibilityModal(false);
+    setPendingInvisibilityValue(false);
+    announceToScreenReader("Perfil configurado como invisível");
+  };
+
+  const cancelInvisibility = () => {
+    setShowInvisibilityModal(false);
+    setPendingInvisibilityValue(false);
+  };
+
   useEffect(() => {
     const carregarDados = async () => {
       if (!usuario) {
@@ -596,6 +626,77 @@ const PersonalDataForm = () => {
             <p id="descricao-help" className="text-sm text-gray-500">
               Esta descrição aparecerá no seu perfil e nos cards de busca. Seja autêntico e compartilhe o que te torna único!
             </p>
+          </motion.div>
+          
+          {/* Toggle de Visibilidade */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.37 }}
+            className="space-y-4 p-6 bg-gradient-to-r from-gray-50/80 to-blue-50/80 rounded-2xl border border-gray-100"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gray-100 rounded-full">
+                  {userData.invisivel ? (
+                    <EyeOff className="w-5 h-5 text-gray-600" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-blue-600" />
+                  )}
+                </div>
+                <div>
+                  <label 
+                    htmlFor="invisivel-toggle" 
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
+                    Ficar invisível nas buscas
+                  </label>
+                  <p className="text-xs text-gray-500">
+                    Controle sua visibilidade no sistema
+                  </p>
+                </div>
+              </div>
+              
+              {/* Toggle Switch */}
+              <div className="relative">
+                <button
+                  type="button"
+                  id="invisivel-toggle"
+                  onClick={() => handleInvisibilityChange(!userData.invisivel)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    userData.invisivel 
+                      ? 'bg-blue-600' 
+                      : 'bg-gray-200'
+                  }`}
+                  role="switch"
+                  aria-checked={userData.invisivel}
+                  aria-labelledby="invisivel-toggle"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      userData.invisivel ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ 
+                opacity: 1, 
+                height: "auto",
+                transition: { delay: 0.1 }
+              }}
+              className="pt-2 border-t border-gray-200"
+            >
+              <p className="text-xs text-gray-500 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                <span>
+                  Ao ativar essa opção, seu perfil e suas viagens não aparecerão para outros usuários nas buscas do sistema.
+                </span>
+              </p>
+            </motion.div>
           </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1191,6 +1292,90 @@ const PersonalDataForm = () => {
           </motion.div>
         </motion.form>
       </motion.div>
+      
+      {/* Modal de Confirmação de Invisibilidade */}
+      <AnimatePresence>
+        {showInvisibilityModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={cancelInvisibility}
+            />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl"
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-amber-100 rounded-full">
+                    <AlertTriangle className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Ficar Invisível
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Confirme sua escolha
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="space-y-4 mb-6">
+                  <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200">
+                    <h4 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
+                      <EyeOff className="w-4 h-4" />
+                      O que acontece quando você fica invisível?
+                    </h4>
+                    <ul className="text-sm text-amber-700 space-y-1">
+                      <li>• Seu perfil não aparecerá nas buscas de outros usuários</li>
+                      <li>• Suas viagens criadas também ficarão invisíveis</li>
+                      <li>• Você ainda pode ver e participar de outras viagens</li>
+                      <li>• Esta configuração pode ser alterada a qualquer momento</li>
+                    </ul>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600">
+                    Tem certeza de que deseja ativar o modo invisível? Esta ação pode ser desfeita a qualquer momento retornando a esta configuração.
+                  </p>
+                </div>
+                
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <Button
+                    onClick={cancelInvisibility}
+                    variant="outline"
+                    className="flex-1 h-12 rounded-xl"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={confirmInvisibility}
+                    className="flex-1 h-12 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    Confirmar
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
