@@ -356,19 +356,26 @@ const Header = () => {
                   className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex flex-col space-y-3">
+                    {/* Entrar */}
                     <Link
                       href="/auth/signin"
-                      className="text-center py-3 px-6 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-all duration-300"
+                      className="flex items-center justify-center py-3 px-6 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-all duration-300 bg-white/50 backdrop-blur-sm"
                       onClick={() => setNavigationOpen(false)}
                     >
-                      Entrar
+                      <span className="flex items-center">
+                        Entrar
+                      </span>
                     </Link>
+                    
+                    {/* Criar Conta */}
                     <Link
                       href="/auth/signup"
-                      className="text-center py-3 px-6 rounded-full bg-gradient-to-r from-primary to-orange-500 text-white font-semibold hover:shadow-lg transition-all duration-300"
+                      className="flex items-center justify-center py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-orange-500 text-white font-semibold hover:shadow-lg transition-all duration-300"
                       onClick={() => setNavigationOpen(false)}
                     >
-                      Criar Conta
+                      <span className="flex items-center">
+                        Criar Conta
+                      </span>
                     </Link>
                   </div>
                 </motion.div>

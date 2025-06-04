@@ -4,7 +4,7 @@ import { useState, Fragment } from "react";
 import { Dialog, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
 import { motion } from "framer-motion";
 import { X, User, Star, MessageCircle } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { criarAvaliacao } from "@/services/avaliacaoService";
 import { AvaliacaoRequestDTO } from "@/models/AvaliacaoRequestDTO";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";

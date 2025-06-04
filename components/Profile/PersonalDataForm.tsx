@@ -1301,32 +1301,39 @@ const PersonalDataForm = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backdropFilter: 'blur(8px)' }}
           >
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={cancelInvisibility}
             />
             
             {/* Modal Content */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl"
+              exit={{ scale: 0.8, opacity: 0, y: 50 }}
+              transition={{ 
+                type: "spring", 
+                damping: 25, 
+                stiffness: 400,
+                duration: 0.3
+              }}
+              className="relative w-full max-w-md mx-auto transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl"
             >
               <div className="p-6">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-amber-100 rounded-full">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full">
                     <AlertTriangle className="w-6 h-6 text-amber-600" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900">
                       Ficar Invisível
                     </h3>
                     <p className="text-sm text-gray-500">
@@ -1337,39 +1344,54 @@ const PersonalDataForm = () => {
                 
                 {/* Content */}
                 <div className="space-y-4 mb-6">
-                  <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200">
-                    <h4 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
+                  <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl border border-amber-200/50">
+                    <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2 text-sm">
                       <EyeOff className="w-4 h-4" />
                       O que acontece quando você fica invisível?
                     </h4>
-                    <ul className="text-sm text-amber-700 space-y-1">
-                      <li>• Seu perfil não aparecerá nas buscas de outros usuários</li>
-                      <li>• Suas viagens criadas também ficarão invisíveis</li>
-                      <li>• Você ainda pode ver e participar de outras viagens</li>
-                      <li>• Esta configuração pode ser alterada a qualquer momento</li>
+                    <ul className="text-sm text-amber-700 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
+                        Seu perfil não aparecerá nas buscas de outros usuários
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
+                        Suas viagens criadas também ficarão invisíveis
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
+                        Você ainda pode ver e participar de outras viagens
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
+                        Esta configuração pode ser alterada a qualquer momento
+                      </li>
                     </ul>
                   </div>
                   
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 leading-relaxed">
                     Tem certeza de que deseja ativar o modo invisível? Esta ação pode ser desfeita a qualquer momento retornando a esta configuração.
                   </p>
                 </div>
                 
                 {/* Actions */}
-                <div className="flex gap-3">
-                  <Button
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <motion.button
                     onClick={cancelInvisibility}
-                    variant="outline"
-                    className="flex-1 h-12 rounded-xl"
+                    className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all duration-200 border border-gray-200"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Cancelar
-                  </Button>
-                  <Button
+                  </motion.button>
+                  <motion.button
                     onClick={confirmInvisibility}
-                    className="flex-1 h-12 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Confirmar
-                  </Button>
+                  </motion.button>
                 </div>
               </div>
             </motion.div>

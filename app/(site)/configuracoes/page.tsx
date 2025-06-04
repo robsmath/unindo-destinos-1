@@ -34,24 +34,28 @@ const abas = [
   {
     id: "bloqueados" as const,
     nome: "Usuários Bloqueados",
+    nomeMobile: "Bloqueados",
     icone: ShieldX,
     descricao: "Gerencie usuários que você bloqueou"
   },
   {
     id: "privacidade" as const,
     nome: "Privacidade",
+    nomeMobile: "Privacidade",
     icone: Eye,
     descricao: "Configure suas preferências de privacidade"
   },
   {
     id: "notificacoes" as const,
     nome: "Notificações",
+    nomeMobile: "Notificações",
     icone: Bell,
     descricao: "Personalize suas notificações"
   },
   {
     id: "conta" as const,
     nome: "Conta",
+    nomeMobile: "Conta",
     icone: Key,
     descricao: "Configurações da conta e segurança"
   },
@@ -499,7 +503,7 @@ export default function ConfiguracoesPage() {
                   <motion.button
                     key={aba.id}
                     onClick={() => setAbaAtiva(aba.id)}
-                    className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 flex-1 min-w-0 ${
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-3 rounded-xl font-medium transition-all duration-200 flex-1 min-w-0 ${
                       abaAtiva === aba.id
                         ? "bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg"
                         : "text-gray-600 hover:bg-gray-100"
@@ -508,7 +512,10 @@ export default function ConfiguracoesPage() {
                     whileTap={{ scale: 0.98 }}
                   >
                     <IconeAba className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate text-sm sm:text-base">{aba.nome}</span>
+                    <span className="truncate text-xs sm:text-sm lg:text-base">
+                      <span className="hidden sm:inline">{aba.nome}</span>
+                      <span className="sm:hidden">{aba.nomeMobile}</span>
+                    </span>
                   </motion.button>
                 );
               })}

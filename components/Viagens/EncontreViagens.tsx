@@ -62,7 +62,6 @@ const EncontreViagens = () => {
   const [viagemDetalhesId, setViagemDetalhesId] = useState<number | null>(null);useEffect(() => {
     if (isAuthenticated === true) {
       setTimeout(() => setCarregandoTela(false), 300);
-      buscarViagensIniciais();
     }
 
     if (isAuthenticated === false) {
@@ -70,15 +69,6 @@ const EncontreViagens = () => {
     }
   }, [isAuthenticated]);
 
-  const buscarViagensIniciais = async () => {
-    try {
-      const res = await buscarViagens({});
-      setViagens(res);
-      await carregarImagens(res);
-    } catch (err: any) {
-      console.warn("Erro ao carregar viagens iniciais:", err);
-    }
-  };
   const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value, type, checked } = e.target;
     setFiltros((prev) => ({
