@@ -28,6 +28,10 @@ import PerfilUsuarioModal from "@/components/EncontrePessoas/PerfilUsuarioModal"
 import { useTabData } from "@/components/Profile/hooks/useTabData";
 import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
 import { usePerfil } from "@/app/context/PerfilContext";
+import { useDenunciaEBloqueio } from "@/hooks/useDenunciaEBloqueio";
+import DenunciaModal from "@/components/Modals/DenunciaModal";
+import BloqueioModal from "@/components/Modals/BloqueioModal";
+import PerguntaBloqueioModal from "@/components/Modals/PerguntaBloqueioModal";
 
 type AcaoResposta = {
   id: number;
@@ -61,9 +65,36 @@ const CentralSolicitacoes = () => {
   const [viagemAbertaId, setViagemAbertaId] = useState<number | null>(null);
   const [carregandoViagemId, setCarregandoViagemId] = useState<number | null>(null);
 
+  // Hook para denúncia e bloqueio
+  const {
+    denunciaModalOpen,
+    bloqueioModalOpen,
+    perguntaBloqueioModalOpen,
+    usuarioSelecionado,
+    abrirDenunciaModal,
+    abrirBloqueioModal,
+    fecharDenunciaModal,
+    fecharBloqueioModal,
+    fecharPerguntaBloqueioModal,
+    handleDenunciaEnviada,
+    handleBloquearAposDenuncia,
+    handleNaoBloquearAposDenuncia,
+    handleUsuarioBloqueado,
+  } = useDenunciaEBloqueio();
+
+  const handleDenunciar = (usuario: { id: number; nome: string }) => {
+    abrirDenunciaModal(usuario);
+  };
+
+  const handleBloquear = (usuario: { id: number; nome: string }) => {
+    abrirBloqueioModal(usuario);
+  };
+
   useEffect(() => {
     carregar();
-  }, []);  const aceitar = async (s: SolicitacaoParticipacaoDTO) => {
+  }, []);
+
+  const aceitar = async (s: SolicitacaoParticipacaoDTO) => {
     setResposta({ id: s.id, tipo: "ACEITAR" });
     try {
       await aprovarSolicitacao(s.id);
@@ -143,6 +174,10 @@ const CentralSolicitacoes = () => {
         return null;
     }
   };
+
+  // Encontrar os dados do usuário para o modal
+  const usuarioParaPerfil = solicitacoes?.find(s => s.outroUsuarioId === perfilAbertoId);
+
   const renderCard = (s: SolicitacaoParticipacaoDTO, index: number) => (
     <motion.li
       key={s.id}
@@ -256,7 +291,9 @@ const CentralSolicitacoes = () => {
               <span>Ver Viagem</span>
             </motion.button>
           </div>
-        </div>        {/* Actions Section */}
+        </div>
+
+        {/* Actions Section */}
         {s.status === "PENDENTE" && (
           <div className="flex flex-col gap-2 sm:gap-3 lg:min-w-[140px]">
             {["CONVITE_RECEBIDO", "SOLICITACAO_RECEBIDA"].includes(s.tipo) && (
@@ -451,13 +488,23 @@ const CentralSolicitacoes = () => {
       )}
 
       {/* Modals */}
-      {perfilAbertoId && (
+      {perfilAbertoId && usuarioParaPerfil && (
         <PerfilUsuarioModal
           usuarioId={perfilAbertoId}
           isOpen={!!perfilAbertoId}
           onClose={() => setPerfilAbertoId(null)}
+          onDenunciar={(usuario) => handleDenunciar({ 
+            id: usuario.id, 
+            nome: usuarioParaPerfil.outroUsuarioNome 
+          })}
+          onBloquear={(usuario) => handleBloquear({ 
+            id: usuario.id, 
+            nome: usuarioParaPerfil.outroUsuarioNome 
+          })}
         />
-      )}      {viagemAbertaId && (
+      )}
+
+      {viagemAbertaId && (
         <ViagemDetalhesModal
           viagemId={viagemAbertaId}
           open={!!viagemAbertaId}
@@ -468,6 +515,35 @@ const CentralSolicitacoes = () => {
           exibirAvisoConvite
           imagemViagem={imagensViagens[viagemAbertaId]}
         />
+      )}
+
+      {/* Modais de Denúncia e Bloqueio */}
+      {usuarioSelecionado && (
+        <>
+          <DenunciaModal
+            isOpen={denunciaModalOpen}
+            onClose={fecharDenunciaModal}
+            usuarioId={usuarioSelecionado.id}
+            usuarioNome={usuarioSelecionado.nome}
+            onDenunciaEnviada={handleDenunciaEnviada}
+          />
+
+          <BloqueioModal
+            isOpen={bloqueioModalOpen}
+            onClose={fecharBloqueioModal}
+            usuarioId={usuarioSelecionado.id}
+            usuarioNome={usuarioSelecionado.nome}
+            onUsuarioBloqueado={handleUsuarioBloqueado}
+          />
+
+          <PerguntaBloqueioModal
+            isOpen={perguntaBloqueioModalOpen}
+            onClose={fecharPerguntaBloqueioModal}
+            usuarioNome={usuarioSelecionado.nome}
+            onBloquear={handleBloquearAposDenuncia}
+            onNaoBloquear={handleNaoBloquearAposDenuncia}
+          />
+        </>
       )}
     </motion.div>
   );

@@ -7,11 +7,14 @@ import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed } from "lucide-react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { getUsuarioById } from "@/services/userService";
 import { Loader2 } from "lucide-react";
+import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
 
 interface Props {
   usuarioId: number;
   isOpen: boolean;
   onClose: () => void;
+  onDenunciar: (usuario: { id: number; nome: string }) => void;
+  onBloquear: (usuario: { id: number; nome: string }) => void;
 }
 
 const formatarTexto = (valor?: string | null) => {
@@ -23,7 +26,13 @@ const formatarTexto = (valor?: string | null) => {
     );
 };
 
-export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props) {
+export default function PerfilUsuarioModal({ 
+  usuarioId, 
+  isOpen, 
+  onClose,
+  onDenunciar,
+  onBloquear
+}: Props) {
   const [usuario, setUsuario] = useState<UsuarioBuscaDTO | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -159,19 +168,30 @@ export default function PerfilUsuarioModal({ usuarioId, isOpen, onClose }: Props
                     </div>
 
                     {/* Aviso */}
-                      {deveExibirAviso && (
-                        <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                          <div className="flex items-start gap-3">
-                            <FaExclamationTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <h4 className="text-sm font-medium text-amber-800 mb-1">Informações Incompletas</h4>
-                              <p className="text-xs text-amber-700">
-                                Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
-                              </p>
-                            </div>
+                    {deveExibirAviso && (
+                      <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                        <div className="flex items-start gap-3">
+                          <FaExclamationTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="text-sm font-medium text-amber-800 mb-1">Informações Incompletas</h4>
+                            <p className="text-xs text-amber-700">
+                              Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
+                            </p>
                           </div>
                         </div>
-                      )}
+                      </div>
+                    )}
+
+                    {/* Botões de Denúncia e Bloqueio */}
+                    <div className="mt-6 flex justify-center">
+                      <DenunciaEBloqueioButtons
+                        usuario={usuario}
+                        onDenunciar={onDenunciar}
+                        onBloquear={onBloquear}
+                        size="md"
+                        layout="horizontal"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <p className="text-center text-gray-500 py-16">Usuário não encontrado.</p>

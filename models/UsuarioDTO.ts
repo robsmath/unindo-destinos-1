@@ -21,6 +21,7 @@ export interface UsuarioDTO {
   descricao?: string;
   endereco?: EnderecoDTO;
   preferencia?: PreferenciasDTO;
+  invisivel?: boolean;
 }
 
 export interface EnderecoDTO {

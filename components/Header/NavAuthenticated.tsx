@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Settings } from "lucide-react";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import ChatDropdown from "@/components/Chat/ChatDropdown";
 
@@ -81,7 +81,7 @@ const NavAuthenticated = () => {
             alt="Avatar"
             width={44}
             height={44}
-            className="rounded-full object-cover aspect-square ring-2 ring-gray-200 group-hover:ring-primary transition-all duration-300 shadow-lg"
+            className="rounded-full object-cover aspect-square ring-2 ring-gray-200 group-hover:ring-primary transition-all duration-300 shadow-lg sm:w-9 sm:h-9 md:w-11 md:h-11"
           />
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
@@ -111,6 +111,23 @@ const NavAuthenticated = () => {
                     <User className="w-4 h-4 text-primary" />
                   </div>
                   Perfil
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.12 }}
+              >
+                <Link
+                  href="/configuracoes"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 hover:text-blue-600 transition-all duration-300 dark:text-gray-200 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mr-3 group-hover:bg-blue-100 transition-colors dark:bg-blue-900/20">
+                    <Settings className="w-4 h-4 text-blue-500" />
+                  </div>
+                  Configurações
                 </Link>
               </motion.div>
               

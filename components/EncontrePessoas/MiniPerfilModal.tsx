@@ -7,12 +7,15 @@ import { FaCheckCircle, FaTimes } from "react-icons/fa";
 import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed } from "lucide-react";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
 
 interface Props {
   usuario: UsuarioBuscaDTO;
   isOpen: boolean;
   onClose: () => void;
   onConvidar?: (usuarioId: number) => void;
+  onDenunciar: (usuario: { id: number; nome: string }) => void;
+  onBloquear: (usuario: { id: number; nome: string }) => void;
 }
 
 const formatarTexto = (valor?: string | null) => {
@@ -24,7 +27,14 @@ const formatarTexto = (valor?: string | null) => {
     );
 };
 
-export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }: Props) {
+export default function MiniPerfilModal({ 
+  usuario, 
+  isOpen, 
+  onClose, 
+  onConvidar,
+  onDenunciar,
+  onBloquear
+}: Props) {
   const semPreferencias =
     !usuario.tipoAcomodacao &&
     !usuario.tipoTransporte &&
@@ -143,32 +153,47 @@ export default function MiniPerfilModal({ usuario, isOpen, onClose, onConvidar }
                   </div>
 
                   {/* Aviso */}
-                    {deveExibirAviso && (
-                      <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                        <div className="flex items-start gap-3">
-                          <FaExclamationTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <h4 className="text-sm font-medium text-amber-800 mb-1">Informações Incompletas</h4>
-                            <p className="text-xs text-amber-700">
-                              Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
-                            </p>
-                          </div>
+                  {deveExibirAviso && (
+                    <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                      <div className="flex items-start gap-3">
+                        <FaExclamationTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="text-sm font-medium text-amber-800 mb-1">Informações Incompletas</h4>
+                          <p className="text-xs text-amber-700">
+                            Este usuário ainda não preencheu suas preferências nem adicionou uma descrição.
+                          </p>
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Ações */}
+                  <div className="mt-6 w-full space-y-3">
+                    
+                    {/* Botão de Convidar */}
+                    {onConvidar && (
+                      <Button
+                        className="w-full bg-gradient-to-r from-primary to-orange-500 text-white hover:scale-105 transition-all duration-200"
+                        onClick={() => {
+                          onClose();
+                          setTimeout(() => onConvidar(usuario.id), 150);
+                        }}
+                      >
+                        Convidar para Viagem
+                      </Button>
                     )}
 
-                  {/* Botão de Convidar */}
-                  {onConvidar && (
-                    <Button
-                      className="mt-6 w-full bg-gradient-to-r from-primary to-orange-500 text-white hover:scale-105 transition-all duration-200"
-                      onClick={() => {
-                        onClose();
-                        setTimeout(() => onConvidar(usuario.id), 150);
-                      }}
-                    >
-                      Convidar para Viagem
-                    </Button>
-                  )}
+                    {/* Botões de Denúncia e Bloqueio */}
+                    <div className="flex justify-center">
+                      <DenunciaEBloqueioButtons
+                        usuario={usuario}
+                        onDenunciar={onDenunciar}
+                        onBloquear={onBloquear}
+                        size="md"
+                        layout="horizontal"
+                      />
+                    </div>
+                  </div>
                 </div>
               </DialogPanel>
             </TransitionChild>

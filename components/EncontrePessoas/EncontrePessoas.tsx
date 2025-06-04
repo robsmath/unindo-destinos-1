@@ -44,6 +44,11 @@ import { FaCheckCircle } from "react-icons/fa";
 import ConviteViagemModal from "@/components/EncontrePessoas/ConviteViagemModal";
 import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
 import { AnimatePresence, motion } from "framer-motion";
+import { useDenunciaEBloqueio } from "@/hooks/useDenunciaEBloqueio";
+import DenunciaModal from "@/components/Modals/DenunciaModal";
+import BloqueioModal from "@/components/Modals/BloqueioModal";
+import PerguntaBloqueioModal from "@/components/Modals/PerguntaBloqueioModal";
+import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
 
 const EncontrePessoas = () => {
   const { isAuthenticated } = useAuth();
@@ -81,11 +86,54 @@ const EncontrePessoas = () => {
       : ""
   );
 
+  // Hook para denúncia e bloqueio
+  const {
+    denunciaModalOpen,
+    bloqueioModalOpen,
+    perguntaBloqueioModalOpen,
+    usuarioSelecionado: usuarioParaDenunciarBloquear,
+    abrirDenunciaModal,
+    abrirBloqueioModal,
+    fecharDenunciaModal,
+    fecharBloqueioModal,
+    fecharPerguntaBloqueioModal,
+    handleDenunciaEnviada,
+    handleBloquearAposDenuncia,
+    handleNaoBloquearAposDenuncia,
+    handleUsuarioBloqueado,
+  } = useDenunciaEBloqueio();
+
+  const handleDenunciar = (usuario: { id: number; nome: string }) => {
+    abrirDenunciaModal(usuario);
+  };
+
+  const handleBloquear = (usuario: { id: number; nome: string }) => {
+    abrirBloqueioModal(usuario);
+  };
+
+  const handleUsuarioBloqueadoComRemocao = () => {
+    if (usuarioParaDenunciarBloquear) {
+      // Remove o usuário da lista local
+      setUsuarios(prev => prev.filter(u => u.id !== usuarioParaDenunciarBloquear.id));
+    }
+    handleUsuarioBloqueado();
+  };
+
+  const handleBloquearAposDenunciaComRemocao = async () => {
+    if (usuarioParaDenunciarBloquear) {
+      // Remove o usuário da lista local
+      setUsuarios(prev => prev.filter(u => u.id !== usuarioParaDenunciarBloquear.id));
+    }
+    await handleBloquearAposDenuncia();
+  };
+
   useEffect(() => {
     const carregarPreferenciasDiretamente = async () => {
       try {
         const prefs = await getPreferenciasDoUsuario();
-        if (!prefs) return;        setFiltros((prev) => ({
+        if (!prefs) return;
+
+        setFiltros((prev) => ({
           ...prev,
           genero: ["MASCULINO", "FEMININO", "OUTRO", "NAO_BINARIO"].includes(prefs.generoPreferido)
             ? (prefs.generoPreferido as UsuarioFiltroDTO["genero"])
@@ -198,21 +246,24 @@ const EncontrePessoas = () => {
         email: filtros.email || null,
       };
 
-      if (filtros.petFriendly) filtrosLimpos.petFriendly = true;
-      if (filtros.aceitaCriancas) filtrosLimpos.aceitaCriancas = true;
-      if (filtros.aceitaFumantes) filtrosLimpos.aceitaFumantes = true;
-      if (filtros.aceitaBebidasAlcoolicas) filtrosLimpos.aceitaBebidasAlcoolicas = true;
-      if (filtros.acomodacaoCompartilhada) filtrosLimpos.acomodacaoCompartilhada = true;
-      if (filtros.apenasVerificados) filtrosLimpos.apenasVerificados = true;
+      // Só adiciona checkboxes que estão definidos
+      if (filtros.petFriendly !== undefined) filtrosLimpos.petFriendly = filtros.petFriendly;
+      if (filtros.aceitaCriancas !== undefined) filtrosLimpos.aceitaCriancas = filtros.aceitaCriancas;
+      if (filtros.aceitaFumantes !== undefined) filtrosLimpos.aceitaFumantes = filtros.aceitaFumantes;
+      if (filtros.aceitaBebidasAlcoolicas !== undefined) filtrosLimpos.aceitaBebidasAlcoolicas = filtros.aceitaBebidasAlcoolicas;
+      if (filtros.acomodacaoCompartilhada !== undefined) filtrosLimpos.acomodacaoCompartilhada = filtros.acomodacaoCompartilhada;
+      if (filtros.apenasVerificados !== undefined) filtrosLimpos.apenasVerificados = filtros.apenasVerificados;
 
       const response = await buscarUsuarios(filtrosLimpos);
       setUsuarios(response);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao buscar usuários");
+    } catch (err) {
+      console.error("Erro na busca:", err);
+      toast.error("Erro na busca. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
+
   const limparFiltros = () => {
     setFiltros({
       genero: "",
@@ -231,332 +282,123 @@ const EncontrePessoas = () => {
       email: "",
     });
     setValorMedioMaxInput("");
+    setUsuarios([]);
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
   const abrirModalConvite = async (usuario: UsuarioBuscaDTO, fecharOutroModal?: () => void) => {
+    fecharOutroModal?.();
     setUsuarioCarregandoId(usuario.id);
     try {
-      const response = await getMinhasViagens();
-      setMinhasViagens(response);
+      const minhasViagensResponse = await getMinhasViagens();
+      setMinhasViagens(minhasViagensResponse);
       setUsuarioSelecionado(usuario);
-      if (fecharOutroModal) fecharOutroModal();
-      setTimeout(() => setShowModal(true), 150);
-    } catch {
-      toast.error("Erro ao carregar suas viagens");
+      setShowModal(true);
+    } catch (err) {
+      toast.error("Erro ao carregar suas viagens.");
     } finally {
       setUsuarioCarregandoId(null);
     }
   };
+
   const handleValorMedioChange = (
     campo: "valorMedioMax",
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const raw = e.target.value.replace(/\D/g, "");
-    const valor = raw ? parseFloat(raw) / 100 : "";
+    const valor = e.target.value;
+    setValorMedioMaxInput(valor);
 
-    const formatado =
-      valor !== ""
-        ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)
-        : "";
-
-    setValorMedioMaxInput(formatado);
+    // Remove caracteres não numéricos para conversão
+    const numeroLimpo = valor.replace(/[^\d]/g, "");
+    const numeroConvertido = numeroLimpo ? parseInt(numeroLimpo) / 100 : "";
 
     setFiltros((prev) => ({
       ...prev,
-      [campo]: valor === "" ? "" : Number(valor),
+      [campo]: numeroConvertido,
     }));
   };
-  // --- MODERNIZAÇÃO VISUAL ABAIXO ---
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        {/* Gradient overlay */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
-          animate={{
-            background: [
-              "linear-gradient(45deg, rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05))",
-              "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05))",
-              "linear-gradient(45deg, rgba(234, 88, 12, 0.05), rgba(249, 115, 22, 0.05), rgba(234, 88, 12, 0.05))"
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
 
-        {/* Floating particles */}
-        {Array.from({ length: 12 }).map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{ 
-              y: [0, -90, 0],
-              x: [0, Math.random() * 30 - 15, 0],
-              opacity: [0, 0.6, 0],
-              scale: [0, 1, 0]
-            }}
-            transition={{ 
-              duration: 8 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 8,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-
-        {/* Animated icons */}
-        <motion.div
-          className="absolute top-32 right-16"
-          animate={{ 
-            y: [0, -18, 0],
-            rotate: [0, 10, 0]
-          }}
-          transition={{ 
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <User className="w-8 h-8 text-blue-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute bottom-40 left-20"
-          animate={{ 
-            y: [0, -15, 0],
-            rotate: [0, -8, 0]
-          }}
-          transition={{ 
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5
-          }}
-        >
-          <MapPin className="w-7 h-7 text-gray-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute top-48 left-40"
-          animate={{ 
-            y: [0, -10, 0],
-            x: [0, 8, 0]
-          }}
-          transition={{ 
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-        >
-          <Heart className="w-6 h-6 text-red-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute bottom-40 right-24"
-          animate={{ 
-            y: [0, 12, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-        >
-          <Users className="w-7 h-7 text-yellow-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute top-64 right-40"
-          animate={{ 
-            y: [0, -12, 0],
-            rotate: [0, 15, 0]
-          }}
-          transition={{ 
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        >
-          <Search className="w-6 h-6 text-green-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute top-36 right-64"
-          animate={{ 
-            y: [0, -20, 0],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ 
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <Filter className="w-8 h-8 text-purple-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute bottom-32 left-48"
-          animate={{ 
-            y: [0, -8, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.8
-          }}
-        >
-          <Baby className="w-6 h-6 text-indigo-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute top-72 left-24"
-          animate={{ 
-            rotate: [0, 360],
-            scale: [1, 1.3, 1]
-          }}
-          transition={{ 
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.8
-          }}
-        >
-          <SlidersHorizontal className="w-5 h-5 text-teal-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute top-16 left-56"
-          animate={{ 
-            y: [0, -14, 0],
-            rotate: [0, -12, 0]
-          }}
-          transition={{ 
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2.5
-          }}
-        >
-          <Wine className="w-6 h-6 text-purple-600/30 drop-shadow-lg" />
-        </motion.div>
-
-        <motion.div
-          className="absolute bottom-16 right-56"
-          animate={{ 
-            y: [0, 18, 0],
-            x: [0, -6, 0]
-          }}
-          transition={{ 
-            duration: 4.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.2
-          }}
-        >
-          <Hotel className="w-7 h-7 text-orange-500/30 drop-shadow-lg" />
-        </motion.div>
-
-        {/* Gradient orbs */}
-        <motion.div
-          className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
-          animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-orange-500/15 to-primary/15 rounded-full blur-2xl pointer-events-none"
-          animate={{ y: [0, 20, 0], scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
+  if (isAuthenticated === false || carregandoTela) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="animate-spin w-8 h-8 mx-auto mb-4" />
+          <p>Carregando...</p>
+        </div>
       </div>
+    );
+  }
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 pt-32">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center mb-10"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
-            Encontre sua companhia de viagem
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Busque pessoas incríveis para compartilhar experiências e aventuras pelo mundo.
-          </p>
-        </motion.div>
-
+  return (
+    <div className="py-16 bg-gradient-to-br from-primary/5 via-white to-orange-500/5 min-h-screen">
+      <div className="container mx-auto px-4">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6 mb-8"
+          className="text-center mb-12"
         >
-          {/* --- TODO SEU BLOCO DE BUSCA, FILTROS E BOTÕES AQUI --- */}
-          <div className="flex flex-col gap-1 mb-4">
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <div className="flex flex-1 items-center border border-gray-300 rounded px-4 py-2 bg-white/70">
-                <Search className="text-gray-500 mr-2" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 mb-4">
+            <Users className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-primary">Encontre Pessoas</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent mb-4">
+            Encontre Companheiros de Viagem
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            Conecte-se com pessoas que compartilham dos mesmos interesses e descubra novos destinos juntos
+          </p>
+        </motion.div>
+
+        {/* Search Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-8"
+        >
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Buscar por:
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <select
+                  value={buscarPor}
+                  onChange={(e) => setBuscarPor(e.target.value as "nome" | "email")}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="nome">Nome</option>
+                  <option value="email">E-mail</option>
+                </select>
                 <input
-                  type="text"
-                  placeholder={
-                    buscarPor === "nome" ? "Buscar por nome..." : "Buscar por e-mail..."
-                  }
+                  type={buscarPor === "email" ? "email" : "text"}
+                  placeholder={buscarPor === "nome" ? "Digite o nome..." : "Digite o e-mail..."}
                   value={buscarPor === "nome" ? filtros.nome : filtros.email}
                   onChange={handleInputBusca}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      buscar();
-                    }
-                  }}
-                  className="w-full outline-none bg-transparent"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
-              <button
-                onClick={() => setBuscarPor(buscarPor === "nome" ? "email" : "nome")}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 whitespace-nowrap"
-              >
-                <RefreshCw className="w-4 h-4" />
-                {buscarPor === "nome" ? "Buscar por E-mail" : "Buscar por Nome"}
-              </button>
-              <button
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 whitespace-nowrap"
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                Filtros
-              </button>
             </div>
-            <p className="text-xs text-gray-500 ml-1">
-              Digite {buscarPor === "nome" ? "o nome" : "o e-mail"} e pressione{" "}
-              <span className="font-semibold">Enter</span> para buscar.
-            </p>
+            <button
+              onClick={() => setMostrarFiltros(!mostrarFiltros)}
+              className="flex items-center gap-2 px-6 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
+            >
+              <Filter className="w-4 h-4" />
+              Filtros Avançados
+            </button>
           </div>
+
+          {/* Filtros Avançados */}
           <AnimatePresence>
             {mostrarFiltros && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4 }}
-                className="overflow-hidden bg-gray-50 rounded-lg p-6 border mb-6 shadow-sm"
+                className="mt-6 border-t border-gray-200 pt-6"
               >
-                {/* Linha 1: Gênero + Tipo de Acomodação + Tipo de Transporte */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {/* Linha 1: Gênero + Acomodação + Transporte */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Gênero */}
                   <div>
                     <label className="text-sm text-gray-600 block mb-1">Gênero</label>
@@ -566,11 +408,11 @@ const EncontrePessoas = () => {
                       onChange={handleChange}
                       className="border border-gray-300 rounded px-3 py-2 w-full"
                     >
-                      <option value="">Todos</option>
+                      <option value="">Qualquer</option>
                       <option value="MASCULINO">Masculino</option>
                       <option value="FEMININO">Feminino</option>
+                      <option value="NAO_BINARIO">Não-binário</option>
                       <option value="OUTRO">Outro</option>
-                      <option value="NAO_BINARIO">Não Binário</option>
                     </select>
                   </div>
                   {/* Tipo de Acomodação */}
@@ -656,7 +498,8 @@ const EncontrePessoas = () => {
                       onChange={handleChange}
                       className="border border-gray-300 rounded px-3 py-2 w-full"
                     />
-                  </div>                  {/* Valor Médio Máximo */}
+                  </div>
+                  {/* Valor Médio Máximo */}
                   <div>
                     <label className="text-sm text-gray-600 block mb-1">
                       Valor Médio Máximo (R$)
@@ -737,136 +580,152 @@ const EncontrePessoas = () => {
         </motion.div>
 
         {/* Lista de usuários */}
-<div className="mt-8">
-  {usuarios.length === 0 && !loading ? (
-    <p className="text-center text-gray-500">
-      Nenhum resultado encontrado.
-    </p>
-  ) : (
-    <motion.div
-      layout
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-    >
-      {usuarios.map((user) => (
-        <motion.div
-          key={user.id}
-          whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(234,88,12,0.10)" }}
-          className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
-          onClick={(e) => {
-            const clicouNoBotao = (e.target as HTMLElement).closest("button");
-            if (!clicouNoBotao) {
-              setUsuarioSelecionado(user);
-              setModalPerfilAberto(true);
-            }
-          }}
-        >
-          <div>
-            <Image
-              src={
-                user.fotoPerfil?.startsWith("http")
-                  ? user.fotoPerfil
-                  : "/images/user/avatar.png"
-              }
-              alt="Foto"
-              width={100}
-              height={100}
-              className="rounded-full mx-auto mb-3 object-cover aspect-square"
-            />
-            <h2 className="text-lg font-bold flex items-center justify-center gap-1">
-              {extrairPrimeiroEUltimoNome(user.nome)}
-              {user.emailVerificado && user.telefoneVerificado && (
-                <FaCheckCircle
-                  title="Perfil verificado"
-                  className="text-green-600"
-                />
-              )}
-            </h2>
-            <p className="text-gray-600 flex items-center justify-center gap-1">
-              <User className="w-4 h-4" />
-              {user.genero} • {user.idade} anos
+        <div className="mt-8">
+          {usuarios.length === 0 && !loading ? (
+            <p className="text-center text-gray-500">
+              Nenhum resultado encontrado.
             </p>
-            <ul className="text-sm text-left mt-3 space-y-2">
-              {user.petFriendly && (
-                <li className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-red-500" />
-                  Pet Friendly
-                </li>
-              )}
-              {user.aceitaCriancas && (
-                <li className="flex items-center gap-2">
-                  <Baby className="w-4 h-4 text-blue-500" />
-                  Aceita Crianças
-                </li>
-              )}
-              {user.aceitaFumantes && (
-                <li className="flex items-center gap-2">
-                  <Cigarette className="w-4 h-4 text-gray-500" />
-                  Aceita Fumantes
-                </li>
-              )}
-              {user.aceitaBebidasAlcoolicas && (
-                <li className="flex items-center gap-2">
-                  <Wine className="w-4 h-4 text-purple-500" />
-                  Aceita Bebidas
-                </li>
-              )}
-              {user.acomodacaoCompartilhada && (
-                <li className="flex items-center gap-2">
-                  <Bed className="w-4 h-4 text-orange-500" />
-                  Acomodação Compartilhada
-                </li>
-              )}
-              {!user.petFriendly &&
-                !user.aceitaCriancas &&
-                !user.aceitaFumantes &&
-                !user.aceitaBebidasAlcoolicas &&
-                !user.acomodacaoCompartilhada && (
-                  <li className="italic text-gray-400 text-center">
-                    Preferências de viagem não informadas.
-                  </li>
-                )}
-              {(() => {
-                const IconeAcomodacao = getIconeAcomodacao(user.tipoAcomodacao);
-                return (
-                  <li className="flex items-center gap-2">
-                    <IconeAcomodacao className="w-4 h-4 text-green-600" />
-                    {formatarTexto(user.tipoAcomodacao)}
-                  </li>
-                );
-              })()}
-              {(() => {
-                const IconeTransporte = getIconeTransporte(user.tipoTransporte);
-                return (
-                  <li className="flex items-center gap-2">
-                    <IconeTransporte className="w-4 h-4 text-blue-600" />
-                    {formatarTexto(user.tipoTransporte)}
-                  </li>
-                );
-              })()}
-            </ul>
-          </div>
-          <button
-            className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg mt-4 hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 transition-all duration-200"
-            onClick={() => abrirModalConvite(user)}
-            disabled={usuarioCarregandoId === user.id}
-          >
-            {usuarioCarregandoId === user.id ? (
-              <>
-                <Loader2 className="animate-spin w-4 h-4" />
-                Carregando...
-              </>
-            ) : (
-              <>
-                <Users className="w-4 h-4" />
-                Convidar para Viagem
-              </>
-            )}
-          </button>
-        </motion.div>
-      ))}
-    </motion.div>
-  )}
-</div>
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+            >
+              {usuarios.map((user) => (
+                <motion.div
+                  key={user.id}
+                  whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(234,88,12,0.10)" }}
+                  className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
+                  onClick={(e) => {
+                    const clicouNoBotao = (e.target as HTMLElement).closest("button");
+                    if (!clicouNoBotao) {
+                      setUsuarioSelecionado(user);
+                      setModalPerfilAberto(true);
+                    }
+                  }}
+                >
+                  <div>
+                    <Image
+                      src={
+                        user.fotoPerfil?.startsWith("http")
+                          ? user.fotoPerfil
+                          : "/images/user/avatar.png"
+                      }
+                      alt="Foto"
+                      width={100}
+                      height={100}
+                      className="rounded-full mx-auto mb-3 object-cover aspect-square"
+                    />
+                    <h2 className="text-lg font-bold flex items-center justify-center gap-1">
+                      {extrairPrimeiroEUltimoNome(user.nome)}
+                      {user.emailVerificado && user.telefoneVerificado && (
+                        <FaCheckCircle
+                          title="Perfil verificado"
+                          className="text-green-600"
+                        />
+                      )}
+                    </h2>
+                    <p className="text-gray-600 flex items-center justify-center gap-1">
+                      <User className="w-4 h-4" />
+                      {user.genero} • {user.idade} anos
+                    </p>
+                    <ul className="text-sm text-left mt-3 space-y-2">
+                      {user.petFriendly && (
+                        <li className="flex items-center gap-2">
+                          <Heart className="w-4 h-4 text-red-500" />
+                          Pet Friendly
+                        </li>
+                      )}
+                      {user.aceitaCriancas && (
+                        <li className="flex items-center gap-2">
+                          <Baby className="w-4 h-4 text-blue-500" />
+                          Aceita Crianças
+                        </li>
+                      )}
+                      {user.aceitaFumantes && (
+                        <li className="flex items-center gap-2">
+                          <Cigarette className="w-4 h-4 text-gray-500" />
+                          Aceita Fumantes
+                        </li>
+                      )}
+                      {user.aceitaBebidasAlcoolicas && (
+                        <li className="flex items-center gap-2">
+                          <Wine className="w-4 h-4 text-purple-500" />
+                          Aceita Bebidas
+                        </li>
+                      )}
+                      {user.acomodacaoCompartilhada && (
+                        <li className="flex items-center gap-2">
+                          <Bed className="w-4 h-4 text-orange-500" />
+                          Acomodação Compartilhada
+                        </li>
+                      )}
+                      {!user.petFriendly &&
+                        !user.aceitaCriancas &&
+                        !user.aceitaFumantes &&
+                        !user.aceitaBebidasAlcoolicas &&
+                        !user.acomodacaoCompartilhada && (
+                          <li className="italic text-gray-400 text-center">
+                            Preferências de viagem não informadas.
+                          </li>
+                        )}
+                      {(() => {
+                        const IconeAcomodacao = getIconeAcomodacao(user.tipoAcomodacao);
+                        return (
+                          <li className="flex items-center gap-2">
+                            <IconeAcomodacao className="w-4 h-4 text-green-600" />
+                            {formatarTexto(user.tipoAcomodacao)}
+                          </li>
+                        );
+                      })()}
+                      {(() => {
+                        const IconeTransporte = getIconeTransporte(user.tipoTransporte);
+                        return (
+                          <li className="flex items-center gap-2">
+                            <IconeTransporte className="w-4 h-4 text-blue-600" />
+                            {formatarTexto(user.tipoTransporte)}
+                          </li>
+                        );
+                      })()}
+                    </ul>
+                  </div>
+                  
+                  {/* Ações */}
+                  <div className="space-y-3 mt-4">
+                    {/* Botão Convidar */}
+                    <button
+                      className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 transition-all duration-200"
+                      onClick={() => abrirModalConvite(user)}
+                      disabled={usuarioCarregandoId === user.id}
+                    >
+                      {usuarioCarregandoId === user.id ? (
+                        <>
+                          <Loader2 className="animate-spin w-4 h-4" />
+                          Carregando...
+                        </>
+                      ) : (
+                        <>
+                          <Users className="w-4 h-4" />
+                          Convidar para Viagem
+                        </>
+                      )}
+                    </button>
+
+                    {/* Botões de Denúncia e Bloqueio */}
+                    <div className="flex justify-center">
+                      <DenunciaEBloqueioButtons
+                        usuario={user}
+                        onDenunciar={handleDenunciar}
+                        onBloquear={handleBloquear}
+                        size="sm"
+                        layout="horizontal"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </div>
       </div>
 
       {/* MODAL DE CONVITE */}
@@ -886,7 +745,38 @@ const EncontrePessoas = () => {
           isOpen={modalPerfilAberto}
           onClose={() => setModalPerfilAberto(false)}
           onConvidar={() => abrirModalConvite(usuarioSelecionado)}
+          onDenunciar={handleDenunciar}
+          onBloquear={handleBloquear}
         />
+      )}
+
+      {/* Modais de Denúncia e Bloqueio */}
+      {usuarioParaDenunciarBloquear && (
+        <>
+          <DenunciaModal
+            isOpen={denunciaModalOpen}
+            onClose={fecharDenunciaModal}
+            usuarioId={usuarioParaDenunciarBloquear.id}
+            usuarioNome={usuarioParaDenunciarBloquear.nome}
+            onDenunciaEnviada={handleDenunciaEnviada}
+          />
+
+          <BloqueioModal
+            isOpen={bloqueioModalOpen}
+            onClose={fecharBloqueioModal}
+            usuarioId={usuarioParaDenunciarBloquear.id}
+            usuarioNome={usuarioParaDenunciarBloquear.nome}
+            onUsuarioBloqueado={handleUsuarioBloqueadoComRemocao}
+          />
+
+          <PerguntaBloqueioModal
+            isOpen={perguntaBloqueioModalOpen}
+            onClose={fecharPerguntaBloqueioModal}
+            usuarioNome={usuarioParaDenunciarBloquear.nome}
+            onBloquear={handleBloquearAposDenunciaComRemocao}
+            onNaoBloquear={handleNaoBloquearAposDenuncia}
+          />
+        </>
       )}
     </div>
   );

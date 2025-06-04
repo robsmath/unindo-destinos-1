@@ -21,7 +21,12 @@ import {
   Loader2, 
   Map,
   Luggage,
-  Bus
+  Bus,
+  Eye,
+  EyeOff,
+  X,
+  Check,
+  ExternalLink
 } from "lucide-react";
 
 import "react-phone-input-2/lib/style.css";
@@ -74,6 +79,10 @@ const Signup = () => {
 
   const [showAddress, setShowAddress] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -159,31 +168,68 @@ const Signup = () => {
     return telefoneNumeros.length >= 10;
   };
 
-  const validarSenha = (senha: string): boolean => {
-    return senha.length >= 6;
+  const validarSenhaForte = (senha: string): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (senha.length < 8) {
+      errors.push("Pelo menos 8 caracteres");
+    }
+    if (!/[A-Z]/.test(senha)) {
+      errors.push("Uma letra maiúscula");
+    }
+    if (!/[a-z]/.test(senha)) {
+      errors.push("Uma letra minúscula");
+    }
+    if (!/\d/.test(senha)) {
+      errors.push("Um número");
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(senha)) {
+      errors.push("Um caractere especial (!@#$%^&*)");
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setLoading(true);
-  
+    
+    // Validações básicas primeiro
     if (form.senha !== form.confirmSenha) {
       toast.error("Senhas não coincidem. Verifique e tente novamente.");
-      setLoading(false);
       return;
     }
 
     if (!validarIdade(form.dataNascimento)) {
       toast.error("Você deve ter pelo menos 18 anos para se cadastrar.");
-      setLoading(false);
       return;
     }
 
     if (!form.nome.trim() || !form.email.trim() || !form.senha.trim() || !form.cpf.trim() || !form.telefone.trim() || !form.dataNascimento) {
       toast.error("Por favor, preencha todos os campos obrigatórios.");
-      setLoading(false);
       return;
     }
+
+    const senhaValidation = validarSenhaForte(form.senha);
+    if (!senhaValidation.isValid) {
+      toast.error("Senha não atende aos critérios de segurança.");
+      return;
+    }
+
+    // Mostrar modal de termos
+    setShowTermsModal(true);
+  };
+
+  const handleFinalSubmit = async () => {
+    if (!acceptedTerms) {
+      toast.error("Você deve aceitar os termos de uso para continuar.");
+      return;
+    }
+
+    setLoading(true);
+    setShowTermsModal(false);
   
     const payload = {
       nome: form.nome,
@@ -510,25 +556,50 @@ const Signup = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Senha *
                     </label>
-                    <input 
-                      type="password" 
-                      name="senha" 
-                      placeholder="Digite sua senha (mín. 6 caracteres)" 
-                      value={form.senha} 
-                      onChange={handleChange} 
-                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
-                        form.senha && !validarSenha(form.senha) 
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-                          : form.senha && validarSenha(form.senha)
-                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
-                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
-                      }`}
-                      style={{ fontSize: '16px' }}
-                    />
-                    {form.senha && !validarSenha(form.senha) && (
-                      <p className="text-red-500 text-sm mt-1">
-                        A senha deve ter pelo menos 6 caracteres
-                      </p>
+                    <div className="relative">
+                      <input 
+                        type={showPassword ? "text" : "password"}
+                        name="senha" 
+                        placeholder="Digite sua senha (mín. 8 caracteres)" 
+                        value={form.senha} 
+                        onChange={handleChange} 
+                        className={`w-full px-4 py-4 pr-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                          form.senha && !validarSenhaForte(form.senha).isValid 
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            : form.senha && validarSenhaForte(form.senha).isValid
+                            ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                            : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                        }`}
+                        style={{ fontSize: '16px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                    {form.senha && !validarSenhaForte(form.senha).isValid && (
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-3 mt-2">
+                        <p className="font-medium text-red-700 text-sm mb-2">A senha deve conter:</p>
+                        <div className="space-y-1">
+                          {validarSenhaForte(form.senha).errors.map((error, index) => (
+                            <div key={index} className="flex items-center gap-2 text-red-600 text-sm">
+                              <div className="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0"></div>
+                              <span>{error}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {form.senha && validarSenhaForte(form.senha).isValid && (
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-3 mt-2">
+                        <div className="flex items-center gap-2 text-green-700 text-sm">
+                          <Check size={16} className="flex-shrink-0" />
+                          <span className="font-medium">Senha atende aos critérios de segurança!</span>
+                        </div>
+                      </div>
                     )}
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
@@ -537,21 +608,30 @@ const Signup = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Confirmar Senha *
                     </label>
-                    <input 
-                      type="password" 
-                      name="confirmSenha" 
-                      placeholder="Confirme sua senha" 
-                      value={form.confirmSenha} 
-                      onChange={handleChange} 
-                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
-                        form.confirmSenha && form.senha !== form.confirmSenha 
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-                          : form.confirmSenha && form.senha === form.confirmSenha && form.senha
-                          ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
-                          : 'border-gray-200 focus:border-primary focus:ring-primary/20'
-                      }`}
-                      style={{ fontSize: '16px' }}
-                    />
+                    <div className="relative">
+                      <input 
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmSenha" 
+                        placeholder="Confirme sua senha" 
+                        value={form.confirmSenha} 
+                        onChange={handleChange} 
+                        className={`w-full px-4 py-4 pr-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                          form.confirmSenha && form.senha !== form.confirmSenha 
+                            ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                            : form.confirmSenha && form.senha === form.confirmSenha && form.senha
+                            ? 'border-green-300 focus:border-green-500 focus:ring-green-200'
+                            : 'border-gray-200 focus:border-primary focus:ring-primary/20'
+                        }`}
+                        style={{ fontSize: '16px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                     {form.confirmSenha && form.senha !== form.confirmSenha && (
                       <p className="text-red-500 text-sm mt-1">
                         As senhas não coincidem
@@ -862,6 +942,178 @@ const Signup = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Modal de Termos de Uso */}
+      <AnimatePresence>
+        {showTermsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 max-w-md w-full relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
+                    Termos de Uso
+                  </h2>
+                  <button
+                    onClick={() => setShowTermsModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X size={20} className="text-gray-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <p className="text-gray-700 leading-relaxed">
+                    Para criar sua conta no <span className="font-semibold text-primary">Unindo Destinos</span>, 
+                    você precisa aceitar nossos termos de uso e política de privacidade.
+                  </p>
+                  
+                  <div className="bg-gradient-to-r from-primary/5 to-orange-500/5 rounded-2xl p-5 border border-primary/10">
+                    <h3 className="font-semibold text-gray-800 mb-3">Principais pontos dos nossos termos:</h3>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Conectamos viajantes com interesses similares de forma segura</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Seu perfil só é visível para usuários logados e verificados</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Geramos roteiros personalizados com IA (até 3 por viagem)</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Você controla sua privacidade e visibilidade do perfil</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Promovemos um ambiente respeitoso e seguro para todos</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-primary/10">
+                      <Link 
+                        href="/termos-de-uso" 
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-primary hover:text-orange-500 transition-colors text-sm font-medium hover:underline"
+                      >
+                        Ler termos completos
+                        <ExternalLink size={14} />
+                      </Link>
+                      <span className="text-gray-400">•</span>
+                      <Link 
+                        href="/politica-privacidade" 
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-primary hover:text-orange-500 transition-colors text-sm font-medium hover:underline"
+                      >
+                        Política de privacidade
+                        <ExternalLink size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0 mt-1">
+                      <input
+                        type="checkbox"
+                        id="acceptTerms"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <motion.div
+                        onClick={() => setAcceptedTerms(!acceptedTerms)}
+                        className={`w-5 h-5 rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                          acceptedTerms 
+                            ? 'bg-primary border-primary' 
+                            : 'border-gray-300 hover:border-primary'
+                        }`}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <AnimatePresence>
+                          {acceptedTerms && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="flex items-center justify-center h-full"
+                            >
+                              <Check size={12} className="text-white" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    </div>
+                    <label 
+                      htmlFor="acceptTerms" 
+                      className="text-gray-700 text-sm leading-relaxed cursor-pointer"
+                    >
+                      Eu li e aceito os{" "}
+                      <Link 
+                        href="/termos-de-uso" 
+                        target="_blank"
+                        className="text-primary hover:text-orange-500 transition-colors font-medium hover:underline"
+                      >
+                        termos de uso
+                      </Link>{" "}
+                      e{" "}
+                      <Link 
+                        href="/politica-privacidade" 
+                        target="_blank"
+                        className="text-primary hover:text-orange-500 transition-colors font-medium hover:underline"
+                      >
+                        política de privacidade
+                      </Link>
+                    </label>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <motion.button
+                      type="button"
+                      onClick={() => setShowTermsModal(false)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-2xl transition-all duration-200"
+                    >
+                      Cancelar
+                    </motion.button>
+                    
+                    <motion.button
+                      type="button"
+                      onClick={handleFinalSubmit}
+                      disabled={!acceptedTerms}
+                      whileHover={{ scale: acceptedTerms ? 1.02 : 1 }}
+                      whileTap={{ scale: acceptedTerms ? 0.98 : 1 }}
+                      className={`flex-1 py-3 px-4 font-medium rounded-2xl transition-all duration-200 ${
+                        acceptedTerms
+                          ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg hover:shadow-xl'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Aceitar e Cadastrar
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

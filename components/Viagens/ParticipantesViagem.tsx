@@ -10,6 +10,10 @@ import { useAuth } from "@/app/context/AuthContext";
 import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin, X } from "lucide-react";
 import ChatPrivado from "@/components/Chat/ChatPrivado";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useDenunciaEBloqueio } from "@/hooks/useDenunciaEBloqueio";
+import DenunciaModal from "@/components/Modals/DenunciaModal";
+import BloqueioModal from "@/components/Modals/BloqueioModal";
+import PerguntaBloqueioModal from "@/components/Modals/PerguntaBloqueioModal";
 
 const ParticipantesViagem = () => {
   const { id } = useParams();
@@ -20,18 +24,58 @@ const ParticipantesViagem = () => {
   const [carregando, setCarregando] = useState(true);
   const [chatAberto, setChatAberto] = useState(false);
   const [participanteSelecionado, setParticipanteSelecionado] = useState<UsuarioBuscaDTO | null>(null);
-    const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000); // 5 segundos para atualização rápida
+  const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
+
+  // Hook para denúncia e bloqueio
+  const {
+    denunciaModalOpen,
+    bloqueioModalOpen,
+    perguntaBloqueioModalOpen,
+    usuarioSelecionado,
+    abrirDenunciaModal,
+    abrirBloqueioModal,
+    fecharDenunciaModal,
+    fecharBloqueioModal,
+    fecharPerguntaBloqueioModal,
+    handleDenunciaEnviada,
+    handleBloquearAposDenuncia,
+    handleNaoBloquearAposDenuncia,
+    handleUsuarioBloqueado,
+  } = useDenunciaEBloqueio();
 
   const handleOpenChat = (participante: UsuarioBuscaDTO) => {
     setParticipanteSelecionado(participante);
     setChatAberto(true);
-    // Marcar conversa como visualizada
     markConversationAsRead(participante.id);
   };
 
   const handleCloseChat = () => {
     setChatAberto(false);
     setParticipanteSelecionado(null);
+  };
+
+  const handleDenunciar = (usuario: { id: number; nome: string }) => {
+    abrirDenunciaModal(usuario);
+  };
+
+  const handleBloquear = (usuario: { id: number; nome: string }) => {
+    abrirBloqueioModal(usuario);
+  };
+
+  const handleUsuarioBloqueadoComRemocao = () => {
+    if (usuarioSelecionado) {
+      // Remove o usuário da lista local
+      setParticipantes(prev => prev.filter(p => p.id !== usuarioSelecionado.id));
+    }
+    handleUsuarioBloqueado();
+  };
+
+  const handleBloquearAposDenunciaComRemocao = async () => {
+    if (usuarioSelecionado) {
+      // Remove o usuário da lista local
+      setParticipantes(prev => prev.filter(p => p.id !== usuarioSelecionado.id));
+    }
+    await handleBloquearAposDenuncia();
   };
 
   useEffect(() => {
@@ -56,6 +100,7 @@ const ParticipantesViagem = () => {
     if (a.criador === b.criador) return 0;
     return a.criador ? -1 : 1;
   });
+
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
       {/* Background Effects */}
@@ -260,36 +305,16 @@ const ParticipantesViagem = () => {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
         />
-      </div>      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pt-16 pb-16">
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pt-16 pb-16">
         {/* Header Section Integrado */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="mb-8"
+          className="text-center mb-12"
         >
-          {/* Back Button integrado */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-6"
-          >
-            <motion.button
-              onClick={() => router.back()}
-              className="group inline-flex items-center gap-3 px-5 py-3 bg-white/95 backdrop-blur-md border border-primary/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white hover:border-primary/20"
-              whileHover={{ scale: 1.02, x: -2 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="w-8 h-8 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full flex items-center justify-center group-hover:from-primary/20 group-hover:to-orange-500/20 transition-all duration-300">
-                <ArrowLeft className="w-4 h-4 text-primary transition-all duration-300" />
-              </div>
-              <span className="text-sm font-semibold text-gray-700 group-hover:text-primary transition-colors duration-300">
-                Voltar para Viagem
-              </span>
-            </motion.button>
-          </motion.div>
-
           {/* Badge e Título mais próximos */}
           <div className="text-center">
             <motion.div
@@ -305,14 +330,28 @@ const ParticipantesViagem = () => {
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent mb-3"
-            >
-              Companheiros de Viagem
-            </motion.h1>
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <motion.button
+                onClick={() => router.back()}
+                className="group w-10 h-10 bg-white/95 backdrop-blur-md border border-primary/10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white hover:border-primary/20 flex items-center justify-center"
+                whileHover={{ scale: 1.1, x: -2 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <ArrowLeft className="w-4 h-4 text-primary transition-all duration-300" />
+              </motion.button>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent"
+              >
+                Companheiros de Viagem
+              </motion.h1>
+            </div>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -361,7 +400,8 @@ const ParticipantesViagem = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-          >            {participantes.length === 0 ? (
+          >
+            {participantes.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -407,13 +447,18 @@ const ParticipantesViagem = () => {
                       usuarioEhCriador={usuarioEhCriador}
                       onOpenChat={handleOpenChat}
                       unreadCount={getUnreadCountForUser(usuario.id)}
+                      onDenunciar={handleDenunciar}
+                      onBloquear={handleBloquear}
                     />
                   </motion.div>
                 ))}
               </div>
-            )}</motion.div>
+            )}
+          </motion.div>
         )}
-      </div>      {/* Modal do Chat */}
+      </div>
+
+      {/* Modal do Chat */}
       <AnimatePresence>
         {chatAberto && participanteSelecionado && (
           <motion.div
@@ -439,6 +484,35 @@ const ParticipantesViagem = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modais de Denúncia e Bloqueio */}
+      {usuarioSelecionado && (
+        <>
+          <DenunciaModal
+            isOpen={denunciaModalOpen}
+            onClose={fecharDenunciaModal}
+            usuarioId={usuarioSelecionado.id}
+            usuarioNome={usuarioSelecionado.nome}
+            onDenunciaEnviada={handleDenunciaEnviada}
+          />
+
+          <BloqueioModal
+            isOpen={bloqueioModalOpen}
+            onClose={fecharBloqueioModal}
+            usuarioId={usuarioSelecionado.id}
+            usuarioNome={usuarioSelecionado.nome}
+            onUsuarioBloqueado={handleUsuarioBloqueadoComRemocao}
+          />
+
+          <PerguntaBloqueioModal
+            isOpen={perguntaBloqueioModalOpen}
+            onClose={fecharPerguntaBloqueioModal}
+            usuarioNome={usuarioSelecionado.nome}
+            onBloquear={handleBloquearAposDenunciaComRemocao}
+            onNaoBloquear={handleNaoBloquearAposDenuncia}
+          />
+        </>
+      )}
     </section>
   );
 };

@@ -12,6 +12,7 @@ import Testimonials from "./Testimonials";
 import EnhancedHero from "./EnhancedHero";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { useAuth } from "@/app/context/AuthContext";
+import HomeLogada from "./HomeLogada";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -72,6 +73,12 @@ export default function Home() {
       }
     }
   };
+
+  // Se o usuário está autenticado, mostrar a home específica para usuários logados
+  if (isAuthenticated) {
+    return <HomeLogada />;
+  }
+
   return (
     <>      <AnimatePresence>
         {isLoading && isInitialLoad && (

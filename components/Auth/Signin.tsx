@@ -16,7 +16,9 @@ import {
   Globe,
   Map,
   Luggage,
-  Bus
+  Bus,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +30,7 @@ const Signin = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { isAuthenticated, login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,8 +68,25 @@ const Signin = () => {
         setError("Conta não verificada. Verifique seu e-mail antes de fazer login.");
       } else if (error.response?.status === 401) {
         setError("E-mail ou senha inválidos. Verifique suas credenciais.");
-      } else {
+      } else if (error.response?.status === 400) {
+        // Erro de validação (dados inválidos)
+        setError("E-mail ou senha inválidos. Verifique suas credenciais.");
+      } else if (error.response?.status >= 500) {
+        // Erro interno do servidor
         setError("Erro no servidor. Tente novamente mais tarde.");
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        // Erro de rede
+        setError("Erro de conexão. Verifique sua internet e tente novamente.");
+      } else {
+        // Para outros erros, verificar se há mensagem específica do servidor
+        const serverMessage = error.response?.data?.message;
+        if (serverMessage && serverMessage.toLowerCase().includes('credenciais')) {
+          setError("E-mail ou senha inválidos. Verifique suas credenciais.");
+        } else if (serverMessage) {
+          setError(serverMessage);
+        } else {
+          setError("E-mail ou senha inválidos. Verifique suas credenciais.");
+        }
       }
     } finally {
       setLoading(false);
@@ -338,14 +358,23 @@ const Signin = () => {
                   </div>
 
                   <div className="relative group">
-                    <input
-                      type="password"
-                      placeholder="Digite sua senha"
-                      value={data.senha}
-                      onChange={(e) => setData({ ...data, senha: e.target.value })}
-                      required
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Digite sua senha"
+                        value={data.senha}
+                        onChange={(e) => setData({ ...data, senha: e.target.value })}
+                        required
+                        className="w-full px-4 py-4 pr-12 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                   </div>
                 </motion.div>

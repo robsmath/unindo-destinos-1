@@ -45,7 +45,8 @@ const Footer = () => {
   ];
   const supportLinks = [
     { name: "FAQ", href: "/faq" },
-    { name: "Termos de Uso", href: "/termos-de-uso" }
+    { name: "Termos de Uso", href: "/termos-de-uso" },
+    { name: "Política de Privacidade", href: "/politica-privacidade" }
   ];
 
   return (

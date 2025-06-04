@@ -108,8 +108,8 @@ const Header = () => {
       animate="animate"
       variants={headerVariants}      className={`fixed left-0 top-0 z-50 w-full transition-all duration-500 ${
         stickyMenu
-          ? "bg-white/80 backdrop-blur-xl py-2 shadow-2xl border-b border-white/20 dark:bg-black/80 dark:border-white/10"
-          : "bg-white/60 backdrop-blur-lg py-4 dark:bg-black/60"
+          ? "bg-white/80 backdrop-blur-xl py-1 sm:py-2 shadow-2xl border-b border-white/20 dark:bg-black/80 dark:border-white/10"
+          : "bg-white/60 backdrop-blur-lg py-2 sm:py-4 dark:bg-black/60"
       }`}
       role="banner"
       aria-label="Navegação principal"
@@ -152,7 +152,7 @@ const Header = () => {
               alt="Unindo Destinos - Logo"
               width={120}
               height={35}
-              className="dark:hidden transition-all duration-300 hover:scale-105 relative z-10"
+              className="dark:hidden transition-all duration-300 hover:scale-105 relative z-10 w-20 sm:w-24 md:w-28 lg:w-[120px] h-auto"
               priority
             />
             <Image
@@ -160,7 +160,7 @@ const Header = () => {
               alt="Unindo Destinos - Logo"
               width={120}
               height={35}
-              className="hidden dark:block transition-all duration-300 hover:scale-105 relative z-10"
+              className="hidden dark:block transition-all duration-300 hover:scale-105 relative z-10 w-20 sm:w-24 md:w-28 lg:w-[120px] h-auto"
               priority
             />
           </Link>

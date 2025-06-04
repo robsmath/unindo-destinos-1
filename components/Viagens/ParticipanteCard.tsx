@@ -19,6 +19,7 @@ import {
   FaDoorOpen,
 } from "react-icons/fa";
 import { confirm } from "@/components/ui/confirm";
+import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
 
 interface Props {
   participante: UsuarioBuscaDTO;
@@ -26,6 +27,8 @@ interface Props {
   usuarioEhCriador: boolean;
   onOpenChat: (participante: UsuarioBuscaDTO) => void;
   unreadCount?: number;
+  onDenunciar: (usuario: { id: number; nome: string }) => void;
+  onBloquear: (usuario: { id: number; nome: string }) => void;
 }
 
 const formatarNome = (nome: string) => {
@@ -34,7 +37,15 @@ const formatarNome = (nome: string) => {
   return `${partes[0]} ${partes[partes.length - 1]}`;
 };
 
-const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador, onOpenChat, unreadCount }: Props) => {
+const ParticipanteCard = ({ 
+  participante, 
+  viagemId, 
+  usuarioEhCriador, 
+  onOpenChat, 
+  unreadCount,
+  onDenunciar,
+  onBloquear
+}: Props) => {
   const { usuario } = useAuth();
   const router = useRouter();
   const [carregando, setCarregando] = useState(false);
@@ -95,10 +106,11 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador, onOpenChat
   return (
     <>
       <motion.div
-        className="group relative bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-100/50 shadow-lg hover:shadow-2xl p-6 w-full max-w-xs transition-all duration-500 ease-out hover:border-primary/20 hover:bg-white/95"
+        className="group relative bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-100/50 shadow-lg hover:shadow-2xl p-6 w-full max-w-xs h-80 transition-all duration-500 ease-out hover:border-primary/20 hover:bg-white/95 cursor-pointer"
         whileHover={{ y: -8, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", damping: 20, stiffness: 300 }}
+        onClick={() => setMostrarModal(true)}
       >
         {/* Status Indicator */}
         {ehCriador && (
@@ -140,75 +152,100 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador, onOpenChat
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-2">
-          <motion.button
-            title="Ver Perfil"
-            onClick={() => setMostrarModal(true)}
-            className="relative w-10 h-10 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl flex items-center justify-center text-blue-600 hover:text-blue-700 transition-all duration-300 group/btn"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <FaUser className="w-4 h-4" />
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-blue-600/0 group-hover/btn:from-blue-500/10 group-hover/btn:to-blue-600/10 transition-all duration-300" />
-          </motion.button>
+        {/* Action Buttons - Com altura fixa para padronizar */}
+        <div className="absolute bottom-6 left-6 right-6">
+          <div className="flex items-center justify-center gap-2 flex-wrap min-h-[44px]">
+            <motion.button
+              title="Ver Perfil"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMostrarModal(true);
+              }}
+              className="relative w-10 h-10 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl flex items-center justify-center text-blue-600 hover:text-blue-700 transition-all duration-300 group/btn"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaUser className="w-4 h-4" />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/0 to-blue-600/0 group-hover/btn:from-blue-500/10 group-hover/btn:to-blue-600/10 transition-all duration-300" />
+            </motion.button>
 
-          <motion.button
-            title="Enviar Mensagem"
-            onClick={() => onOpenChat(participante)}
-            disabled={usuario?.id === participante.id}
-            className="relative w-10 h-10 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl flex items-center justify-center text-purple-600 hover:text-purple-700 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed group/btn"
-            whileHover={{ scale: usuario?.id === participante.id ? 1 : 1.1 }}
-            whileTap={{ scale: usuario?.id === participante.id ? 1 : 0.95 }}
-          >
-            <MessageCircle className="w-4 h-4" />
-            {unreadCount !== undefined && unreadCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg border-2 border-white"
+            <motion.button
+              title="Enviar Mensagem"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenChat(participante);
+              }}
+              disabled={usuario?.id === participante.id}
+              className="relative w-10 h-10 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl flex items-center justify-center text-purple-600 hover:text-purple-700 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed group/btn"
+              whileHover={{ scale: usuario?.id === participante.id ? 1 : 1.1 }}
+              whileTap={{ scale: usuario?.id === participante.id ? 1 : 0.95 }}
+            >
+              <MessageCircle className="w-4 h-4" />
+              {unreadCount !== undefined && unreadCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg border-2 border-white"
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </motion.span>
+              )}
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 to-purple-600/0 group-hover/btn:from-purple-500/10 group-hover/btn:to-purple-600/10 transition-all duration-300" />
+            </motion.button>
+
+            {/* Botões de Denúncia e Bloqueio */}
+            <div onClick={(e) => e.stopPropagation()}>
+              <DenunciaEBloqueioButtons
+                usuario={participante}
+                onDenunciar={onDenunciar}
+                onBloquear={onBloquear}
+                size="md"
+                layout="horizontal"
+              />
+            </div>
+
+            {podeRemover && (
+              <motion.button
+                title="Remover Participante"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemover();
+                }}
+                disabled={carregando}
+                className="relative w-10 h-10 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 rounded-xl flex items-center justify-center text-red-600 hover:text-red-700 transition-all duration-300 group/btn"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </motion.span>
+                {carregando ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  <FaTrash className="w-4 h-4" />
+                )}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 to-red-600/0 group-hover/btn:from-red-500/10 group-hover/btn:to-red-600/10 transition-all duration-300" />
+              </motion.button>
             )}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 to-purple-600/0 group-hover/btn:from-purple-500/10 group-hover/btn:to-purple-600/10 transition-all duration-300" />
-          </motion.button>
 
-          {podeRemover && (
-            <motion.button
-              title="Remover Participante"
-              onClick={handleRemover}
-              disabled={carregando}
-              className="relative w-10 h-10 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 rounded-xl flex items-center justify-center text-red-600 hover:text-red-700 transition-all duration-300 group/btn"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {carregando ? (
-                <Loader2 className="animate-spin w-4 h-4" />
-              ) : (
-                <FaTrash className="w-4 h-4" />
-              )}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 to-red-600/0 group-hover/btn:from-red-500/10 group-hover/btn:to-red-600/10 transition-all duration-300" />
-            </motion.button>
-          )}
-
-          {podeSair && (
-            <motion.button
-              title="Sair da Viagem"
-              onClick={handleSairDaViagem}
-              disabled={carregando}
-              className="relative w-10 h-10 bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-xl flex items-center justify-center text-orange-600 hover:text-orange-700 transition-all duration-300 group/btn"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {carregando ? (
-                <Loader2 className="animate-spin w-4 h-4" />
-              ) : (
-                <FaDoorOpen className="w-4 h-4" />
-              )}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 to-orange-600/0 group-hover/btn:from-orange-500/10 group-hover/btn:to-orange-600/10 transition-all duration-300" />
-            </motion.button>
-          )}
+            {podeSair && (
+              <motion.button
+                title="Sair da Viagem"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSairDaViagem();
+                }}
+                disabled={carregando}
+                className="relative w-10 h-10 bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-xl flex items-center justify-center text-orange-600 hover:text-orange-700 transition-all duration-300 group/btn"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {carregando ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  <FaDoorOpen className="w-4 h-4" />
+                )}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 to-orange-600/0 group-hover/btn:from-orange-500/10 group-hover/btn:to-orange-600/10 transition-all duration-300" />
+              </motion.button>
+            )}
+          </div>
         </div>
 
         {/* Hover Glow Effect */}
@@ -219,6 +256,8 @@ const ParticipanteCard = ({ participante, viagemId, usuarioEhCriador, onOpenChat
         usuario={participante}
         isOpen={mostrarModal}
         onClose={() => setMostrarModal(false)}
+        onDenunciar={onDenunciar}
+        onBloquear={onBloquear}
       />
     </>
   );
