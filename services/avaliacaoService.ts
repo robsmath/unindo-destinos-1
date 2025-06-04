@@ -11,20 +11,16 @@ interface ApiResponse<T> {
 }
 
 export const criarAvaliacao = async (data: AvaliacaoRequestDTO): Promise<AvaliacaoDTO> => {
-  const response = await api.post<ApiResponse<AvaliacaoDTO>>('/avaliacoes', data);
+  const response = await api.post<ApiResponse<AvaliacaoDTO>>('/avaliacoes/avaliar', data);
   return response.data.data;
 };
 
-export const buscarAvaliacoes = async (viagemId: number): Promise<AvaliacaoDTO[]> => {
-  const response = await api.get<ApiResponse<AvaliacaoDTO[]>>(`/avaliacoes/viagem/${viagemId}`);
+export const buscarAvaliacoesPorUsuario = async (usuarioId: number): Promise<AvaliacaoDTO[]> => {
+  const response = await api.get<ApiResponse<AvaliacaoDTO[]>>(`/avaliacoes/usuarios/${usuarioId}/recebidas`);
   return response.data.data;
 };
 
-export const atualizarAvaliacao = async (avaliacaoId: number, data: AvaliacaoRequestDTO): Promise<AvaliacaoDTO> => {
-  const response = await api.put<ApiResponse<AvaliacaoDTO>>(`/avaliacoes/${avaliacaoId}`, data);
+export const buscarAvaliacaoPorId = async (avaliacaoId: number): Promise<AvaliacaoDTO> => {
+  const response = await api.get<ApiResponse<AvaliacaoDTO>>(`/avaliacoes/${avaliacaoId}`);
   return response.data.data;
-};
-
-export const excluirAvaliacao = async (avaliacaoId: number): Promise<void> => {
-  await api.delete(`/avaliacoes/${avaliacaoId}`);
 };

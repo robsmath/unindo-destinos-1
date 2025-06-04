@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
+import { ViagemDTO } from "@/models/ViagemDTO";
 import ParticipanteCard from "@/components/Viagens/ParticipanteCard";
 import { useParams, useRouter } from "next/navigation";
-import { getParticipantesDaViagem } from "@/services/viagemService";
+import { getParticipantesDaViagem, getViagemById } from "@/services/viagemService";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
-import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin, X } from "lucide-react";
+import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin, X, Star } from "lucide-react";
 import ChatPrivado from "@/components/Chat/ChatPrivado";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useDenunciaEBloqueio } from "@/hooks/useDenunciaEBloqueio";
 import DenunciaModal from "@/components/Modals/DenunciaModal";
 import BloqueioModal from "@/components/Modals/BloqueioModal";
 import PerguntaBloqueioModal from "@/components/Modals/PerguntaBloqueioModal";
+import ModalAvaliacao from "@/components/Avaliacoes/ModalAvaliacao";
 
 const ParticipantesViagem = () => {
   const { id } = useParams();
@@ -21,9 +23,12 @@ const ParticipantesViagem = () => {
   const router = useRouter();
 
   const [participantes, setParticipantes] = useState<UsuarioBuscaDTO[]>([]);
+  const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [chatAberto, setChatAberto] = useState(false);
   const [participanteSelecionado, setParticipanteSelecionado] = useState<UsuarioBuscaDTO | null>(null);
+  const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
+  const [usuarioParaAvaliar, setUsuarioParaAvaliar] = useState<UsuarioBuscaDTO | null>(null);
   const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
 
   // Hook para denúncia e bloqueio
@@ -62,6 +67,21 @@ const ParticipantesViagem = () => {
     abrirBloqueioModal(usuario);
   };
 
+  const handleAvaliar = (participante: UsuarioBuscaDTO) => {
+    setUsuarioParaAvaliar(participante);
+    setModalAvaliacaoAberto(true);
+  };
+
+  const handleCloseModalAvaliacao = () => {
+    setModalAvaliacaoAberto(false);
+    setUsuarioParaAvaliar(null);
+  };
+
+  const handleAvaliacaoEnviada = () => {
+    // Pode recarregar os dados se necessário
+    console.log("Avaliação enviada com sucesso!");
+  };
+
   const handleUsuarioBloqueadoComRemocao = () => {
     if (usuarioSelecionado) {
       // Remove o usuário da lista local
@@ -79,18 +99,24 @@ const ParticipantesViagem = () => {
   };
 
   useEffect(() => {
-    const fetchParticipantes = async () => {
+    const fetchDados = async () => {
       try {
-        const resultado = await getParticipantesDaViagem(Number(id));
-        setParticipantes(resultado);
+        // Carregar dados da viagem e participantes
+        const [dadosViagem, dadosParticipantes] = await Promise.all([
+          getViagemById(Number(id)),
+          getParticipantesDaViagem(Number(id))
+        ]);
+        
+        setViagem(dadosViagem);
+        setParticipantes(dadosParticipantes);
       } catch (err) {
-        console.error("Erro ao carregar participantes:", err);
+        console.error("Erro ao carregar dados:", err);
       } finally {
         setCarregando(false);
       }
     };
 
-    fetchParticipantes();
+    fetchDados();
   }, [id]);
 
   const criador = participantes.find((p) => p.criador);
@@ -100,6 +126,16 @@ const ParticipantesViagem = () => {
     if (a.criador === b.criador) return 0;
     return a.criador ? -1 : 1;
   });
+
+  // Verificar se a viagem está concluída para exibir botão de avaliação
+  const viagemConcluida = viagem?.status === "CONCLUIDA";
+
+  // Função para verificar se pode avaliar um participante
+  const podeAvaliar = (participante: UsuarioBuscaDTO) => {
+    return viagemConcluida && 
+           participante.id !== usuario?.id && // Não pode avaliar a si mesmo
+           participantes.some(p => p.id === usuario?.id); // Deve ser participante da viagem
+  };
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
@@ -449,6 +485,8 @@ const ParticipantesViagem = () => {
                       unreadCount={getUnreadCountForUser(usuario.id)}
                       onDenunciar={handleDenunciar}
                       onBloquear={handleBloquear}
+                      podeAvaliar={podeAvaliar(usuario)}
+                      onAvaliar={handleAvaliar}
                     />
                   </motion.div>
                 ))}
@@ -512,6 +550,17 @@ const ParticipantesViagem = () => {
             onNaoBloquear={handleNaoBloquearAposDenuncia}
           />
         </>
+      )}
+
+      {/* Modal de Avaliação */}
+      {modalAvaliacaoAberto && usuarioParaAvaliar && viagem && (
+        <ModalAvaliacao
+          isOpen={modalAvaliacaoAberto}
+          onClose={handleCloseModalAvaliacao}
+          usuarioAvaliado={usuarioParaAvaliar}
+          viagemId={viagem.id}
+          onAvaliacaoEnviada={handleAvaliacaoEnviada}
+        />
       )}
     </section>
   );

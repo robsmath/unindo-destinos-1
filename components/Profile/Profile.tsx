@@ -14,6 +14,7 @@ import MinhasPreferencias from "@/components/Profile/MinhasPreferencias";
 import MinhasViagens from "@/components/Profile/MinhasViagens";
 import MeusPets from "@/components/Profile/MeusPets";
 import CentralSolicitacoes from "@/components/Solicitacoes/CentralSolicitacoes";
+import ListaAvaliacoes from "@/components/Avaliacoes/ListaAvaliacoes";
 import { uploadFotoPerfil } from "@/services/uploadService";
 import { CacheInvalidationProvider } from "@/components/Profile/hooks/useCacheInvalidation";
 
@@ -41,6 +42,7 @@ const Profile = () => {
     { label: "Minhas Viagens", param: "viagens" },
     { label: "Minhas Preferências", param: "preferencias" },
     { label: "Meus Pets", param: "pets" },
+    { label: "Avaliações", param: "avaliacoes" },
     { label: "Central de Solicitações", param: "solicitacoes" },
   ];
 
@@ -939,6 +941,9 @@ const Profile = () => {
                       </TabPanel>
                       <TabPanel>
                         <MeusPets />
+                      </TabPanel>
+                      <TabPanel>
+                        {usuario && <ListaAvaliacoes usuarioId={usuario.id} />}
                       </TabPanel>
                       <TabPanel>
                         <CentralSolicitacoes />

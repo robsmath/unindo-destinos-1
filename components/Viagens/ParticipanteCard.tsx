@@ -5,7 +5,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
 import { removerParticipanteDaViagem, sairDaViagem } from "@/services/viagemService";
 import { useState } from "react";
-import { Loader2, MessageCircle } from "lucide-react";
+import { Loader2, MessageCircle, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import Image from "next/image";
@@ -29,6 +29,8 @@ interface Props {
   unreadCount?: number;
   onDenunciar: (usuario: { id: number; nome: string }) => void;
   onBloquear: (usuario: { id: number; nome: string }) => void;
+  podeAvaliar?: boolean;
+  onAvaliar?: (participante: UsuarioBuscaDTO) => void;
 }
 
 const formatarNome = (nome: string) => {
@@ -44,7 +46,9 @@ const ParticipanteCard = ({
   onOpenChat, 
   unreadCount,
   onDenunciar,
-  onBloquear
+  onBloquear,
+  podeAvaliar,
+  onAvaliar
 }: Props) => {
   const { usuario } = useAuth();
   const router = useRouter();
@@ -203,6 +207,23 @@ const ParticipanteCard = ({
                 layout="horizontal"
               />
             </div>
+
+            {/* Botão de Avaliação */}
+            {podeAvaliar && onAvaliar && (
+              <motion.button
+                title="Avaliar Participante"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAvaliar(participante);
+                }}
+                className="relative w-10 h-10 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 rounded-xl flex items-center justify-center text-yellow-600 hover:text-yellow-700 transition-all duration-300 group/btn"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Star className="w-4 h-4" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-500/0 to-yellow-600/0 group-hover/btn:from-yellow-500/10 group-hover/btn:to-yellow-600/10 transition-all duration-300" />
+              </motion.button>
+            )}
 
             {podeRemover && (
               <motion.button
