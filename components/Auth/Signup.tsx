@@ -474,14 +474,14 @@ const Signup = () => {
         </motion.div>
       )}
 
-      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 py-16">
+      <div className="relative z-20 min-h-screen flex items-center justify-center p-4 py-8 md:py-16">
         <motion.div
           className="w-full max-w-2xl"
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 relative overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-4 md:p-8 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
             
             <div className="relative z-10">
@@ -489,19 +489,19 @@ const Signup = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-center mb-8"
+                className="text-center mb-6 md:mb-8"
               >
-                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-3">
                   <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
                     Junte-se a nós
                   </span>
                 </h1>
-                <p className="text-gray-600 text-lg">
+                <p className="text-gray-600 text-base md:text-lg">
                   Crie sua conta e descubra destinos incríveis
                 </p>
               </motion.div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">              
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -517,7 +517,7 @@ const Signup = () => {
                       placeholder="Digite seu nome completo" 
                       value={form.nome} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
+                      className="w-full px-4 py-3 md:py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80" 
                       style={{ fontSize: '16px' }}
                     />
                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
@@ -531,7 +531,7 @@ const Signup = () => {
                       placeholder="Digite seu e-mail" 
                       value={form.email} 
                       onChange={handleChange} 
-                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                      className={`w-full px-4 py-3 md:py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
                         form.email && !validarEmail(form.email) 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
                           : form.email && validarEmail(form.email)
@@ -563,7 +563,7 @@ const Signup = () => {
                         placeholder="Digite sua senha (mín. 8 caracteres)" 
                         value={form.senha} 
                         onChange={handleChange} 
-                        className={`w-full px-4 py-4 pr-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                        className={`w-full px-4 py-3 md:py-4 pr-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
                           form.senha && !validarSenhaForte(form.senha).isValid 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
                             : form.senha && validarSenhaForte(form.senha).isValid
@@ -615,7 +615,7 @@ const Signup = () => {
                         placeholder="Confirme sua senha" 
                         value={form.confirmSenha} 
                         onChange={handleChange} 
-                        className={`w-full px-4 py-4 pr-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                        className={`w-full px-4 py-3 md:py-4 pr-12 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
                           form.confirmSenha && form.senha !== form.confirmSenha 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
                             : form.confirmSenha && form.senha === form.confirmSenha && form.senha
@@ -656,7 +656,7 @@ const Signup = () => {
                       value={form.cpf}
                       onChange={handleChange}
                       placeholder="000.000.000-00"
-                      className={`w-full px-4 py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
+                      className={`w-full px-4 py-3 md:py-4 bg-white/70 backdrop-blur-sm border rounded-2xl focus:ring-2 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80 ${
                         form.cpf && !validarCPF(form.cpf) 
                           ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
                           : form.cpf && validarCPF(form.cpf)
@@ -910,7 +910,7 @@ const Signup = () => {
                   transition={{ delay: 0.9, duration: 0.6 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-lg relative overflow-hidden"
+                  className="w-full py-3 md:py-4 bg-gradient-to-r from-primary to-orange-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed text-base md:text-lg relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 hover:opacity-100 transition-opacity duration-300"
@@ -925,9 +925,9 @@ const Signup = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.0 }}
-                  className="text-center pt-6 border-t border-gray-200/50"
+                  className="text-center pt-4 md:pt-6 border-t border-gray-200/50"
                 >
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm md:text-base">
                     Já tem uma conta?{" "}
                     <Link 
                       href="/auth/signin" 

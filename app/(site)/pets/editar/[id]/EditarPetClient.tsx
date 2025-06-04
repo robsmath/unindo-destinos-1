@@ -8,7 +8,7 @@ interface Props {
 
 export default function EditarPetClient({ petId }: Props) {
   return (
-    <div className="pt-30 min-h-screen px-4">
+    <div className="pt-15 min-h-screen px-4">
       <CadastroPet petId={petId} />
     </div>
   );

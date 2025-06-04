@@ -16,13 +16,14 @@ export function useDenunciaEBloqueio() {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioInfo | null>(null);
 
   const abrirDenunciaModal = (usuario: UsuarioInfo) => {
+    console.log("🚨 Abrindo modal de denúncia para:", usuario);
     setUsuarioSelecionado(usuario);
     setDenunciaModalOpen(true);
   };
 
   const fecharDenunciaModal = () => {
     setDenunciaModalOpen(false);
-    setUsuarioSelecionado(null);
+    // NÃO limpar usuarioSelecionado aqui, pois ainda pode ser usado no modal de pergunta
   };
 
   const abrirBloqueioModal = (usuario: UsuarioInfo) => {
@@ -44,8 +45,10 @@ export function useDenunciaEBloqueio() {
   };
 
   const handleDenunciaEnviada = () => {
+    console.log("🚨 handleDenunciaEnviada chamado");
     // Após enviar denúncia, perguntar se quer bloquear
     fecharDenunciaModal();
+    console.log("🚨 Abrindo modal de pergunta de bloqueio");
     abrirPerguntaBloqueioModal();
   };
 
@@ -56,7 +59,7 @@ export function useDenunciaEBloqueio() {
       await bloquearUsuario(usuarioSelecionado.id);
       toast.success(`${usuarioSelecionado.nome} foi bloqueado com sucesso!`);
       fecharPerguntaBloqueioModal();
-      setUsuarioSelecionado(null);
+      setUsuarioSelecionado(null); // Limpar apenas após todo o fluxo terminar
     } catch (error) {
       console.error("Erro ao bloquear usuário:", error);
       toast.error("Erro ao bloquear usuário. Tente novamente.");
@@ -65,7 +68,7 @@ export function useDenunciaEBloqueio() {
 
   const handleNaoBloquearAposDenuncia = () => {
     fecharPerguntaBloqueioModal();
-    setUsuarioSelecionado(null);
+    setUsuarioSelecionado(null); // Limpar apenas após todo o fluxo terminar
   };
 
   const handleUsuarioBloqueado = () => {

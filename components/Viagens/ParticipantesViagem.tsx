@@ -29,6 +29,7 @@ const ParticipantesViagem = () => {
   const [participanteSelecionado, setParticipanteSelecionado] = useState<UsuarioBuscaDTO | null>(null);
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
   const [usuarioParaAvaliar, setUsuarioParaAvaliar] = useState<UsuarioBuscaDTO | null>(null);
+  const [participantesAvaliados, setParticipantesAvaliados] = useState<Set<number>>(new Set());
   const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
 
   // Hook para denúncia e bloqueio
@@ -78,7 +79,10 @@ const ParticipantesViagem = () => {
   };
 
   const handleAvaliacaoEnviada = () => {
-    // Pode recarregar os dados se necessário
+    // Adiciona o participante à lista de avaliados
+    if (usuarioParaAvaliar) {
+      setParticipantesAvaliados(prev => new Set(prev).add(usuarioParaAvaliar.id));
+    }
     console.log("Avaliação enviada com sucesso!");
   };
 
@@ -134,7 +138,8 @@ const ParticipantesViagem = () => {
   const podeAvaliar = (participante: UsuarioBuscaDTO) => {
     return viagemConcluida && 
            participante.id !== usuario?.id && // Não pode avaliar a si mesmo
-           participantes.some(p => p.id === usuario?.id); // Deve ser participante da viagem
+           participantes.some(p => p.id === usuario?.id) && // Deve ser participante da viagem
+           !participantesAvaliados.has(participante.id); // Não pode ter avaliado já
   };
 
   return (
@@ -541,15 +546,18 @@ const ParticipantesViagem = () => {
             usuarioNome={usuarioSelecionado.nome}
             onUsuarioBloqueado={handleUsuarioBloqueadoComRemocao}
           />
-
-          <PerguntaBloqueioModal
-            isOpen={perguntaBloqueioModalOpen}
-            onClose={fecharPerguntaBloqueioModal}
-            usuarioNome={usuarioSelecionado.nome}
-            onBloquear={handleBloquearAposDenunciaComRemocao}
-            onNaoBloquear={handleNaoBloquearAposDenuncia}
-          />
         </>
+      )}
+
+      {/* Modal de Pergunta de Bloqueio - renderizado separadamente */}
+      {usuarioSelecionado && (
+        <PerguntaBloqueioModal
+          isOpen={perguntaBloqueioModalOpen}
+          onClose={fecharPerguntaBloqueioModal}
+          usuarioNome={usuarioSelecionado.nome}
+          onBloquear={handleBloquearAposDenunciaComRemocao}
+          onNaoBloquear={handleNaoBloquearAposDenuncia}
+        />
       )}
 
       {/* Modal de Avaliação */}

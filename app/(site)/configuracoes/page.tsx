@@ -34,21 +34,21 @@ const abas = [
   {
     id: "bloqueados" as const,
     nome: "Usuários Bloqueados",
-    nomeMobile: "Bloqueados",
+    nomeMobile: "Bloq.",
     icone: ShieldX,
     descricao: "Gerencie usuários que você bloqueou"
   },
   {
     id: "privacidade" as const,
     nome: "Privacidade",
-    nomeMobile: "Privacidade",
+    nomeMobile: "Priv.",
     icone: Eye,
     descricao: "Configure suas preferências de privacidade"
   },
   {
     id: "notificacoes" as const,
     nome: "Notificações",
-    nomeMobile: "Notificações",
+    nomeMobile: "Notif.",
     icone: Bell,
     descricao: "Personalize suas notificações"
   },

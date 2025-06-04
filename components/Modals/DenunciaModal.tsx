@@ -59,6 +59,7 @@ export default function DenunciaModal({
       
       toast.success("Denúncia enviada com sucesso!");
       handleClose();
+      
       onDenunciaEnviada?.();
       
     } catch (error) {

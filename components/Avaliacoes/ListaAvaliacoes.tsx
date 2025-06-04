@@ -100,11 +100,11 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 rounded-xl p-6"
+        className="bg-gradient-to-r from-primary/10 to-orange-500/10 border border-primary/20 rounded-xl p-4 md:p-6"
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">
               {avaliacoes.length} avaliação{avaliacoes.length !== 1 ? "ões" : ""}
             </h3>
             <div className="flex items-center gap-2">
@@ -115,10 +115,10 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
               <span className="text-sm text-gray-600">de 5.0</span>
             </div>
           </div>
-          <div className="text-right">
+          <div className="flex items-center gap-3 md:flex-col md:text-right">
             <p className="text-sm text-gray-600">Média geral</p>
-            <div className="w-16 h-16 bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-xl font-bold text-white">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-lg md:text-xl font-bold text-white">
                 {calcularMediaAvaliacoes()}
               </span>
             </div>
@@ -137,7 +137,7 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
             className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
           >
             {/* Header da avaliação */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
                 <img
                   src={avaliacao.fotoAvaliador || "/images/user/avatar.png"}
@@ -153,9 +153,9 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
                 </div>
               </div>
               
-              <div className="text-right">
+              <div className="flex items-center justify-between sm:flex-col sm:text-right">
                 <StarRating rating={avaliacao.nota} size="sm" />
-                <p className="text-xs text-gray-500 mt-1">{avaliacao.nota}/5</p>
+                <p className="text-xs text-gray-500 sm:mt-1">{avaliacao.nota}/5</p>
               </div>
             </div>
 

@@ -534,18 +534,18 @@ const EncontrePessoas = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-8"
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4 md:p-6 mb-8"
           >
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="flex flex-col gap-4">
               <div className="flex-1">
                 <label className="text-sm font-medium text-gray-700 block mb-2">
                   Buscar por:
                 </label>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <select
                     value={buscarPor}
                     onChange={(e) => setBuscarPor(e.target.value as "nome" | "email")}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base sm:w-auto w-full"
                   >
                     <option value="nome">Nome</option>
                     <option value="email">E-mail</option>
@@ -555,209 +555,210 @@ const EncontrePessoas = () => {
                     placeholder={buscarPor === "nome" ? "Digite o nome..." : "Digite o e-mail..."}
                     value={buscarPor === "nome" ? filtros.nome : filtros.email}
                     onChange={handleInputBusca}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
                   />
+                  <button
+                    onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap"
+                  >
+                    <Filter className="w-4 h-4" />
+                    <span className="hidden sm:inline">Filtros Avançados</span>
+                    <span className="sm:hidden">Filtros</span>
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="flex items-center gap-2 px-6 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
-              >
-                <Filter className="w-4 h-4" />
-                Filtros Avançados
-              </button>
             </div>
+          </motion.div>
 
-            {/* Filtros Avançados */}
-            <AnimatePresence>
-              {mostrarFiltros && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-6 border-t border-gray-200 pt-6"
-                >
-                  {/* Linha 1: Gênero + Acomodação + Transporte */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Gênero */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Gênero</label>
-                      <select
-                        name="genero"
-                        value={filtros.genero}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        <option value="">Qualquer</option>
-                        <option value="MASCULINO">Masculino</option>
-                        <option value="FEMININO">Feminino</option>
-                        <option value="NAO_BINARIO">Não-binário</option>
-                        <option value="OUTRO">Outro</option>
-                      </select>
-                    </div>
-                    {/* Tipo de Acomodação */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">
-                        Tipo de Acomodação
-                      </label>
-                      <select
-                        name="tipoAcomodacao"
-                        value={filtros.tipoAcomodacao}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        {[
-                          "NAO_TENHO_PREFERENCIA",
-                          "HOTEL",
-                          "HOSTEL",
-                          "AIRBNB",
-                          "POUSADA",
-                          "CAMPING",
-                          "RESORT",
-                          "FAZENDA",
-                          "CASA_DE_AMIGOS",
-                        ].map((op) => (
-                          <option key={op} value={op}>
-                            {formatarTexto(op)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {/* Tipo de Transporte */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">
-                        Tipo de Transporte
-                      </label>
-                      <select
-                        name="tipoTransporte"
-                        value={filtros.tipoTransporte}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        {[
-                          "NAO_TENHO_PREFERENCIA",
-                          "AVIAO",
-                          "CARRO",
-                          "ONIBUS",
-                          "TREM",
-                          "NAVIO",
-                          "MOTO",
-                          "BICICLETA",
-                          "VAN",
-                          "MOTORHOME",
-                        ].map((op) => (
-                          <option key={op} value={op}>
-                            {formatarTexto(op)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+          {/* Filtros Avançados */}
+          <AnimatePresence>
+            {mostrarFiltros && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-6 border-t border-gray-200 pt-6"
+              >
+                {/* Linha 1: Gênero + Acomodação + Transporte */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Gênero */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Gênero</label>
+                    <select
+                      name="genero"
+                      value={filtros.genero}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    >
+                      <option value="">Qualquer</option>
+                      <option value="MASCULINO">Masculino</option>
+                      <option value="FEMININO">Feminino</option>
+                      <option value="NAO_BINARIO">Não-binário</option>
+                      <option value="OUTRO">Outro</option>
+                    </select>
                   </div>
-                  {/* Linha 2: Idades + Valor Médio */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                    {/* Idade Mínima */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Idade Mínima</label>
-                      <input
-                        type="number"
-                        name="idadeMin"
-                        min={18}
-                        value={filtros.idadeMin}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
-                    {/* Idade Máxima */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Idade Máxima</label>
-                      <input
-                        type="number"
-                        name="idadeMax"
-                        min={18}
-                        value={filtros.idadeMax}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
-                    {/* Valor Médio Máximo */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">
-                        Valor Médio Máximo (R$)
-                      </label>
-                      <input
-                        type="text"
-                        name="valorMedioMax"
-                        placeholder="Valor máximo..."
-                        value={valorMedioMaxInput}
-                        onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
+                  {/* Tipo de Acomodação */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Tipo de Acomodação
+                    </label>
+                    <select
+                      name="tipoAcomodacao"
+                      value={filtros.tipoAcomodacao}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    >
+                      {[
+                        "NAO_TENHO_PREFERENCIA",
+                        "HOTEL",
+                        "HOSTEL",
+                        "AIRBNB",
+                        "POUSADA",
+                        "CAMPING",
+                        "RESORT",
+                        "FAZENDA",
+                        "CASA_DE_AMIGOS",
+                      ].map((op) => (
+                        <option key={op} value={op}>
+                          {formatarTexto(op)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  {/* Checkboxes */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
-                    {[
-                      { nome: "petFriendly", label: "Pet Friendly", icon: Heart },
-                      { nome: "aceitaCriancas", label: "Aceita Crianças", icon: Baby },
-                      { nome: "aceitaFumantes", label: "Aceita Fumantes", icon: Cigarette },
-                      { nome: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas", icon: Wine },
-                      { nome: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", icon: Bed },
-                    ].map(({ nome, label, icon: Icon }) => (
-                      <label key={nome} className="flex items-center gap-2 text-sm">
-                        <input
-                          type="checkbox"
-                          name={nome}
-                          checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
-                          onChange={handleChange}
-                          className="accent-blue-600"
-                        />
-                        <Icon className="w-4 h-4 text-gray-600" />
-                        {label}
-                      </label>
-                    ))}
-                    <label className="flex items-center gap-2 text-sm">
+                  {/* Tipo de Transporte */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Tipo de Transporte
+                    </label>
+                    <select
+                      name="tipoTransporte"
+                      value={filtros.tipoTransporte}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    >
+                      {[
+                        "NAO_TENHO_PREFERENCIA",
+                        "AVIAO",
+                        "CARRO",
+                        "ONIBUS",
+                        "TREM",
+                        "NAVIO",
+                        "MOTO",
+                        "BICICLETA",
+                        "VAN",
+                        "MOTORHOME",
+                      ].map((op) => (
+                        <option key={op} value={op}>
+                          {formatarTexto(op)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {/* Linha 2: Idades + Valor Médio */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                  {/* Idade Mínima */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Idade Mínima</label>
+                    <input
+                      type="number"
+                      name="idadeMin"
+                      min={18}
+                      value={filtros.idadeMin}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
+                  </div>
+                  {/* Idade Máxima */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Idade Máxima</label>
+                    <input
+                      type="number"
+                      name="idadeMax"
+                      min={18}
+                      value={filtros.idadeMax}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
+                  </div>
+                  {/* Valor Médio Máximo */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">
+                      Valor Médio Máximo (R$)
+                    </label>
+                    <input
+                      type="text"
+                      name="valorMedioMax"
+                      placeholder="Valor máximo..."
+                      value={valorMedioMaxInput}
+                      onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
+                  </div>
+                </div>
+                {/* Checkboxes */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+                  {[
+                    { nome: "petFriendly", label: "Pet Friendly", icon: Heart },
+                    { nome: "aceitaCriancas", label: "Aceita Crianças", icon: Baby },
+                    { nome: "aceitaFumantes", label: "Aceita Fumantes", icon: Cigarette },
+                    { nome: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas", icon: Wine },
+                    { nome: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", icon: Bed },
+                  ].map(({ nome, label, icon: Icon }) => (
+                    <label key={nome} className="flex items-center gap-2 text-sm">
                       <input
                         type="checkbox"
-                        name="apenasVerificados"
-                        checked={!!filtros.apenasVerificados}
+                        name={nome}
+                        checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
                         onChange={handleChange}
                         className="accent-blue-600"
                       />
-                      <FaCheckCircle className="w-4 h-4 text-green-600" />
-                      Apenas perfis verificados
+                      <Icon className="w-4 h-4 text-gray-600" />
+                      {label}
                     </label>
-                  </div>
-                  {/* Botões */}
-                  <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button
-                      onClick={buscar}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Buscando...
-                        </>
-                      ) : (
-                        <>
-                          <Search className="w-4 h-4" />
-                          Buscar Pessoas
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={limparFiltros}
-                      className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      Limpar filtros
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+                  ))}
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="apenasVerificados"
+                      checked={!!filtros.apenasVerificados}
+                      onChange={handleChange}
+                      className="accent-blue-600"
+                    />
+                    <FaCheckCircle className="w-4 h-4 text-green-600" />
+                    Apenas perfis verificados
+                  </label>
+                </div>
+                {/* Botões */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    onClick={buscar}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Buscando...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Buscar Pessoas
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={limparFiltros}
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Limpar filtros
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Lista de usuários */}
           <div className="mt-8">
@@ -790,13 +791,13 @@ const EncontrePessoas = () => {
             ) : (
               <motion.div
                 layout
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
               >
                 {usuarios.map((user) => (
                   <motion.div
                     key={user.id}
                     whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(234,88,12,0.10)" }}
-                    className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
+                    className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-4 sm:p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
                     onClick={(e) => {
                       const clicouNoBotao = (e.target as HTMLElement).closest("button");
                       if (!clicouNoBotao) {
@@ -892,22 +893,22 @@ const EncontrePessoas = () => {
                     </div>
                     
                     {/* Ações */}
-                    <div className="space-y-3 mt-4">
+                    <div className="space-y-3 mt-4 pt-4 border-t border-gray-100">
                       {/* Botão Convidar */}
                       <button
-                        className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 transition-all duration-200"
+                        className="bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 transition-all duration-200"
                         onClick={() => abrirModalConvite(user)}
                         disabled={usuarioCarregandoId === user.id}
                       >
                         {usuarioCarregandoId === user.id ? (
                           <>
                             <Loader2 className="animate-spin w-4 h-4" />
-                            Carregando...
+                            <span className="text-sm sm:text-base">Carregando...</span>
                           </>
                         ) : (
                           <>
                             <Users className="w-4 h-4" />
-                            Convidar para Viagem
+                            <span className="text-sm sm:text-base">Convidar para Viagem</span>
                           </>
                         )}
                       </button>
@@ -970,15 +971,18 @@ const EncontrePessoas = () => {
               usuarioNome={usuarioParaDenunciarBloquear.nome}
               onUsuarioBloqueado={handleUsuarioBloqueadoComRemocao}
             />
-
-            <PerguntaBloqueioModal
-              isOpen={perguntaBloqueioModalOpen}
-              onClose={fecharPerguntaBloqueioModal}
-              usuarioNome={usuarioParaDenunciarBloquear.nome}
-              onBloquear={handleBloquearAposDenunciaComRemocao}
-              onNaoBloquear={handleNaoBloquearAposDenuncia}
-            />
           </>
+        )}
+
+        {/* Modal de Pergunta de Bloqueio - renderizado separadamente */}
+        {usuarioParaDenunciarBloquear && (
+          <PerguntaBloqueioModal
+            isOpen={perguntaBloqueioModalOpen}
+            onClose={fecharPerguntaBloqueioModal}
+            usuarioNome={usuarioParaDenunciarBloquear.nome}
+            onBloquear={handleBloquearAposDenunciaComRemocao}
+            onNaoBloquear={handleNaoBloquearAposDenuncia}
+          />
         )}
       </div>
     </div>

@@ -320,18 +320,21 @@ const EncontreViagens = () => {
           </div>
         </div>
 
-        <motion.button
-          className="w-full bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mt-auto"
-          onClick={(e) => {
-            e.stopPropagation();
-            abrirSolicitacaoParticipacao(viagem);
-          }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Plane className="w-4 h-4" />
-          Solicitar Participação
-        </motion.button>
+        {/* Ações */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <motion.button
+            className="w-full bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              abrirSolicitacaoParticipacao(viagem);
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Plane className="w-4 h-4" />
+            <span className="text-sm sm:text-base">Solicitar Participação</span>
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );
@@ -541,14 +544,14 @@ const EncontreViagens = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-8"
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4 md:p-6 mb-8"
           >
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="flex flex-col gap-4">
               <div className="flex-1">
                 <label className="text-sm font-medium text-gray-700 block mb-2">
                   Buscar destino:
                 </label>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="text"
                     placeholder="Digite o destino, cidade, país..."
@@ -560,170 +563,171 @@ const EncontreViagens = () => {
                         buscar();
                       }
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
                   />
+                  <button
+                    onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    <span className="hidden sm:inline">Filtros Avançados</span>
+                    <span className="sm:hidden">Filtros</span>
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="flex items-center gap-2 px-6 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                Filtros Avançados
-              </button>
             </div>
-
-            {/* Filtros Avançados */}
-            <AnimatePresence>
-              {mostrarFiltros && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-6 border-t border-gray-200 pt-6"
-                >
-                  {/* Linha 1: Tipo + Estilo + Status */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Tipo do destino */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Tipo do destino</label>
-                      <select
-                        name="categoriaViagem"
-                        value={filtros.categoriaViagem || ""}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        <option value="">Todos os tipos</option>
-                        <option value="NACIONAL">Nacional</option>
-                        <option value="INTERNACIONAL">Internacional</option>
-                      </select>
-                    </div>
-                    {/* Estilo */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Estilo</label>
-                      <select
-                        name="estiloViagem"
-                        value={filtros.estiloViagem || ""}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        <option value="">Todos os estilos</option>
-                        <option value="AVENTURA">🏔️ Aventura</option>
-                        <option value="CULTURA">🏛️ Cultura</option>
-                        <option value="FESTA">🎉 Festa</option>
-                        <option value="RELAXAMENTO">🏖️ Relaxamento</option>
-                        <option value="GASTRONOMIA">🍽️ Gastronomia</option>
-                        <option value="ECOTURISMO">🌿 Ecoturismo</option>
-                        <option value="NEGOCIOS">💼 Negócios</option>
-                        <option value="ROMANTICA">💕 Romântica</option>
-                        <option value="RELIGIOSA">⛪ Religiosa</option>
-                        <option value="COMPRAS">🛍️ Compras</option>
-                        <option value="PRAIA">🏝️ Praia</option>
-                        <option value="HISTORICA">🏰 Histórica</option>
-                        <option value="TECNOLOGIA">💻 Tecnologia</option>
-                        <option value="NAO_TENHO_PREFERENCIA">✈️ Sem Preferência</option>
-                      </select>
-                    </div>
-                    {/* Status */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Status</label>
-                      <select
-                        name="status"
-                        value={filtros.status || ""}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      >
-                        <option value="">Todos os status</option>
-                        <option value="PENDENTE">🟡 Pendente</option>
-                        <option value="CONFIRMADA">🔵 Confirmada</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {/* Linha 2: Datas + Valor */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                    {/* Data Inicial (de) */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Data Inicial (de)</label>
-                      <input
-                        type="date"
-                        name="dataInicio"
-                        value={filtros.dataInicio}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
-                    {/* Data Inicial (até) */}
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Data Inicial (até)</label>
-                      <input
-                        type="date"
-                        name="dataFim"
-                        value={filtros.dataFim}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
-                    {/* Valor máximo */}
-                    <div>
-                      <ValueSlider
-                        value={filtros.valorMedioMax || 0}
-                        onChange={handleValorMaximoChange}
-                        min={0}
-                        max={20000}
-                        step={100}
-                        label="Valor máximo por pessoa"
-                        className="mt-2"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Linha 3: Criador */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                    <div>
-                      <label className="text-sm text-gray-600 block mb-1">Criador</label>
-                      <input
-                        type="text"
-                        name="criadorNome"
-                        placeholder="Nome do criador..."
-                        value={filtros.criadorNome}
-                        onChange={handleChange}
-                        className="border border-gray-300 rounded px-3 py-2 w-full"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Botões */}
-                  <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button
-                      onClick={buscar}
-                      className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Buscando...
-                        </>
-                      ) : (
-                        <>
-                          <Search className="w-4 h-4" />
-                          Buscar Viagens
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={limparTodosFiltros}
-                      className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      Limpar filtros
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
+
+          {/* Filtros Avançados */}
+          <AnimatePresence>
+            {mostrarFiltros && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-6 border-t border-gray-200 pt-6"
+              >
+                {/* Linha 1: Tipo + Estilo + Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Tipo do destino */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Tipo do destino</label>
+                    <select
+                      name="categoriaViagem"
+                      value={filtros.categoriaViagem || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    >
+                      <option value="">Todos os tipos</option>
+                      <option value="NACIONAL">Nacional</option>
+                      <option value="INTERNACIONAL">Internacional</option>
+                    </select>
+                  </div>
+                  {/* Estilo */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Estilo</label>
+                    <select
+                      name="estiloViagem"
+                      value={filtros.estiloViagem || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    >
+                      <option value="">Todos os estilos</option>
+                      <option value="AVENTURA">🏔️ Aventura</option>
+                      <option value="CULTURA">🏛️ Cultura</option>
+                      <option value="FESTA">🎉 Festa</option>
+                      <option value="RELAXAMENTO">🏖️ Relaxamento</option>
+                      <option value="GASTRONOMIA">🍽️ Gastronomia</option>
+                      <option value="ECOTURISMO">🌿 Ecoturismo</option>
+                      <option value="NEGOCIOS">💼 Negócios</option>
+                      <option value="ROMANTICA">💕 Romântica</option>
+                      <option value="RELIGIOSA">⛪ Religiosa</option>
+                      <option value="COMPRAS">🛍️ Compras</option>
+                      <option value="PRAIA">🏝️ Praia</option>
+                      <option value="HISTORICA">🏰 Histórica</option>
+                      <option value="TECNOLOGIA">💻 Tecnologia</option>
+                      <option value="NAO_TENHO_PREFERENCIA">✈️ Sem Preferência</option>
+                    </select>
+                  </div>
+                  {/* Status */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Status</label>
+                    <select
+                      name="status"
+                      value={filtros.status || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    >
+                      <option value="">Todos os status</option>
+                      <option value="PENDENTE">🟡 Pendente</option>
+                      <option value="CONFIRMADA">🔵 Confirmada</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Linha 2: Datas + Valor */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                  {/* Data Inicial (de) */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Data Inicial (de)</label>
+                    <input
+                      type="date"
+                      name="dataInicio"
+                      value={filtros.dataInicio}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
+                  </div>
+                  {/* Data Inicial (até) */}
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Data Inicial (até)</label>
+                    <input
+                      type="date"
+                      name="dataFim"
+                      value={filtros.dataFim}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
+                  </div>
+                  {/* Valor máximo */}
+                  <div>
+                    <ValueSlider
+                      value={filtros.valorMedioMax || 0}
+                      onChange={handleValorMaximoChange}
+                      min={0}
+                      max={20000}
+                      step={100}
+                      label="Valor máximo por pessoa"
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+
+                {/* Linha 3: Criador */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                  <div>
+                    <label className="text-sm text-gray-600 block mb-1">Criador</label>
+                    <input
+                      type="text"
+                      name="criadorNome"
+                      placeholder="Nome do criador..."
+                      value={filtros.criadorNome}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Botões */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    onClick={buscar}
+                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Buscando...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Buscar Viagens
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={limparTodosFiltros}
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Limpar filtros
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Lista de viagens */}
           <div className="mt-8">
@@ -756,13 +760,13 @@ const EncontreViagens = () => {
             ) : (
               <motion.div 
                 layout
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
               >
                 {viagens.map((viagem) => (
                   <motion.div
                     key={viagem.id}
                     whileHover={{ scale: 1.03, boxShadow: "0 8px 32px rgba(234,88,12,0.10)" }}
-                    className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
+                    className="bg-white/90 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-4 sm:p-6 flex flex-col justify-between min-h-[520px] cursor-pointer border border-primary/10"
                     onClick={(e) => {
                       const clicouNoBotao = (e.target as HTMLElement).closest("button");
                       if (!clicouNoBotao) {
@@ -842,17 +846,19 @@ const EncontreViagens = () => {
                     </div>
 
                     {/* Ações */}
-                    <div className="mt-4">
-                      <button
-                        className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full transition-all duration-200"
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <motion.button
+                        className="w-full bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           abrirSolicitacaoParticipacao(viagem);
                         }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
                         <Plane className="w-4 h-4" />
-                        Solicitar Participação
-                      </button>
+                        <span className="text-sm sm:text-base">Solicitar Participação</span>
+                      </motion.button>
                     </div>
                   </motion.div>
                 ))}

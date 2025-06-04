@@ -18,8 +18,9 @@ const NavUnauthenticated = () => {
         >
           <Link
             href="/auth/signin"
-            className="relative group flex items-center justify-center rounded-full border-2 border-primary/30 px-6 py-2.5 text-sm font-semibold text-primary transition-all duration-500 hover:border-primary hover:shadow-lg hover:shadow-primary/25 overflow-hidden backdrop-blur-sm bg-white/50 dark:bg-black/50"
-          >            <span className="relative z-10 flex items-center">
+            className="relative group flex items-center justify-center rounded-full border-2 border-primary/30 px-7 py-2.5 text-sm font-semibold text-primary transition-all duration-500 hover:border-primary hover:shadow-lg hover:shadow-primary/25 overflow-hidden backdrop-blur-sm bg-white/50 dark:bg-black/50 min-w-[110px]"
+          >
+            <span className="relative z-10 flex items-center">
               <LogIn className="w-4 h-4 mr-2" />
               Entrar
             </span>
@@ -50,8 +51,9 @@ const NavUnauthenticated = () => {
         >
           <Link
             href="/auth/signup"
-            className="relative group flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-500 hover:shadow-xl hover:shadow-primary/40 overflow-hidden"
-          >            <span className="relative z-10 flex items-center">
+            className="relative group flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-500 hover:shadow-xl hover:shadow-primary/40 overflow-hidden min-w-[130px]"
+          >
+            <span className="relative z-10 flex items-center">
               <UserPlus className="w-4 h-4 mr-2" />
               Criar Conta
             </span>
@@ -93,7 +95,8 @@ const NavUnauthenticated = () => {
                     repeat: Infinity,
                     delay: i * 0.2,
                     ease: "easeInOut"
-                  }}                />
+                  }}
+                />
               ))}
             </motion.div>
           </Link>
