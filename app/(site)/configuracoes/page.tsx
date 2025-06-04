@@ -116,63 +116,63 @@ export default function ConfiguracoesPage() {
   const renderBloqueados = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
           Usuários Bloqueados
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
           Gerencie os usuários que você bloqueou. Você pode desbloqueá-los a qualquer momento.
         </p>
       </div>
 
       {carregandoBloqueados ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-8 sm:py-12">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
-            <p className="text-sm text-gray-600">Carregando usuários bloqueados...</p>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <p className="text-xs sm:text-sm text-gray-600">Carregando usuários bloqueados...</p>
           </div>
         </div>
       ) : usuariosBloqueados.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-20 h-20 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-10 h-10 text-green-600" />
+        <div className="text-center py-8 sm:py-12">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
           </div>
-          <h4 className="text-lg font-semibold text-gray-900 mb-2">
+          <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
             Nenhum usuário bloqueado
           </h4>
-          <p className="text-sm text-gray-600 max-w-sm mx-auto">
+          <p className="text-sm text-gray-600 max-w-xs sm:max-w-sm mx-auto leading-relaxed">
             Você não bloqueou nenhum usuário ainda. Quando bloquear alguém, eles aparecerão aqui.
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-3 sm:space-y-4">
           {usuariosBloqueados.map((usuario, index) => (
             <motion.div
               key={usuario.bloqueadoId}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 gap-3 sm:gap-4"
             >
-              <div className="flex items-center gap-4">
-                <div className="relative">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                <div className="relative flex-shrink-0">
                   <Image
                     src={usuario.fotoPerfil || "/images/user/avatar.png"}
                     alt={usuario.nome}
-                    width={48}
-                    height={48}
-                    className="rounded-full object-cover ring-2 ring-gray-100"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-gray-100"
                   />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">{usuario.nome}</h4>
-                  <p className="text-sm text-gray-500">{usuario.email}</p>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{usuario.nome}</h4>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">{usuario.email}</p>
                 </div>
               </div>
 
               <motion.button
                 onClick={() => handleDesbloquear(usuario.bloqueadoId, usuario.nome)}
                 disabled={desbloqueandoId === usuario.bloqueadoId}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed text-sm flex-shrink-0 w-full sm:w-auto"
                 whileHover={desbloqueandoId !== usuario.bloqueadoId ? { scale: 1.02 } : {}}
                 whileTap={desbloqueandoId !== usuario.bloqueadoId ? { scale: 0.98 } : {}}
               >
@@ -181,7 +181,8 @@ export default function ConfiguracoesPage() {
                 ) : (
                   <>
                     <Unlock className="w-4 h-4" />
-                    Desbloquear
+                    <span className="hidden sm:inline">Desbloquear</span>
+                    <span className="sm:hidden">Desbloquear</span>
                   </>
                 )}
               </motion.button>
@@ -496,14 +497,14 @@ export default function ConfiguracoesPage() {
             transition={{ delay: 0.1 }}
             className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-2 mb-8"
           >
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               {abas.map((aba) => {
                 const IconeAba = aba.icone;
                 return (
                   <motion.button
                     key={aba.id}
                     onClick={() => setAbaAtiva(aba.id)}
-                    className={`flex items-center gap-2 px-3 sm:px-4 py-3 rounded-xl font-medium transition-all duration-200 flex-1 min-w-0 ${
+                    className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-xl font-medium transition-all duration-200 flex-1 min-w-0 text-xs sm:text-sm lg:text-base ${
                       abaAtiva === aba.id
                         ? "bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg"
                         : "text-gray-600 hover:bg-gray-100"
@@ -511,10 +512,10 @@ export default function ConfiguracoesPage() {
                     whileHover={{ scale: abaAtiva !== aba.id ? 1.02 : 1 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <IconeAba className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate text-xs sm:text-sm lg:text-base">
-                      <span className="hidden sm:inline">{aba.nome}</span>
-                      <span className="sm:hidden">{aba.nomeMobile}</span>
+                    <IconeAba className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="truncate">
+                      <span className="hidden lg:inline">{aba.nome}</span>
+                      <span className="lg:hidden">{aba.nomeMobile}</span>
                     </span>
                   </motion.button>
                 );
@@ -527,7 +528,7 @@ export default function ConfiguracoesPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-8"
+            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4 sm:p-6 lg:p-8"
           >
             {renderConteudo()}
           </motion.div>

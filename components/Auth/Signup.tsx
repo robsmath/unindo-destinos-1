@@ -950,85 +950,85 @@ const Signup = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 max-w-md w-full relative overflow-hidden"
+              className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-4 sm:p-6 md:p-8 max-w-sm sm:max-w-md md:max-w-lg w-full my-8 relative overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
               
               <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent">
                     Termos de Uso
                   </h2>
                   <button
                     onClick={() => setShowTermsModal(false)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
                   >
                     <X size={20} className="text-gray-500" />
                   </button>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <p className="text-gray-700 leading-relaxed">
+                <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                  <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                     Para criar sua conta no <span className="font-semibold text-primary">Unindo Destinos</span>, 
                     você precisa aceitar nossos termos de uso e política de privacidade.
                   </p>
                   
-                  <div className="bg-gradient-to-r from-primary/5 to-orange-500/5 rounded-2xl p-5 border border-primary/10">
-                    <h3 className="font-semibold text-gray-800 mb-3">Principais pontos dos nossos termos:</h3>
-                    <div className="space-y-2 text-sm text-gray-600">
+                  <div className="bg-gradient-to-r from-primary/5 to-orange-500/5 rounded-2xl p-3 sm:p-5 border border-primary/10">
+                    <h3 className="font-semibold text-gray-800 mb-2 sm:mb-3 text-sm sm:text-base">Principais pontos dos nossos termos:</h3>
+                    <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                       <div className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                         <span>Conectamos viajantes com interesses similares de forma segura</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                         <span>Seu perfil só é visível para usuários logados e verificados</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                         <span>Geramos roteiros personalizados com IA (até 3 por viagem)</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                         <span>Você controla sua privacidade e visibilidade do perfil</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
                         <span>Promovemos um ambiente respeitoso e seguro para todos</span>
                       </div>
                     </div>
                     
-                    <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-primary/10">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mt-3 sm:mt-4 pt-3 border-t border-primary/10">
                       <Link 
                         href="/termos-de-uso" 
                         target="_blank"
-                        className="inline-flex items-center gap-1 text-primary hover:text-orange-500 transition-colors text-sm font-medium hover:underline"
+                        className="inline-flex items-center justify-center sm:justify-start gap-1 text-primary hover:text-orange-500 transition-colors text-xs sm:text-sm font-medium hover:underline"
                       >
                         Ler termos completos
-                        <ExternalLink size={14} />
+                        <ExternalLink size={12} className="sm:w-3.5 sm:h-3.5" />
                       </Link>
-                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-400 hidden sm:inline">•</span>
                       <Link 
                         href="/politica-privacidade" 
                         target="_blank"
-                        className="inline-flex items-center gap-1 text-primary hover:text-orange-500 transition-colors text-sm font-medium hover:underline"
+                        className="inline-flex items-center justify-center sm:justify-start gap-1 text-primary hover:text-orange-500 transition-colors text-xs sm:text-sm font-medium hover:underline"
                       >
                         Política de privacidade
-                        <ExternalLink size={14} />
+                        <ExternalLink size={12} className="sm:w-3.5 sm:h-3.5" />
                       </Link>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-start gap-3">
-                    <div className="relative flex-shrink-0 mt-1">
+                    <div className="relative flex-shrink-0 mt-0.5 sm:mt-1">
                       <input
                         type="checkbox"
                         id="acceptTerms"
@@ -1038,7 +1038,7 @@ const Signup = () => {
                       />
                       <motion.div
                         onClick={() => setAcceptedTerms(!acceptedTerms)}
-                        className={`w-5 h-5 rounded-md border-2 cursor-pointer transition-all duration-200 ${
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-md border-2 cursor-pointer transition-all duration-200 ${
                           acceptedTerms 
                             ? 'bg-primary border-primary' 
                             : 'border-gray-300 hover:border-primary'
@@ -1053,7 +1053,7 @@ const Signup = () => {
                               exit={{ scale: 0, opacity: 0 }}
                               className="flex items-center justify-center h-full"
                             >
-                              <Check size={12} className="text-white" />
+                              <Check size={10} className="text-white sm:w-3 sm:h-3" />
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -1061,7 +1061,7 @@ const Signup = () => {
                     </div>
                     <label 
                       htmlFor="acceptTerms" 
-                      className="text-gray-700 text-sm leading-relaxed cursor-pointer"
+                      className="text-gray-700 text-xs sm:text-sm leading-relaxed cursor-pointer"
                     >
                       Eu li e aceito os{" "}
                       <Link 
@@ -1082,13 +1082,13 @@ const Signup = () => {
                     </label>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <motion.button
                       type="button"
                       onClick={() => setShowTermsModal(false)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-2xl transition-all duration-200"
+                      className="flex-1 py-2.5 sm:py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-2xl transition-all duration-200 text-sm sm:text-base"
                     >
                       Cancelar
                     </motion.button>
@@ -1099,7 +1099,7 @@ const Signup = () => {
                       disabled={!acceptedTerms}
                       whileHover={{ scale: acceptedTerms ? 1.02 : 1 }}
                       whileTap={{ scale: acceptedTerms ? 0.98 : 1 }}
-                      className={`flex-1 py-3 px-4 font-medium rounded-2xl transition-all duration-200 ${
+                      className={`flex-1 py-2.5 sm:py-3 px-4 font-medium rounded-2xl transition-all duration-200 text-sm sm:text-base ${
                         acceptedTerms
                           ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-lg hover:shadow-xl'
                           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
