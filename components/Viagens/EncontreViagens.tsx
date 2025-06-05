@@ -565,15 +565,37 @@ const EncontreViagens = () => {
                     }}
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
                   />
-                  <button
-                    onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap"
-                  >
-                    <SlidersHorizontal className="w-4 h-4" />
-                    <span className="hidden sm:inline">Filtros Avançados</span>
-                    <span className="sm:hidden">Filtros</span>
-                  </button>
                 </div>
+              </div>
+              
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={buscar}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Buscando...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4" />
+                      Buscar Viagens
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span className="hidden sm:inline">Filtros Avançados</span>
+                  <span className="sm:hidden">Filtros</span>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -585,18 +607,23 @@ const EncontreViagens = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-6 border-t border-gray-200 pt-6"
+                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4 md:p-6 mb-8"
               >
+                <div className="flex items-center gap-2 mb-6">
+                  <SlidersHorizontal className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800">Filtros Avançados</h3>
+                </div>
+                
                 {/* Linha 1: Tipo + Estilo + Status */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Tipo do destino */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Tipo do destino</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Tipo do destino</label>
                     <select
                       name="categoriaViagem"
                       value={filtros.categoriaViagem || ""}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="">Todos os tipos</option>
                       <option value="NACIONAL">Nacional</option>
@@ -605,12 +632,12 @@ const EncontreViagens = () => {
                   </div>
                   {/* Estilo */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Estilo</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Estilo</label>
                     <select
                       name="estiloViagem"
                       value={filtros.estiloViagem || ""}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="">Todos os estilos</option>
                       <option value="AVENTURA">🏔️ Aventura</option>
@@ -631,12 +658,12 @@ const EncontreViagens = () => {
                   </div>
                   {/* Status */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Status</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Status</label>
                     <select
                       name="status"
                       value={filtros.status || ""}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="">Todos os status</option>
                       <option value="PENDENTE">🟡 Pendente</option>
@@ -649,24 +676,24 @@ const EncontreViagens = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                   {/* Data Inicial (de) */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Data Inicial (de)</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (de)</label>
                     <input
                       type="date"
                       name="dataInicio"
                       value={filtros.dataInicio}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   {/* Data Inicial (até) */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Data Inicial (até)</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (até)</label>
                     <input
                       type="date"
                       name="dataFim"
                       value={filtros.dataFim}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   {/* Valor máximo */}
@@ -686,43 +713,26 @@ const EncontreViagens = () => {
                 {/* Linha 3: Criador */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Criador</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Criador</label>
                     <input
                       type="text"
                       name="criadorNome"
                       placeholder="Nome do criador..."
                       value={filtros.criadorNome}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </div>
 
-                {/* Botões */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                  <button
-                    onClick={buscar}
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Buscando...
-                      </>
-                    ) : (
-                      <>
-                        <Search className="w-4 h-4" />
-                        Buscar Viagens
-                      </>
-                    )}
-                  </button>
+                {/* Botão dentro dos filtros */}
+                <div className="flex justify-center mt-6 pt-6 border-t border-gray-200">
                   <button
                     onClick={limparTodosFiltros}
                     className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
                   >
                     <RefreshCw className="w-4 h-4" />
-                    Limpar filtros
+                    Limpar Filtros
                   </button>
                 </div>
               </motion.div>

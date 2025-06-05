@@ -80,6 +80,7 @@ const EncontrePessoas = () => {
   const [modalPerfilAberto, setModalPerfilAberto] = useState(false);
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [carregandoPreferencias, setCarregandoPreferencias] = useState(false);
   const [valorMedioMaxInput, setValorMedioMaxInput] = useState(
     filtros.valorMedioMax !== null && filtros.valorMedioMax !== undefined
       ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(filtros.valorMedioMax as number)
@@ -128,37 +129,8 @@ const EncontrePessoas = () => {
   };
 
   useEffect(() => {
-    const carregarPreferenciasDiretamente = async () => {
-      try {
-        const prefs = await getPreferenciasDoUsuario();
-        if (!prefs) return;
-
-        setFiltros((prev) => ({
-          ...prev,
-          genero: ["MASCULINO", "FEMININO", "OUTRO", "NAO_BINARIO"].includes(prefs.generoPreferido)
-            ? (prefs.generoPreferido as UsuarioFiltroDTO["genero"])
-            : "",
-          idadeMin: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : "",
-          idadeMax: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : "",
-          valorMedioMax: "",
-          petFriendly: prefs.petFriendly,
-          aceitaCriancas: prefs.aceitaCriancas,
-          aceitaFumantes: prefs.aceitaFumantes,
-          aceitaBebidasAlcoolicas: prefs.aceitaBebidasAlcoolicas,
-          acomodacaoCompartilhada: prefs.acomodacaoCompartilhada,
-          tipoAcomodacao: prefs.tipoAcomodacao || "NAO_TENHO_PREFERENCIA",
-          tipoTransporte: prefs.tipoTransporte || "NAO_TENHO_PREFERENCIA",
-          apenasVerificados: true,
-        }));
-      } catch (err) {
-        console.error("Erro ao buscar preferências do usuário:", err);
-      } finally {
-        setTimeout(() => setCarregandoTela(false), 300);
-      }
-    };
-
     if (isAuthenticated === true) {
-      carregarPreferenciasDiretamente();
+      setTimeout(() => setCarregandoTela(false), 300);
     }
 
     if (isAuthenticated === false) {
@@ -315,6 +287,47 @@ const EncontrePessoas = () => {
       ...prev,
       [campo]: numeroConvertido,
     }));
+  };
+
+  const importarPreferencias = async () => {
+    setCarregandoPreferencias(true);
+    try {
+      const prefs = await getPreferenciasDoUsuario();
+      if (!prefs) {
+        toast.info("Nenhuma preferência encontrada para importar.");
+        return;
+      }
+
+      setFiltros((prev) => ({
+        ...prev,
+        genero: ["MASCULINO", "FEMININO", "OUTRO", "NAO_BINARIO"].includes(prefs.generoPreferido)
+          ? (prefs.generoPreferido as UsuarioFiltroDTO["genero"])
+          : "",
+        idadeMin: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : "",
+        idadeMax: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : "",
+        petFriendly: prefs.petFriendly,
+        aceitaCriancas: prefs.aceitaCriancas,
+        aceitaFumantes: prefs.aceitaFumantes,
+        aceitaBebidasAlcoolicas: prefs.aceitaBebidasAlcoolicas,
+        acomodacaoCompartilhada: prefs.acomodacaoCompartilhada,
+        tipoAcomodacao: prefs.tipoAcomodacao || "NAO_TENHO_PREFERENCIA",
+        tipoTransporte: prefs.tipoTransporte || "NAO_TENHO_PREFERENCIA",
+        apenasVerificados: true,
+      }));
+      
+      toast.success("Preferências importadas com sucesso!");
+    } catch (err) {
+      console.error("Erro ao buscar preferências do usuário:", err);
+      toast.error("Erro ao importar preferências.");
+    } finally {
+      setCarregandoPreferencias(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      buscar();
+    }
   };
 
   if (isAuthenticated === false || carregandoTela) {
@@ -555,17 +568,40 @@ const EncontrePessoas = () => {
                     placeholder={buscarPor === "nome" ? "Digite o nome..." : "Digite o e-mail..."}
                     value={buscarPor === "nome" ? filtros.nome : filtros.email}
                     onChange={handleInputBusca}
+                    onKeyPress={handleKeyPress}
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
                   />
-                  <button
-                    onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap"
-                  >
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden sm:inline">Filtros Avançados</span>
-                    <span className="sm:hidden">Filtros</span>
-                  </button>
                 </div>
+              </div>
+              
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={buscar}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Buscando...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4" />
+                      Buscar Pessoas
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden sm:inline">Filtros Avançados</span>
+                  <span className="sm:hidden">Filtros</span>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -577,18 +613,23 @@ const EncontrePessoas = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-6 border-t border-gray-200 pt-6"
+                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-4 md:p-6 mb-8"
               >
+                <div className="flex items-center gap-2 mb-6">
+                  <SlidersHorizontal className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800">Filtros Avançados</h3>
+                </div>
+                
                 {/* Linha 1: Gênero + Acomodação + Transporte */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Gênero */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Gênero</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Gênero</label>
                     <select
                       name="genero"
                       value={filtros.genero}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       <option value="">Qualquer</option>
                       <option value="MASCULINO">Masculino</option>
@@ -599,14 +640,14 @@ const EncontrePessoas = () => {
                   </div>
                   {/* Tipo de Acomodação */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
                       Tipo de Acomodação
                     </label>
                     <select
                       name="tipoAcomodacao"
                       value={filtros.tipoAcomodacao}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       {[
                         "NAO_TENHO_PREFERENCIA",
@@ -627,14 +668,14 @@ const EncontrePessoas = () => {
                   </div>
                   {/* Tipo de Transporte */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
                       Tipo de Transporte
                     </label>
                     <select
                       name="tipoTransporte"
                       value={filtros.tipoTransporte}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     >
                       {[
                         "NAO_TENHO_PREFERENCIA",
@@ -655,35 +696,36 @@ const EncontrePessoas = () => {
                     </select>
                   </div>
                 </div>
+                
                 {/* Linha 2: Idades + Valor Médio */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                   {/* Idade Mínima */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Idade Mínima</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Idade Mínima</label>
                     <input
                       type="number"
                       name="idadeMin"
                       min={18}
                       value={filtros.idadeMin}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   {/* Idade Máxima */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">Idade Máxima</label>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Idade Máxima</label>
                     <input
                       type="number"
                       name="idadeMax"
                       min={18}
                       value={filtros.idadeMax}
                       onChange={handleChange}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   {/* Valor Médio Máximo */}
                   <div>
-                    <label className="text-sm text-gray-600 block mb-1">
+                    <label className="text-sm font-medium text-gray-700 block mb-2">
                       Valor Médio Máximo (R$)
                     </label>
                     <input
@@ -692,68 +734,74 @@ const EncontrePessoas = () => {
                       placeholder="Valor máximo..."
                       value={valorMedioMaxInput}
                       onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
-                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </div>
+                
                 {/* Checkboxes */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
-                  {[
-                    { nome: "petFriendly", label: "Pet Friendly", icon: Heart },
-                    { nome: "aceitaCriancas", label: "Aceita Crianças", icon: Baby },
-                    { nome: "aceitaFumantes", label: "Aceita Fumantes", icon: Cigarette },
-                    { nome: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas", icon: Wine },
-                    { nome: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", icon: Bed },
-                  ].map(({ nome, label, icon: Icon }) => (
-                    <label key={nome} className="flex items-center gap-2 text-sm">
+                <div className="mt-6">
+                  <label className="text-sm font-medium text-gray-700 block mb-3">Preferências de Viagem</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {[
+                      { nome: "petFriendly", label: "Pet Friendly", icon: Heart },
+                      { nome: "aceitaCriancas", label: "Aceita Crianças", icon: Baby },
+                      { nome: "aceitaFumantes", label: "Aceita Fumantes", icon: Cigarette },
+                      { nome: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas", icon: Wine },
+                      { nome: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", icon: Bed },
+                    ].map(({ nome, label, icon: Icon }) => (
+                      <label key={nome} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          name={nome}
+                          checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
+                          onChange={handleChange}
+                          className="accent-primary rounded"
+                        />
+                        <Icon className="w-4 h-4 text-gray-600" />
+                        <span>{label}</span>
+                      </label>
+                    ))}
+                    <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
                       <input
                         type="checkbox"
-                        name={nome}
-                        checked={!!filtros[nome as keyof UsuarioFiltroDTO]}
+                        name="apenasVerificados"
+                        checked={!!filtros.apenasVerificados}
                         onChange={handleChange}
-                        className="accent-blue-600"
+                        className="accent-green-600 rounded"
                       />
-                      <Icon className="w-4 h-4 text-gray-600" />
-                      {label}
+                      <FaCheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Apenas perfis verificados</span>
                     </label>
-                  ))}
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      name="apenasVerificados"
-                      checked={!!filtros.apenasVerificados}
-                      onChange={handleChange}
-                      className="accent-blue-600"
-                    />
-                    <FaCheckCircle className="w-4 h-4 text-green-600" />
-                    Apenas perfis verificados
-                  </label>
+                  </div>
                 </div>
-                {/* Botões */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+
+                {/* Botões dentro dos filtros */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-gray-200">
                   <button
-                    onClick={buscar}
-                    className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
-                    disabled={loading}
+                    onClick={importarPreferencias}
+                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium flex-1"
+                    disabled={carregandoPreferencias}
                   >
-                    {loading ? (
+                    {carregandoPreferencias ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Buscando...
+                        Importando...
                       </>
                     ) : (
                       <>
-                        <Search className="w-4 h-4" />
-                        Buscar Pessoas
+                        <RefreshCw className="w-4 h-4" />
+                        Importar Preferências
                       </>
                     )}
                   </button>
+                  
                   <button
                     onClick={limparFiltros}
-                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium flex-1"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    Limpar filtros
+                    Limpar Filtros
                   </button>
                 </div>
               </motion.div>
