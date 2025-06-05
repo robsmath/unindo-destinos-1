@@ -13,7 +13,7 @@ export const uploadFotoAlbum = async (file: File): Promise<AlbumFotoDTO> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await api.post<ApiResponse<AlbumFotoDTO>>(
+  const response = await api.post<any>(
     "/album-fotos/upload",
     formData,
     {
@@ -21,14 +21,19 @@ export const uploadFotoAlbum = async (file: File): Promise<AlbumFotoDTO> => {
       withCredentials: true,
     }
   );
-  return response.data.data;
+  
+  // Verificar se a resposta tem a estrutura ApiResponse ou é direta
+  if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+    return response.data.data;
+  }
+  return response.data;
 };
 
 export const listarFotosAlbum = async (): Promise<AlbumFotoDTO[]> => {
-  const response = await api.get<ApiResponse<AlbumFotoDTO[]>>("/album-fotos", {
+  const response = await api.get<AlbumFotoDTO[]>("/album-fotos", {
     withCredentials: true,
   });
-  return response.data.data;
+  return response.data;
 };
 
 export const removerFotoAlbum = async (id: number): Promise<void> => {
@@ -36,6 +41,6 @@ export const removerFotoAlbum = async (id: number): Promise<void> => {
 };
 
 export const listarFotosAlbumUsuario = async (usuarioId: number): Promise<AlbumFotoDTO[]> => {
-  const response = await api.get<ApiResponse<AlbumFotoDTO[]>>(`/album-fotos/usuario/${usuarioId}`);
-  return response.data.data;
+  const response = await api.get<AlbumFotoDTO[]>(`/album-fotos/usuario/${usuarioId}`);
+  return response.data;
 };

@@ -4,11 +4,12 @@ import { Fragment } from "react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { Dialog, DialogPanel, Transition, TransitionChild, TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
 import { FaCheckCircle, FaTimes } from "react-icons/fa";
-import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed, Star } from "lucide-react";
+import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed, Star, ImageIcon } from "lucide-react";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
 import ListaAvaliacoes from "@/components/Avaliacoes/ListaAvaliacoes";
+import AlbumDeFotos from "@/components/Profile/AlbumDeFotos";
 
 interface Props {
   usuario: UsuarioBuscaDTO;
@@ -137,6 +138,19 @@ export default function MiniPerfilModal({
                         )
                       }
                     >
+                      <ImageIcon className="w-4 h-4" />
+                      Álbum
+                    </Tab>
+                    <Tab
+                      className={({ selected }) =>
+                        classNames(
+                          "px-6 py-3 text-sm font-medium focus:outline-none flex items-center gap-2",
+                          selected
+                            ? "text-primary border-b-2 border-primary"
+                            : "text-gray-600 hover:text-gray-800"
+                        )
+                      }
+                    >
                       <Star className="w-4 h-4" />
                       Avaliações
                     </Tab>
@@ -204,6 +218,11 @@ export default function MiniPerfilModal({
                           </div>
                         )}
                       </div>
+                    </TabPanel>
+
+                    {/* Aba Álbum */}
+                    <TabPanel className="p-6">
+                      <AlbumDeFotos isOwner={false} usuarioId={usuario.id} />
                     </TabPanel>
 
                     {/* Aba Avaliações */}

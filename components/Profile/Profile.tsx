@@ -13,6 +13,7 @@ import PersonalDataForm from "@/components/Profile/PersonalDataForm";
 import MinhasPreferencias from "@/components/Profile/MinhasPreferencias";
 import MinhasViagens from "@/components/Profile/MinhasViagens";
 import MeusPets from "@/components/Profile/MeusPets";
+import AlbumDeFotos from "@/components/Profile/AlbumDeFotos";
 import CentralSolicitacoes from "@/components/Solicitacoes/CentralSolicitacoes";
 import ListaAvaliacoes from "@/components/Avaliacoes/ListaAvaliacoes";
 import { uploadFotoPerfil } from "@/services/uploadService";
@@ -42,6 +43,7 @@ const Profile = () => {
     { label: "Minhas Viagens", param: "viagens" },
     { label: "Minhas Preferências", param: "preferencias" },
     { label: "Meus Pets", param: "pets" },
+    { label: "Álbum", param: "album" },
     { label: "Avaliações", param: "avaliacoes" },
     { label: "Central de Solicitações", param: "solicitacoes" },
   ];
@@ -941,6 +943,9 @@ const Profile = () => {
                       </TabPanel>
                       <TabPanel>
                         <MeusPets />
+                      </TabPanel>
+                      <TabPanel>
+                        <AlbumDeFotos isOwner={true} />
                       </TabPanel>
                       <TabPanel>
                         {usuario && <ListaAvaliacoes usuarioId={usuario.id} />}
