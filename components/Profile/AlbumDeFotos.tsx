@@ -11,7 +11,8 @@ import {
   ChevronRight,
   Loader2,
   Camera,
-  AlertCircle
+  AlertCircle,
+  ImagePlus
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { AlbumFotoDTO } from "@/models/AlbumFotoDTO";
@@ -83,76 +84,79 @@ const GaleriaViewer = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center"
+        className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center touch-none"
         onClick={onClose}
       >
-        {/* Botão Fechar */}
-        <motion.button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-105 z-10"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <X className="w-6 h-6" />
-        </motion.button>
-
-        {/* Contador */}
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full backdrop-blur-sm">
-          <span className="text-sm font-medium">
-            {fotoAtualIndex + 1} de {fotosSeguras.length}
-          </span>
+        {/* Área de botões superior - Mobile First */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 sm:p-4 z-10">
+          {/* Contador à esquerda */}
+          <div className="bg-black/60 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full backdrop-blur-sm">
+            <span className="text-xs sm:text-sm font-medium">
+              {fotoAtualIndex + 1} de {fotosSeguras.length}
+            </span>
+          </div>
+          
+          {/* Botão Fechar à direita - Maior no mobile */}
+          <motion.button
+            onClick={onClose}
+            className="p-2 sm:p-3 bg-white/20 hover:bg-white/30 text-white rounded-full backdrop-blur-sm transition-all duration-200"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <X className="w-7 h-7 sm:w-6 sm:h-6" />
+          </motion.button>
         </div>
 
-        {/* Navegação Anterior */}
+        {/* Navegação Anterior - Mobile Friendly */}
         {fotosSeguras.length > 1 && (
           <motion.button
             onClick={(e) => {
               e.stopPropagation();
               onPrevious();
             }}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm transition-all duration-200"
+            className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 p-2.5 sm:p-3 bg-white/20 hover:bg-white/30 text-white rounded-full backdrop-blur-sm transition-all duration-200"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-6 h-6 sm:w-6 sm:h-6" />
           </motion.button>
         )}
 
-        {/* Navegação Próxima */}
+        {/* Navegação Próxima - Mobile Friendly */}
         {fotosSeguras.length > 1 && (
           <motion.button
             onClick={(e) => {
               e.stopPropagation();
               onNext();
             }}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-sm transition-all duration-200"
+            className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 p-2.5 sm:p-3 bg-white/20 hover:bg-white/30 text-white rounded-full backdrop-blur-sm transition-all duration-200"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-6 h-6 sm:w-6 sm:h-6" />
           </motion.button>
         )}
 
-        {/* Imagem Principal */}
+        {/* Imagem Principal - Mobile Optimized */}
         <motion.div
           key={fotoAtualIndex}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="max-w-6xl max-h-[90vh] mx-2 sm:mx-4"
+          className="w-full max-w-6xl max-h-[85vh] sm:max-h-[90vh] mx-1 sm:mx-4 mt-16 sm:mt-0"
           onClick={(e) => e.stopPropagation()}
         >
           <img
             src={fotoAtual.urlFoto}
             alt={`Foto ${fotoAtualIndex + 1}`}
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
           />
         </motion.div>
 
-        {/* Thumbnails */}
+        {/* Thumbnails - Mobile Friendly */}
         {fotosSeguras.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 max-w-xs sm:max-w-md overflow-x-auto pb-2 px-4">
+          <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1.5 sm:gap-2 max-w-[90vw] sm:max-w-md overflow-x-auto pb-2 px-2 sm:px-4">
             {fotosSeguras.map((foto, index) => (
               <motion.button
                 key={foto.id}
@@ -160,7 +164,7 @@ const GaleriaViewer = ({
                   e.stopPropagation();
                   onSetIndex(index);
                 }}
-                className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                   index === fotoAtualIndex
                     ? 'border-white shadow-lg'
                     : 'border-white/30 hover:border-white/60'
@@ -193,7 +197,9 @@ const AlbumDeFotos = ({
   const [fotoAtualIndex, setFotoAtualIndex] = useState(0);
   const [fotosRemovendoIds, setFotosRemovendoIds] = useState<Set<number>>(new Set());
   const [fotosRecentesIds, setFotosRecentesIds] = useState<Set<number>>(new Set());
+  const [showUploadOptions, setShowUploadOptions] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
 
 
@@ -597,6 +603,21 @@ const AlbumDeFotos = ({
 
   const podeUpload = isOwner && Array.isArray(fotos) && fotos.length < MAX_FOTOS && !uploading;
 
+  // Funções para o seletor de upload
+  const handleUploadClick = () => {
+    setShowUploadOptions(true);
+  };
+
+  const handleCameraClick = () => {
+    setShowUploadOptions(false);
+    cameraInputRef.current?.click();
+  };
+
+  const handleGalleryClick = () => {
+    setShowUploadOptions(false);
+    fileInputRef.current?.click();
+  };
+
   if (loading) {
     return (
       <div className={`flex items-center justify-center py-16 ${className}`}>
@@ -630,7 +651,7 @@ const AlbumDeFotos = ({
         {/* Botão de Upload */}
         {isOwner && (
           <motion.button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleUploadClick}
             disabled={!podeUpload}
             className={`flex items-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-medium transition-all duration-200 text-sm sm:text-base w-full sm:w-auto justify-center ${
               podeUpload
@@ -647,7 +668,7 @@ const AlbumDeFotos = ({
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4" />
+                <ImagePlus className="w-4 h-4" />
                 <span className="hidden sm:inline">Adicionar Foto</span>
                 <span className="sm:hidden">Adicionar</span>
               </>
@@ -655,8 +676,18 @@ const AlbumDeFotos = ({
           </motion.button>
         )}
 
+          {/* Input para Galeria */}
           <input
             ref={fileInputRef}
+            type="file"
+            accept={isIOS() ? "image/*,.heic,.heif" : "image/*"}
+            onChange={handleUpload}
+            className="hidden"
+          />
+
+          {/* Input para Câmera */}
+          <input
+            ref={cameraInputRef}
             type="file"
             accept={isIOS() ? "image/*,.heic,.heif" : "image/*"}
             capture="environment"
@@ -674,6 +705,78 @@ const AlbumDeFotos = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Opções de Upload */}
+      <AnimatePresence>
+        {showUploadOptions && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowUploadOptions(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-gray-800 mb-2 text-center">
+                Adicionar Foto
+              </h3>
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Escolha como deseja adicionar sua foto
+              </p>
+
+              <div className="space-y-3">
+                {/* Opção Câmera */}
+                <motion.button
+                  onClick={handleCameraClick}
+                  className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 rounded-xl transition-all duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="p-2 bg-blue-500 text-white rounded-lg">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-gray-800">Tirar Foto</p>
+                    <p className="text-sm text-gray-600">Usar câmera do dispositivo</p>
+                  </div>
+                </motion.button>
+
+                {/* Opção Galeria */}
+                <motion.button
+                  onClick={handleGalleryClick}
+                  className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-200 rounded-xl transition-all duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="p-2 bg-green-500 text-white rounded-lg">
+                    <ImageIcon className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-gray-800">Escolher da Galeria</p>
+                    <p className="text-sm text-gray-600">Selecionar foto existente</p>
+                  </div>
+                </motion.button>
+              </div>
+
+              {/* Botão Cancelar */}
+              <motion.button
+                onClick={() => setShowUploadOptions(false)}
+                className="w-full mt-4 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Cancelar
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Aviso de Limite */}
       {isOwner && Array.isArray(fotos) && fotos.length >= MAX_FOTOS && (
@@ -694,7 +797,7 @@ const AlbumDeFotos = ({
 
       {/* Grid de Fotos */}
       {Array.isArray(fotos) && fotos.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           <AnimatePresence mode="popLayout">
             {fotos.map((foto, index) => {
               const isRemoving = fotosRemovendoIds.has(foto.id);
@@ -874,12 +977,12 @@ const AlbumDeFotos = ({
           </p>
           {isOwner && (
             <motion.button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleUploadClick}
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Upload className="w-4 h-4" />
+              <ImagePlus className="w-4 h-4" />
               <span className="hidden sm:inline">Adicionar Primeira Foto</span>
               <span className="sm:hidden">Adicionar Foto</span>
             </motion.button>

@@ -228,9 +228,28 @@ const EncontrePessoas = () => {
 
       const response = await buscarUsuarios(filtrosLimpos);
       setUsuarios(response);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro na busca:", err);
-      toast.error("Erro na busca. Tente novamente.");
+      console.error("Detalhes do erro:", {
+        response: err?.response,
+        data: err?.response?.data,
+        message: err?.response?.data?.message,
+        fullError: err
+      });
+      
+      // Verifica se é o erro específico de não ter viagens cadastradas
+      const errorMessage = err?.response?.data?.message || err?.message || "";
+      
+      if (errorMessage.includes("pelo menos uma viagem cadastrada")) {
+        toast.warning("Você precisa ter pelo menos uma viagem cadastrada para buscar pessoas.", {
+          action: {
+            label: "Cadastrar Viagem",
+            onClick: () => router.push("/minhas-viagens")
+          }
+        });
+      } else {
+        toast.error(err?.response?.data?.message || "Erro na busca. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
 import { FaCamera } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, User, Settings, Heart, Star, Shield, Award, UserCircle, ImageIcon } from "lucide-react";
+import { Loader2, User, Settings, Heart, Star, Shield, Award, UserCircle, ImageIcon, Map, MessageCircle } from "lucide-react";
 import { toast } from 'react-hot-toast';
 import PersonalDataForm from "@/components/Profile/PersonalDataForm";
 import MinhasPreferencias from "@/components/Profile/MinhasPreferencias";
@@ -39,13 +39,55 @@ const Profile = () => {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const tabs = [
-    { label: "Dados Pessoais", param: "dados" },
-    { label: "Minhas Viagens", param: "viagens" },
-    { label: "Minhas Preferências", param: "preferencias" },
-    { label: "Meus Pets", param: "pets" },
-    { label: "Álbum", param: "album" },
-    { label: "Avaliações", param: "avaliacoes" },
-    { label: "Central de Solicitações", param: "solicitacoes" },
+    { 
+      label: "Dados Pessoais", 
+      labelMobile: "Dados",
+      param: "dados",
+      icon: "User",
+      category: "perfil" 
+    },
+    { 
+      label: "Viagens", 
+      labelMobile: "Viagens",
+      param: "viagens",
+      icon: "Map",
+      category: "atividades" 
+    },
+    { 
+      label: "Preferências", 
+      labelMobile: "Preferências",
+      param: "preferencias",
+      icon: "Settings",
+      category: "perfil" 
+    },
+    { 
+      label: "Pets", 
+      labelMobile: "Pets",
+      param: "pets",
+      icon: "Heart",
+      category: "atividades" 
+    },
+    { 
+      label: "Álbum", 
+      labelMobile: "Fotos",
+      param: "album",
+      icon: "ImageIcon",
+      category: "conteudo" 
+    },
+    { 
+      label: "Avaliações", 
+      labelMobile: "Avaliações",
+      param: "avaliacoes",
+      icon: "Star",
+      category: "conteudo" 
+    },
+    { 
+      label: "Solicitações", 
+      labelMobile: "Solicitações",
+      param: "solicitacoes",
+      icon: "MessageCircle",
+      category: "gestao" 
+    },
   ];
 
   useEffect(() => {
@@ -883,7 +925,7 @@ const Profile = () => {
                   </AnimatePresence>
                 </motion.div>
 
-                {/* Modern Tab Navigation */}
+                {/* Enhanced Responsive Tab Navigation */}
                 <motion.div
                   className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 overflow-hidden"
                   initial={{ opacity: 0, y: 30 }}
@@ -891,44 +933,76 @@ const Profile = () => {
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
                   <TabGroup selectedIndex={selectedIndex} onChange={handleTabChange}>
-                    <TabList className="flex flex-wrap justify-center border-b border-gray-200/50 p-6 bg-gradient-to-r from-gray-50/50 to-white/50">
-                      {tabs.map((tab, idx) => (
-                        <Tab
-                          key={idx}
-                          className={({ selected }) =>
-                            classNames(
-                              "relative px-6 py-3 mx-1 mb-2 text-sm font-semibold rounded-full transition-all duration-300 focus:outline-none group",
-                              selected
-                                ? "text-white shadow-lg"
-                                : "text-gray-600 hover:text-primary hover:bg-primary/5"
-                            )
-                          }
-                        >
-                          {({ selected }) => (
-                            <>
-                              {/* Active Background */}
-                              {selected && (
-                                <motion.div
-                                  layoutId="activeTabBg"
-                                  className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-full"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ duration: 0.3 }}
-                                />
+                    {/* Responsive Tab Navigation */}
+                    <TabList className="border-b border-gray-200/50 bg-gradient-to-r from-gray-50/50 to-white/50 overflow-x-auto no-scrollbar">
+                      <div className="flex justify-center lg:justify-center p-4 lg:p-6 space-x-1 lg:space-x-2 min-w-max lg:min-w-0">
+                        {tabs.map((tab, idx) => {
+                          const IconComponent = {
+                            User,
+                            Map,
+                            Settings,
+                            Heart,
+                            ImageIcon,
+                            Star,
+                            MessageCircle
+                          }[tab.icon] || User;
+
+                          return (
+                            <Tab
+                              key={idx}
+                              className={({ selected }) =>
+                                classNames(
+                                  "relative transition-all duration-300 focus:outline-none group whitespace-nowrap",
+                                  // Layout responsivo
+                                  "flex flex-col lg:flex-row items-center justify-center lg:justify-start",
+                                  "px-3 lg:px-6 py-3 min-w-[75px] lg:min-w-0 mx-0 lg:mx-1",
+                                  "text-xs lg:text-sm font-medium lg:font-semibold",
+                                  "rounded-xl lg:rounded-full",
+                                  selected
+                                    ? "text-white shadow-lg scale-105 lg:scale-100"
+                                    : "text-gray-600 hover:text-primary hover:bg-primary/5"
+                                )
+                              }
+                            >
+                              {({ selected }) => (
+                                <>
+                                  {/* Active Background */}
+                                  {selected && (
+                                    <motion.div
+                                      layoutId="activeTabBg"
+                                      className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-xl lg:rounded-full"
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      transition={{ duration: 0.3 }}
+                                    />
+                                  )}
+                                  
+                                  {/* Hover Background */}
+                                  {!selected && (
+                                    <motion.div
+                                      className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-xl lg:rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    />
+                                  )}
+                                  
+                                  {/* Content */}
+                                  <div className="relative z-10 flex flex-col lg:flex-row items-center space-y-1 lg:space-y-0 lg:space-x-2">
+                                    {/* Mobile: Icon + Text curto | Desktop: Icon + Text completo */}
+                                    <IconComponent className="w-5 h-5 lg:w-0 lg:h-0 lg:hidden" />
+                                    <span className="text-xs lg:text-sm font-medium leading-tight block lg:hidden">
+                                      {tab.labelMobile}
+                                    </span>
+                                    
+                                    {/* Desktop: Texto completo */}
+                                    <span className="hidden lg:block">
+                                      {tab.label}
+                                    </span>
+                                  </div>
+                                </>
                               )}
-                              
-                              {/* Hover Background */}
-                              {!selected && (
-                                <motion.div
-                                  className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                />
-                              )}
-                              
-                              <span className="relative z-10">{tab.label}</span>
-                            </>
-                          )}
-                        </Tab>
-                      ))}
+                            </Tab>
+                          );
+                        })}
+                      </div>
                     </TabList>
 
                     <TabPanels className="p-8">

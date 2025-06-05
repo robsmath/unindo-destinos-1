@@ -49,7 +49,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     dataInicio: "",
     dataFim: "",
     estilo: "AVENTURA",
-    status: "PENDENTE",
+    status: "RASCUNHO", // Viagens novas começam como rascunho
     descricao: "",
     categoriaViagem: "NACIONAL",
     numeroMaximoParticipantes: undefined
@@ -78,6 +78,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [cidades, setCidades] = useState<string[]>([]);
 
   const id = viagemId ? Number(viagemId) : null;
+
     useEffect(() => {
     const buscarImagem = async () => {
       if (form.destino) {
@@ -181,6 +182,9 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       } else {
         // Para novo cadastro, sempre mostrar aviso de preferências não cadastradas
         setSemPreferencias(true);
+        
+        // Para viagens novas, mostrar seção de preferências expandida por padrão
+        setShowPreferences(true);
       }
     };
   
@@ -243,7 +247,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     if (semPreferencias) {
       setSemPreferencias(false);
     }
-  };
+      };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,8 +291,12 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
         const viagemRequest = { ...form };
 
         if (id) {
-          await editarViagem(id, { ...viagemRequest, id });
+          const viagemAtualizada = await editarViagem(id, { ...viagemRequest, id });
           viagemId = id;
+          
+          // Atualizar o form com o status retornado do backend (pode ter sido validado)
+          setForm(prev => ({ ...prev, status: viagemAtualizada.status }));
+          
           toast.success("Viagem atualizada com sucesso!", { position: "top-center" });
         } else {
           const viagemSalva = await cadastrarViagem({ ...viagemRequest, id: 0 });
@@ -297,6 +305,9 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           if (!viagemId || viagemId === 0) {
             throw new Error("Erro ao cadastrar viagem: ID não retornado ou inválido.");
           }
+
+          // Atualizar o form com o status retornado do backend (pode ter sido validado)
+          setForm(prev => ({ ...prev, status: viagemSalva.status }));
 
           toast.success("Viagem cadastrada com sucesso!", { position: "top-center" });
         }        // Sempre salvar as preferências
@@ -801,45 +812,54 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
 
                       <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
                         <p className="text-sm text-blue-800 mb-3">
-                          <span className="font-semibold">Status atual:</span>{" "}
+                          <span className="font-semibold">Status selecionado:</span>{" "}
                           {form.status === "CONFIRMADA"
                             ? "Confirmada ✅"
-                            : form.status === "CANCELADA"
-                            ? "Cancelada ❌"
-                            : form.status === "EM_ANDAMENTO"
-                            ? "Em andamento 🕒"
-                            : form.status === "CONCLUIDA"
-                            ? "Concluída 🏁"
-                            : form.status === "RASCUNHO"
-                            ? "Rascunho ✍️"
-                            : "Pendente ⏳"}
+                            : "Rascunho ✍️"}
+                        </p>
+                        
+                        <p className="text-xs text-blue-700 mb-3 italic">
+                          💡 <strong>Dica:</strong> Escolha "Rascunho" para planejar ainda ou "Confirmada" se a viagem já estiver pronta.
                         </p>
 
-                        {(form.status !== "EM_ANDAMENTO" && form.status !== "CONCLUIDA" && form.status !== "CANCELADA") && (
-                          <div className="flex gap-2">
-                            {(form.status === "PENDENTE" || form.status === "RASCUNHO") && (
-                              <button
-                                type="button"
-                                onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
-                                className="px-3 py-1.5 text-sm rounded-xl border font-medium border-green-600 text-green-700 hover:bg-green-50 transition-all duration-300"
-                              >
-                                ✅ Confirmar
-                              </button>
-                            )}
-
-                            {["PENDENTE", "RASCUNHO", "CONFIRMADA"].includes(form.status) && (
-                              <button
-                                type="button"
-                                onClick={() => setForm((prev) => ({ ...prev, status: "CANCELADA" }))}
-                                className="px-3 py-1.5 text-sm rounded-xl border font-medium border-red-600 text-red-700 hover:bg-red-50 transition-all duration-300"
-                              >
-                                ❌ Cancelar
-                              </button>
-                            )}
+                        {/* Controles de status - apenas RASCUNHO e CONFIRMADA são permitidos pelo frontend */}
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setForm((prev) => ({ ...prev, status: "RASCUNHO" }))}
+                              className={`px-3 py-1.5 text-sm rounded-xl border font-medium transition-all duration-300 ${
+                                form.status === "RASCUNHO"
+                                  ? "border-gray-600 bg-gray-50 text-gray-800"
+                                  : "border-gray-400 text-gray-600 hover:bg-gray-50"
+                              }`}
+                            >
+                              📝 {form.status === "RASCUNHO" ? "✓" : ""} Rascunho
+                            </button>
+                            
+                            <button
+                              type="button"
+                              onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
+                              className={`px-3 py-1.5 text-sm rounded-xl border font-medium transition-all duration-300 ${
+                                form.status === "CONFIRMADA"
+                                  ? "border-green-600 bg-green-50 text-green-800"
+                                  : "border-green-400 text-green-600 hover:bg-green-50"
+                              }`}
+                            >
+                              ✅ {form.status === "CONFIRMADA" ? "✓" : ""} Confirmada
+                            </button>
                           </div>
-                        )}
+                          
+                          <p className="text-xs text-gray-500">
+                            • <strong>Rascunho:</strong> Viagem em planejamento, pode ser editada
+                            <br />
+                            • <strong>Confirmada:</strong> Viagem pronta para receber participantes
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-500">Você pode confirmar ou cancelar esta viagem.</p>
+                                              <p className="text-sm text-gray-500">
+                          Selecione o status da viagem. Apenas "Rascunho" e "Confirmada" podem ser definidos pelo usuário.
+                        </p>
                     </div>
                   </motion.div>
 

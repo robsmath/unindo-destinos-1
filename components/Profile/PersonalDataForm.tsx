@@ -480,19 +480,22 @@ const PersonalDataForm = () => {
                 Email verificado
               </motion.p>
             ) : (
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="text-sm text-red-600 flex items-center gap-2"
+                className="text-sm text-red-600 flex items-center justify-between gap-2"
               >
-                <FaTimes className="text-red-500" />
-                Email não verificado -{" "}
+                <span className="flex items-center gap-2">
+                  <FaTimes className="text-red-500" />
+                  Email não verificado
+                </span>
                 <Link 
                   href="/profile/verificar" 
-                  className="text-blue-600 hover:text-blue-800 underline"
+                  className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 rounded-lg transition-colors duration-200 font-medium"
                 >
                   Verificar agora
-                </Link>              </motion.p>
+                </Link>
+              </motion.div>
             )}
           </motion.div>
           </div>
@@ -579,20 +582,23 @@ const PersonalDataForm = () => {
                 Telefone verificado
               </motion.p>
             ) : (
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="text-sm text-red-600 flex items-center gap-2"
+                className="text-sm text-red-600 flex items-center justify-between gap-2"
               >
-                <FaTimes className="text-red-500" />
-                Telefone não verificado -{" "}
+                <span className="flex items-center gap-2">
+                  <FaTimes className="text-red-500" />
+                  Telefone não verificado
+                </span>
                 <Link 
                   href="/profile/verificar" 
-                  className="text-blue-600 hover:text-blue-800 underline"
+                  className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 rounded-lg transition-colors duration-200 font-medium"
                 >
                   Verificar agora
                 </Link>
-              </motion.p>            )}</motion.div>          
+              </motion.div>
+            )}</motion.div>          
           
           {/* Campo de Descrição */}
           <motion.div
