@@ -13,11 +13,6 @@ interface ApiResponse<T> {
   data: T;
 }
 
-// Validação removida - o frontend agora garante que apenas status válidos sejam enviados
-// A responsabilidade de controlar os status é dividida:
-// - Frontend: pode enviar apenas "RASCUNHO" ou "CONFIRMADA"
-// - Backend: controla "PENDENTE", "EM_ANDAMENTO", "CONCLUIDA", "CANCELADA"
-
 export const cadastrarViagem = async (dados: ViagemDTO): Promise<ViagemDTO> => {
   const response = await api.post<ApiResponse<ViagemDTO>>("/viagens", dados);
   return response.data.data;
@@ -41,9 +36,6 @@ export const getViagemById = async (id: number): Promise<ViagemDTO> => {
   const response = await api.get<ApiResponse<ViagemDTO>>(`/viagens/${id}`);
   return response.data.data;
 };
-
-// Endpoints /confirmar e /cancelar removidos - o controle de status agora é feito 
-// sempre através do campo status no payload da requisição PUT /viagens/{id}
 
 export const getParticipantesDaViagem = async (
   viagemId: number

@@ -49,7 +49,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     dataInicio: "",
     dataFim: "",
     estilo: "AVENTURA",
-    status: "RASCUNHO", // Viagens novas começam como rascunho
+    status: "RASCUNHO", // Viagens novas sempre começam como rascunho
     descricao: "",
     categoriaViagem: "NACIONAL",
     numeroMaximoParticipantes: undefined
@@ -804,63 +804,72 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                       <p className="text-sm text-gray-500">Qual o estilo principal da viagem.</p>
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Settings className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-gray-800">Status da Viagem</h3>
-                      </div>
-
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
-                        <p className="text-sm text-blue-800 mb-3">
-                          <span className="font-semibold">Status selecionado:</span>{" "}
-                          {form.status === "CONFIRMADA"
-                            ? "Confirmada ✅"
-                            : "Rascunho ✍️"}
-                        </p>
-                        
-                        <p className="text-xs text-blue-700 mb-3 italic">
-                          💡 <strong>Dica:</strong> Escolha "Rascunho" para planejar ainda ou "Confirmada" se a viagem já estiver pronta.
-                        </p>
-
-                        {/* Controles de status - apenas RASCUNHO e CONFIRMADA são permitidos pelo frontend */}
-                        <div className="space-y-3">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setForm((prev) => ({ ...prev, status: "RASCUNHO" }))}
-                              className={`px-3 py-1.5 text-sm rounded-xl border font-medium transition-all duration-300 ${
-                                form.status === "RASCUNHO"
-                                  ? "border-gray-600 bg-gray-50 text-gray-800"
-                                  : "border-gray-400 text-gray-600 hover:bg-gray-50"
-                              }`}
-                            >
-                              📝 {form.status === "RASCUNHO" ? "✓" : ""} Rascunho
-                            </button>
-                            
-                            <button
-                              type="button"
-                              onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
-                              className={`px-3 py-1.5 text-sm rounded-xl border font-medium transition-all duration-300 ${
-                                form.status === "CONFIRMADA"
-                                  ? "border-green-600 bg-green-50 text-green-800"
-                                  : "border-green-400 text-green-600 hover:bg-green-50"
-                              }`}
-                            >
-                              ✅ {form.status === "CONFIRMADA" ? "✓" : ""} Confirmada
-                            </button>
-                          </div>
-                          
-                          <p className="text-xs text-gray-500">
-                            • <strong>Rascunho:</strong> Viagem em planejamento, pode ser editada
-                            <br />
-                            • <strong>Confirmada:</strong> Viagem pronta para receber participantes
-                          </p>
+                    {/* Seção de Status da Viagem - apenas na edição */}
+                    {id && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Settings className="h-5 w-5 text-primary" />
+                          <h3 className="text-lg font-semibold text-gray-800">Status da Viagem</h3>
                         </div>
-                      </div>
-                                              <p className="text-sm text-gray-500">
-                          Selecione o status da viagem. Apenas "Rascunho" e "Confirmada" podem ser definidos pelo usuário.
+
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                          <p className="text-sm text-blue-800 mb-3">
+                            <span className="font-semibold">Status selecionado:</span>{" "}
+                            {form.status === "CONFIRMADA"
+                              ? "Confirmada ✅"
+                              : form.status === "CANCELADA"
+                              ? "Cancelada ❌"
+                              : form.status === "PENDENTE"
+                              ? "Pendente ⏳"
+                              : "Rascunho ✍️"}
+                          </p>
+                          
+                          <p className="text-xs text-blue-700 mb-3 italic">
+                            💡 <strong>Importante:</strong> Apenas viagens <strong>PENDENTES</strong> e <strong>CONFIRMADAS</strong> aparecem nas buscas públicas para outros usuários. Viagens passam para "Pendente" automaticamente quando você gera um roteiro.
+                          </p>
+
+                          <div className="space-y-3">
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setForm((prev) => ({ ...prev, status: "CONFIRMADA" }))}
+                                className={`px-3 py-1.5 text-sm rounded-xl border font-medium transition-all duration-300 ${
+                                  form.status === "CONFIRMADA"
+                                    ? "border-green-600 bg-green-50 text-green-800"
+                                    : "border-green-400 text-green-600 hover:bg-green-50"
+                                }`}
+                              >
+                                ✅ {form.status === "CONFIRMADA" ? "✓" : ""} Confirmada
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setForm((prev) => ({ ...prev, status: "CANCELADA" }))}
+                                className={`px-3 py-1.5 text-sm rounded-xl border font-medium transition-all duration-300 ${
+                                  form.status === "CANCELADA"
+                                    ? "border-red-600 bg-red-50 text-red-800"
+                                    : "border-red-400 text-red-600 hover:bg-red-50"
+                                }`}
+                              >
+                                ❌ {form.status === "CANCELADA" ? "✓" : ""} Cancelada
+                              </button>
+                            </div>
+                            
+                            <p className="text-xs text-gray-500">
+                              • <strong>Pendente:</strong> Viagem com roteiro gerado, aparece nas buscas públicas (status automático)
+                              <br />
+                              • <strong>Confirmada:</strong> Viagem pronta para receber participantes, aparece nas buscas
+                              <br />
+                              • <strong>Cancelada:</strong> Viagem cancelada (ação irreversível)
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-gray-500">
+                          Altere o status conforme necessário. Atenção: cancelar uma viagem é uma ação irreversível.
                         </p>
-                    </div>
+                      </div>
+                    )}
                   </motion.div>
 
                   <motion.div
