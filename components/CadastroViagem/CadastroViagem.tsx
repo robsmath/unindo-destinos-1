@@ -52,7 +52,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     status: "RASCUNHO", // Viagens novas sempre começam como rascunho
     descricao: "",
     categoriaViagem: "NACIONAL",
-    numeroMaximoParticipantes: undefined
+    numeroMaximoParticipantes: undefined,
+    imagemUrl: undefined
   });
   
   const [preferencias, setPreferencias] = useState<PreferenciasDTO>({
@@ -83,7 +84,13 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     const buscarImagem = async () => {
       if (form.destino) {
         const urlImagem = await fetchImagemPaisagemDestino(form.destino, form.categoriaViagem);
-        setImagemDestino(urlImagem || "/images/common/beach.jpg");
+        const imagemFinal = urlImagem || "/images/common/beach.jpg";
+        setImagemDestino(imagemFinal);
+        // Atualizar o form com a nova URL da imagem
+        setForm((prev) => ({
+          ...prev,
+          imagemUrl: urlImagem // Salvar apenas URLs válidas, não a imagem padrão
+        }));
       }
     };
     buscarImagem();
@@ -139,7 +146,8 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             status: viagem.status,
             categoriaViagem: viagem.categoriaViagem ?? "NACIONAL", // Mantido para compatibilidade com API
             descricao: viagem.descricao || "",
-            numeroMaximoParticipantes: viagem.numeroMaximoParticipantes
+            numeroMaximoParticipantes: viagem.numeroMaximoParticipantes,
+            imagemUrl: viagem.imagemUrl
           });
   
           if (viagem.categoriaViagem === "NACIONAL") {
@@ -164,9 +172,20 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
               destino: `${cidadeParte} - ${paisesTraduzidos[paisIngles || ""] || paisParte}`,
             }));
           }
-                const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          setImagemDestino(imagem || "/images/common/beach.jpg");
+          // Priorizar a imagem salva no banco de dados
+          if (viagem.imagemUrl) {
+            setImagemDestino(viagem.imagemUrl);
+          } else {
+            // Fallback para buscar nova imagem apenas se não houver imagemUrl
+            const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
+            const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
+            const imagemFinal = imagem || "/images/common/beach.jpg";
+            setImagemDestino(imagemFinal);
+            // Atualizar o form com a nova URL caso tenha sido buscada
+            if (imagem) {
+              setForm(prev => ({ ...prev, imagemUrl: imagem }));
+            }
+          }
 
   
           const preferenciasSalvas = await getPreferenciaByViagemId(id);
@@ -1044,8 +1063,15 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                     type="button"
                     onClick={async () => {
                       const descricaoFinal = consultaImagem[1] || form.destino;
-                      if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);                      const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
-                      setImagemDestino(novaImagem || "/images/common/beach.jpg");
+                      if (id) localStorage.setItem(`imagemCustom-${id}`, descricaoFinal);
+                      const novaImagem = await getImage(descricaoFinal, form.categoriaViagem);
+                      const imagemFinal = novaImagem || "/images/common/beach.jpg";
+                      setImagemDestino(imagemFinal);
+                      // Atualizar o form com a nova URL da imagem
+                      setForm((prev) => ({
+                        ...prev,
+                        imagemUrl: novaImagem || undefined // Salvar apenas URLs válidas, não a imagem padrão
+                      }));
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}

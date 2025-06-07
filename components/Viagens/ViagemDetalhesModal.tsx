@@ -144,7 +144,8 @@ export default function ViagemDetalhesModal({
       setParticipantes(dadosParticipantes);
 
       if (!imagemViagem) {
-        setImagem("/images/common/beach.jpg");
+        // Usar a imagem da viagem carregada ou a imagem padrão
+        setImagem(dadosViagem.imagemUrl || "/images/common/beach.jpg");
       }
     } catch (err) {
       console.error("Erro ao carregar detalhes da viagem", err);

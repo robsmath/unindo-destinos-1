@@ -10,8 +10,10 @@ import menuData from "./menuData";
 import NavAuthenticated from "./NavAuthenticated";
 import NavUnauthenticated from "./NavUnauthenticated";
 import { useAuth } from "@/app/context/AuthContext";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const Header = () => {
+  const { shouldReduceMotion } = useReducedMotion();
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -32,12 +34,15 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
+    // Desabilitar mouse tracking se movimento reduzido
+    if (shouldReduceMotion) return;
+    
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [shouldReduceMotion]);
 
   // Navegação por teclado
   useEffect(() => {
@@ -88,20 +93,20 @@ const Header = () => {
   const headerVariants = {
     initial: { y: -100, opacity: 0 },
     animate: { y: 0, opacity: 1 },
-    transition: { duration: 0.8, ease: "easeOut" }
+    transition: { duration: shouldReduceMotion ? 0.3 : 0.8, ease: "easeOut" }
   };
 
   const menuItemVariants = {
     initial: { opacity: 0, y: -20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4 }
+    transition: { duration: shouldReduceMotion ? 0.2 : 0.4 }
   };
 
   const mobileMenuVariants = {
     initial: { opacity: 0, height: 0, y: -20 },
     animate: { opacity: 1, height: "auto", y: 0 },
     exit: { opacity: 0, height: 0, y: -20 },
-    transition: { duration: 0.4, ease: "easeInOut" }
+    transition: { duration: shouldReduceMotion ? 0.2 : 0.4, ease: "easeInOut" }
   };  return (
     <motion.header
       initial="initial"
@@ -122,270 +127,285 @@ const Header = () => {
         Pular para o conteúdo principal
       </a>
 
-      {/* Magical gradient overlay */}      <div 
-        className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-700"
-        style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(234, 88, 12, 0.05) 0%, transparent 50%)`
-        }}
-        aria-hidden={true}
-      />
+      {/* Magical gradient overlay - desabilitar se movimento reduzido */}
+      {!shouldReduceMotion && (
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-700"
+          style={{
+            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(234, 88, 12, 0.05) 0%, transparent 50%)`
+          }}
+          aria-hidden={true}
+        />
+      )}
       
       <div className="relative mx-auto flex max-w-c-1390 items-center justify-between px-4 md:px-8 2xl:px-0">
         {/* Logo with enhanced animations */}
         <motion.div 
           className="flex items-center gap-4 relative"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
+          whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.3, type: "spring", stiffness: 300 }}
         >
           <Link 
             href="/" 
             className="relative group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
             aria-label="Unindo Destinos - Página inicial"
-          >            <motion.div
-              className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"
-              initial={{ scale: 0 }}
-              whileHover={{ scale: 1.1 }}
-              transition={{ duration: 0.3 }}
-              aria-hidden={true}
-            />            <Image
-              src="/images/logo/unindo-destinos-logo.png"
-              alt="Unindo Destinos - Logo"
-              width={120}
-              height={35}
-              className="dark:hidden transition-all duration-300 hover:scale-105 relative z-10 w-20 sm:w-24 md:w-28 lg:w-[120px] h-auto"
-              priority
-            />
+          >
+            {!shouldReduceMotion && (
+              <motion.div
+                className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300"
+                initial={{ scale: 0 }}
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}
+                aria-hidden={true}
+              />
+            )}
             <Image
               src="/images/logo/unindo-destinos-logo.png"
-              alt="Unindo Destinos - Logo"
-              width={120}
-              height={35}
-              className="hidden dark:block transition-all duration-300 hover:scale-105 relative z-10 w-20 sm:w-24 md:w-28 lg:w-[120px] h-auto"
-              priority
-            />
-          </Link>
-        </motion.div>
+            alt="Unindo Destinos - Logo"
+            width={120}
+            height={35}
+            className={`dark:hidden transition-all duration-300 relative z-10 w-20 sm:w-24 md:w-28 lg:w-[120px] h-auto ${
+              shouldReduceMotion ? "" : "hover:scale-105"
+            }`}
+            priority
+          />
+          <Image
+            src="/images/logo/unindo-destinos-logo.png"
+            alt="Unindo Destinos - Logo"
+            width={120}
+            height={35}
+            className={`hidden dark:block transition-all duration-300 relative z-10 w-20 sm:w-24 md:w-28 lg:w-[120px] h-auto ${
+              shouldReduceMotion ? "" : "hover:scale-105"
+            }`}
+            priority
+          />
+        </Link>
+      </motion.div>
 
-        {/* Enhanced Nav Menu */}        <nav 
-          className="hidden xl:flex items-center gap-1"
-          role="navigation"
-          aria-label="Menu principal"
-        >
-          {menuData.map((menuItem, index) =>
-            menuItem.path ? (
-              <motion.div
-                key={menuItem.id}
-                variants={menuItemVariants}
-                initial="initial"
-                animate="animate"
-                transition={{ delay: index * 0.1 }}
-                className="relative"
+      {/* Enhanced Nav Menu */}        <nav 
+        className="hidden xl:flex items-center gap-1"
+        role="navigation"
+        aria-label="Menu principal"
+      >
+        {menuData.map((menuItem, index) =>
+          menuItem.path ? (
+            <motion.div
+              key={menuItem.id}
+              variants={menuItemVariants}
+              initial="initial"
+              animate="animate"
+              transition={{ delay: shouldReduceMotion ? 0 : index * 0.1 }}
+              className="relative"
+            >
+              <Link
+                href={menuItem.path}                  className={`relative px-5 py-2 text-sm font-medium tracking-wide transition-all duration-300 rounded-full group ${
+                  pathUrl === menuItem.path
+                    ? "text-white"
+                    : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
+                }`}
               >
-                <Link
-                  href={menuItem.path}                  className={`relative px-5 py-2 text-sm font-medium tracking-wide transition-all duration-300 rounded-full group ${
-                    pathUrl === menuItem.path
-                      ? "text-white"
-                      : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
-                  }`}
-                >
-                  {/* Active background */}
-                  {pathUrl === menuItem.path && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-full shadow-lg"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
-                  
-                  {/* Hover background */}
+                {/* Active background */}
+                {pathUrl === menuItem.path && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-full shadow-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: shouldReduceMotion ? 0.1 : 0.3 }}
+                  />
+                )}
+                
+                {/* Hover background - só se movimento não reduzido */}
+                {!shouldReduceMotion && (
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.2 }}
                   />
-                  
-                  <span className="relative z-10">{menuItem.title}</span>
-                  
-                  {/* Magic underline effect */}
+                )}
+                
+                <span className="relative z-10">{menuItem.title}</span>
+                
+                {/* Magic underline effect - só se movimento não reduzido */}
+                {!shouldReduceMotion && (
                   <motion.div
                     className="absolute bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-primary to-orange-500 rounded-full"
                     initial={{ width: 0 }}
                     whileHover={{ width: pathUrl === menuItem.path ? 0 : "70%" }}
                     transition={{ duration: 0.3 }}
                   />
-                </Link>
-              </motion.div>
-            ) : null
-          )}
-        </nav>        {/* Enhanced Auth Buttons */}
-        <motion.div 
-          className="flex items-center gap-6"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-        >
-          {isAuthenticated ? (
-            <NavAuthenticated />
-          ) : (
-            <NavUnauthenticated />
-          )}
-        </motion.div>
-
-        {/* Revolutionary Mobile Button */}
-        <motion.button
-          aria-label="Mobile Menu"
-          className="block xl:hidden relative w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-gray-700 dark:text-gray-300 focus:outline-none overflow-hidden group"
-          onClick={() => setNavigationOpen(!navigationOpen)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          {/* Magical background */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            animate={{ 
-              scale: navigationOpen ? 1 : 0,
-              rotate: navigationOpen ? 180 : 0 
-            }}
-            transition={{ duration: 0.3 }}
-          />
-          
-          {/* Animated hamburger lines */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-5 h-4">
-              <motion.span
-                className="absolute left-0 w-5 h-0.5 bg-current rounded-full"
-                animate={{
-                  rotate: navigationOpen ? 45 : 0,
-                  y: navigationOpen ? 8 : 2,
-                  scale: navigationOpen ? 0.8 : 1
-                }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              />
-              <motion.span
-                className="absolute left-0 top-2 w-5 h-0.5 bg-current rounded-full"
-                animate={{
-                  opacity: navigationOpen ? 0 : 1,
-                  x: navigationOpen ? 20 : 0
-                }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              />
-              <motion.span
-                className="absolute left-0 w-5 h-0.5 bg-current rounded-full"
-                animate={{
-                  rotate: navigationOpen ? -45 : 0,
-                  y: navigationOpen ? -8 : 14,
-                  scale: navigationOpen ? 0.8 : 1
-                }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              />
-            </div>
-          </div>
-        </motion.button>
-      </div>      {/* Revolutionary Mobile Menu */}
-      <AnimatePresence>
-        {navigationOpen && (
-          <motion.div
-            variants={mobileMenuVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="xl:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl dark:bg-black/95 border-t border-white/20 dark:border-white/10 shadow-2xl"
-          >
-            {/* Background magic */}
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-orange-500/5 to-transparent" />
-            
-            <div className="relative container mx-auto px-4 py-8">
-              <motion.div className="flex flex-col space-y-2">
-                {menuData.map((menuItem, index) =>
-                  menuItem.path ? (
-                    <motion.div
-                      key={menuItem.id}
-                      initial={{ opacity: 0, x: -30 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.4 }}
-                      className="relative"
-                    >
-                      <Link
-                        href={menuItem.path}
-                        className={`block text-lg font-medium transition-all duration-300 py-4 px-6 rounded-2xl relative group overflow-hidden ${
-                          pathUrl === menuItem.path
-                            ? "text-white"
-                            : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
-                        }`}
-                        onClick={() => setNavigationOpen(false)}
-                      >
-                        {/* Active/Hover background */}
-                        {pathUrl === menuItem.path ? (
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-2xl"
-                            layoutId="mobileActiveTab"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                          />
-                        ) : (
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                            whileHover={{ scale: 1.02 }}
-                            transition={{ duration: 0.2 }}
-                          />
-                        )}
-                        
-                        <span className="relative z-10 flex items-center">
-                          <motion.span
-                            className="w-2 h-2 rounded-full bg-current mr-3 opacity-60"
-                            whileHover={{ scale: 1.5 }}
-                            transition={{ duration: 0.2 }}
-                          />
-                          {menuItem.title}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  ) : null
                 )}
-              </motion.div>
-              
-              {/* Mobile Auth Section */}
-              {!isAuthenticated && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.4 }}
-                  className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex flex-col space-y-3">
-                    {/* Entrar */}
-                    <Link
-                      href="/auth/signin"
-                      className="flex items-center justify-center py-3 px-6 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-all duration-300 bg-white/50 backdrop-blur-sm"
-                      onClick={() => setNavigationOpen(false)}
-                    >
-                      <span className="flex items-center">
-                        Entrar
-                      </span>
-                    </Link>
-                    
-                    {/* Criar Conta */}
-                    <Link
-                      href="/auth/signup"
-                      className="flex items-center justify-center py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-orange-500 text-white font-semibold hover:shadow-lg transition-all duration-300"
-                      onClick={() => setNavigationOpen(false)}
-                    >
-                      <span className="flex items-center">
-                        Criar Conta
-                      </span>
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
+              </Link>
+            </motion.div>
+          ) : null
         )}
-      </AnimatePresence>
-    </motion.header>
-  );
+      </nav>        {/* Enhanced Auth Buttons */}
+      <motion.div 
+        className="flex items-center gap-6"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: shouldReduceMotion ? 0 : 0.5, duration: shouldReduceMotion ? 0.3 : 0.6 }}
+      >
+        {isAuthenticated ? (
+          <NavAuthenticated />
+        ) : (
+          <NavUnauthenticated />
+        )}
+      </motion.div>
+
+      {/* Revolutionary Mobile Button */}
+      <motion.button
+        aria-label="Mobile Menu"
+        className="block xl:hidden relative w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-gray-700 dark:text-gray-300 focus:outline-none overflow-hidden group"
+        onClick={() => setNavigationOpen(!navigationOpen)}
+        whileHover={{ scale: shouldReduceMotion ? 1 : 1.1 }}
+        whileTap={{ scale: shouldReduceMotion ? 1 : 0.9 }}
+      >
+        {/* Magical background */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          animate={{ 
+            scale: navigationOpen ? 1 : 0,
+            rotate: navigationOpen ? 180 : 0 
+          }}
+          transition={{ duration: 0.3 }}
+        />
+        
+        {/* Animated hamburger lines */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-5 h-4">
+            <motion.span
+              className="absolute left-0 w-5 h-0.5 bg-current rounded-full"
+              animate={{
+                rotate: navigationOpen ? 45 : 0,
+                y: navigationOpen ? 8 : 2,
+                scale: navigationOpen ? 0.8 : 1
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            />
+            <motion.span
+              className="absolute left-0 top-2 w-5 h-0.5 bg-current rounded-full"
+              animate={{
+                opacity: navigationOpen ? 0 : 1,
+                x: navigationOpen ? 20 : 0
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            />
+            <motion.span
+              className="absolute left-0 w-5 h-0.5 bg-current rounded-full"
+              animate={{
+                rotate: navigationOpen ? -45 : 0,
+                y: navigationOpen ? -8 : 14,
+                scale: navigationOpen ? 0.8 : 1
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            />
+          </div>
+        </div>
+      </motion.button>
+    </div>      {/* Revolutionary Mobile Menu */}
+    <AnimatePresence>
+      {navigationOpen && (
+        <motion.div
+          variants={mobileMenuVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="xl:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl dark:bg-black/95 border-t border-white/20 dark:border-white/10 shadow-2xl"
+        >
+          {/* Background magic */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-orange-500/5 to-transparent" />
+          
+          <div className="relative container mx-auto px-4 py-8">
+            <motion.div className="flex flex-col space-y-2">
+              {menuData.map((menuItem, index) =>
+                menuItem.path ? (
+                  <motion.div
+                    key={menuItem.id}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.4 }}
+                    className="relative"
+                  >
+                    <Link
+                      href={menuItem.path}
+                      className={`block text-lg font-medium transition-all duration-300 py-4 px-6 rounded-2xl relative group overflow-hidden ${
+                        pathUrl === menuItem.path
+                          ? "text-white"
+                          : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
+                      }`}
+                      onClick={() => setNavigationOpen(false)}
+                    >
+                      {/* Active/Hover background */}
+                      {pathUrl === menuItem.path ? (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-2xl"
+                          layoutId="mobileActiveTab"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      ) : (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          whileHover={{ scale: 1.02 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                      )}
+                      
+                      <span className="relative z-10 flex items-center">
+                        <motion.span
+                          className="w-2 h-2 rounded-full bg-current mr-3 opacity-60"
+                          whileHover={{ scale: 1.5 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                        {menuItem.title}
+                      </span>
+                    </Link>
+                  </motion.div>
+                ) : null
+              )}
+            </motion.div>
+            
+            {/* Mobile Auth Section */}
+            {!isAuthenticated && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+                className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex flex-col space-y-3">
+                  {/* Entrar */}
+                  <Link
+                    href="/auth/signin"
+                    className="flex items-center justify-center py-3 px-6 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                    onClick={() => setNavigationOpen(false)}
+                  >
+                    <span className="flex items-center">
+                      Entrar
+                    </span>
+                  </Link>
+                  
+                  {/* Criar Conta */}
+                  <Link
+                    href="/auth/signup"
+                    className="flex items-center justify-center py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-orange-500 text-white font-semibold hover:shadow-lg transition-all duration-300"
+                    onClick={() => setNavigationOpen(false)}
+                  >
+                    <span className="flex items-center">
+                      Criar Conta
+                    </span>
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.header>
+);
 };
 
 export default Header;

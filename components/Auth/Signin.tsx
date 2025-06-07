@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/services/authService";
 import { useAuth } from "@/app/context/AuthContext";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { 
   Loader2, 
   Plane, 
@@ -23,6 +24,7 @@ import {
 import { toast } from "sonner";
 
 const Signin = () => {
+  const { shouldReduceMotion } = useReducedMotion();
   const [data, setData] = useState({
     email: "",
     senha: "",
@@ -97,21 +99,24 @@ const Signin = () => {
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100 flex flex-col">
       {/* Background with Simple Animated Icons */}
       <div className="absolute inset-0 z-10">
-        {/* Animated Background Gradient */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
-          animate={{
-            background: [
-              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))",
-              "linear-gradient(135deg, rgba(255, 165, 0, 0.08), rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08))",
-              "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))"
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
+        {/* Background Gradient - estático se movimento reduzido */}
+        {shouldReduceMotion ? (
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-100/15 via-orange-50/10 to-blue-50/20" />
+        ) : (
+          <motion.div
+            className="absolute inset-0"
+            animate={{
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              background: "linear-gradient(45deg, rgba(135, 206, 235, 0.12), rgba(255, 165, 0, 0.08), rgba(173, 216, 230, 0.12))"
+            }}
+          />
+        )}
 
-        {/* Simple Floating Particles */}
-        {Array.from({ length: 12 }).map((_, i) => (
+        {/* Floating Particles - reduzidos para movimento limitado */}
+        {!shouldReduceMotion && Array.from({ length: 6 }).map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-gradient-to-r from-primary/40 to-orange-500/40 rounded-full"
@@ -120,13 +125,13 @@ const Signin = () => {
               left: `${Math.random() * 100}%`,
             }}
             animate={{ 
-              y: [0, -80, 0],
-              x: [0, Math.random() * 20 - 10, 0],
-              opacity: [0, 0.6, 0],
+              translateY: [0, -60, 0],
+              translateX: [0, Math.random() * 15 - 7.5, 0],
+              opacity: [0, 0.4, 0],
               scale: [0, 1, 0]
             }}
             transition={{ 
-              duration: 6 + Math.random() * 3,
+              duration: 8 + Math.random() * 4,
               repeat: Infinity,
               delay: Math.random() * 6,
               ease: "easeInOut"
@@ -134,148 +139,181 @@ const Signin = () => {
           />
         ))}
 
-        {/* Travel Icons with Simple Animations */}
-        <motion.div
-          className="absolute top-24 right-20"
-          animate={{ 
-            y: [0, -15, 0],
-            rotate: [0, 8, 0]
-          }}
-          transition={{ 
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <Plane className="w-7 h-7 text-orange-500/30 drop-shadow-lg" />
-        </motion.div>
+        {/* Travel Icons - otimizados */}
+        {shouldReduceMotion ? (
+          <>
+            <div className="absolute top-24 right-20">
+              <Plane className="w-7 h-7 text-orange-500/20 drop-shadow-lg" />
+            </div>
+            <div className="absolute top-32 left-16">
+              <MapPin className="w-8 h-8 text-blue-500/20 drop-shadow-lg" />
+            </div>
+            <div className="absolute bottom-48 left-20">
+              <Compass className="w-9 h-9 text-green-500/20 drop-shadow-lg" />
+            </div>
+            <div className="absolute top-48 left-40">
+              <Camera className="w-6 h-6 text-purple-500/20 drop-shadow-lg" />
+            </div>
+          </>
+        ) : (
+          <>
+            <motion.div
+              className="absolute top-24 right-20"
+              animate={{ 
+                translateY: [0, -15, 0],
+                rotate: [0, 8, 0]
+              }}
+              transition={{ 
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+                repeatType: "reverse"
+              }}
+            >
+              <Plane className="w-7 h-7 text-orange-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute top-32 left-16"
-          animate={{ 
-            y: [0, 12, 0],
-            rotate: [0, -12, 0]
-          }}
-          transition={{ 
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        >
-          <MapPin className="w-8 h-8 text-blue-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute top-32 left-16"
+              animate={{ 
+                translateY: [0, 12, 0],
+                rotate: [0, -12, 0]
+              }}
+              transition={{ 
+                duration: 7,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+                repeatType: "reverse"
+              }}
+            >
+              <MapPin className="w-8 h-8 text-blue-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute bottom-48 left-20"
-          animate={{ 
-            y: [0, -18, 0],
-            rotate: [0, 15, 0]
-          }}
-          transition={{ 
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5
-          }}
-        >
-          <Compass className="w-9 h-9 text-green-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute bottom-48 left-20"
+              animate={{ 
+                translateY: [0, -18, 0],
+                rotate: [0, 15, 0]
+              }}
+              transition={{ 
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1.5,
+                repeatType: "reverse"
+              }}
+            >
+              <Compass className="w-9 h-9 text-green-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute top-48 left-40"
-          animate={{ 
-            y: [0, -10, 0],
-            x: [0, 8, 0]
-          }}
-          transition={{ 
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-        >
-          <Camera className="w-6 h-6 text-purple-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute top-48 left-40"
+              animate={{ 
+                translateY: [0, -10, 0],
+                translateX: [0, 8, 0]
+              }}
+              transition={{ 
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5,
+                repeatType: "reverse"
+              }}
+            >
+              <Camera className="w-6 h-6 text-purple-500/30 drop-shadow-lg" />
+            </motion.div>
+          </>
+        )}
 
-        <motion.div
-          className="absolute bottom-40 right-24"
-          animate={{ 
-            y: [0, 15, 0],
-            rotate: [0, -8, 0]
-          }}
-          transition={{ 
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-        >
-          <Map className="w-7 h-7 text-red-500/30 drop-shadow-lg" />
-        </motion.div>
+        {/* Menos ícones em movimento reduzido para não sobrecarregar */}
+        {!shouldReduceMotion && (
+          <>
+            <motion.div
+              className="absolute bottom-40 right-24"
+              animate={{ 
+                translateY: [0, 15, 0],
+                rotate: [0, -8, 0]
+              }}
+              transition={{ 
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 2,
+                repeatType: "reverse"
+              }}
+            >
+              <Map className="w-7 h-7 text-red-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute top-64 right-40"
-          animate={{ 
-            y: [0, -12, 0],
-            rotate: [0, 10, 0]
-          }}
-          transition={{ 
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
-        >
-          <Luggage className="w-8 h-8 text-indigo-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute top-64 right-40"
+              animate={{ 
+                translateY: [0, -12, 0],
+                rotate: [0, 10, 0]
+              }}
+              transition={{ 
+                duration: 7,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+                repeatType: "reverse"
+              }}
+            >
+              <Luggage className="w-8 h-8 text-indigo-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute bottom-56 right-48"
-          animate={{ 
-            y: [0, 8, 0],
-            x: [0, -6, 0]
-          }}
-          transition={{ 
-            duration: 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2.5
-          }}
-        >
-          <Bus className="w-7 h-7 text-yellow-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute bottom-56 right-48"
+              animate={{ 
+                translateY: [0, 8, 0],
+                translateX: [0, -6, 0]
+              }}
+              transition={{ 
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 2.5,
+                repeatType: "reverse"
+              }}
+            >
+              <Bus className="w-7 h-7 text-yellow-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute top-36 right-64"
-          animate={{ 
-            y: [0, -20, 0],
-            rotate: [0, 360, 0]
-          }}
-          transition={{ 
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <Globe className="w-9 h-9 text-teal-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute top-36 right-64"
+              animate={{ 
+                translateY: [0, -20, 0],
+                rotate: [0, 180, 0]
+              }}
+              transition={{ 
+                duration: 12,
+                repeat: Infinity,
+                ease: "easeInOut",
+                repeatType: "reverse"
+              }}
+            >
+              <Globe className="w-9 h-9 text-teal-500/30 drop-shadow-lg" />
+            </motion.div>
 
-        <motion.div
-          className="absolute bottom-32 left-48"
-          animate={{ 
-            y: [0, -8, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 3
-          }}
-        >
-          <Heart className="w-5 h-5 text-pink-500/30 drop-shadow-lg" />
-        </motion.div>
+            <motion.div
+              className="absolute bottom-32 left-48"
+              animate={{ 
+                translateY: [0, -8, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 3,
+                repeatType: "reverse"
+              }}
+            >
+              <Heart className="w-5 h-5 text-pink-500/30 drop-shadow-lg" />
+            </motion.div>
+          </>
+        )}
       </div>
 
       {/* Loading Overlay */}

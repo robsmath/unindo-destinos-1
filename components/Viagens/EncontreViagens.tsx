@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { ViagemFiltroDTO } from "@/models/ViagemFiltroDTO";
 import { ViagemBuscaDTO } from "@/models/ViagemBuscaDTO";
 import { buscarViagens } from "@/services/viagemService";
-import { getImage } from "@/services/unsplashService";
 import SmartImage from "@/components/Common/SmartImage";
 import { 
   Loader2, 
@@ -53,7 +52,7 @@ const EncontreViagens = () => {
     status: undefined,
     criadorNome: "",
   });const [viagens, setViagens] = useState<ViagemBuscaDTO[]>([]);
-  const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [carregandoTela, setCarregandoTela] = useState(true);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [viagemSelecionada, setViagemSelecionada] = useState<ViagemBuscaDTO | null>(null);
@@ -82,24 +81,7 @@ const EncontreViagens = () => {
       valorMedioMax: valor,
     }));
   };
-  const carregarImagens = async (viagensLista: ViagemBuscaDTO[]) => {
-    const novasImagens: { [key: number]: string } = {};
-    
-    await Promise.all(
-      viagensLista.map(async (viagem) => {
-        try {
-          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
-        } catch (error) {
-          console.warn(`Erro ao carregar imagem para viagem ${viagem.id}:`, error);
-          novasImagens[viagem.id] = "/images/common/beach.jpg";
-        }
-      })
-    );
-    
-    setImagensViagens(novasImagens);
-  }; 
+  // Função removida - agora usa viagem.imagemUrl diretamente 
   const buscar = async () => {
     setLoading(true);
     try {
@@ -114,7 +96,6 @@ const EncontreViagens = () => {
       
       const res = await buscarViagens(filtrosParaEnviar);
       setViagens(res);
-      await carregarImagens(res);
       if (res.length === 0) {
         toast.info("Nenhuma viagem encontrada.");
       }
@@ -241,7 +222,7 @@ const EncontreViagens = () => {
         onClick={() => abrirDetalhesViagem(viagem)}
       >
         <SmartImage
-          src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
+          src={viagem.imagemUrl || "/images/common/beach.jpg"}
           alt={`Viagem para ${viagem.destino}`}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
@@ -787,7 +768,7 @@ const EncontreViagens = () => {
                     <div>
                       <div className="relative h-48 overflow-hidden rounded-xl mb-4">
                         <SmartImage
-                          src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
+                          src={viagem.imagemUrl || "/images/common/beach.jpg"}
                           alt={`Viagem para ${viagem.destino}`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -896,7 +877,7 @@ const EncontreViagens = () => {
             setModalDetalhesAberto(false);
             setViagemDetalhesId(null);
           }}
-          imagemViagem={viagemDetalhesId ? imagensViagens[viagemDetalhesId] : undefined}
+          imagemViagem={viagemDetalhesId ? viagens.find(v => v.id === viagemDetalhesId)?.imagemUrl : undefined}
         />
       )}
     </div>

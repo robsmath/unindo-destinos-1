@@ -35,4 +35,5 @@ export interface ViagemDTO {
   descricao?: string;
   numeroMaximoParticipantes?: number;
   criadorViagemId?: number;
+  imagemUrl?: string;
 }

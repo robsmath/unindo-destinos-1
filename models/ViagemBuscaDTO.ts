@@ -34,4 +34,6 @@ export interface ViagemBuscaDTO {
   descricao?: string;
   quantidadeParticipantes: number;
   numeroMaximoParticipantes?: number;
+
+  imagemUrl?: string;
 }

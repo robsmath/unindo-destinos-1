@@ -5,9 +5,6 @@
 /* Responsive styles for hero section */
 @import '../styles/hero-responsive.css';
 
-/* third-party libraries CSS */
-@import 'react-phone-input-2/lib/style.css';
-
 .testimonial-01 .swiper-pagination-bullet {
   @apply h-2.5 w-2.5 bg-stroke opacity-100;
 }
@@ -111,6 +108,21 @@
   .img-white {
     filter: invert(0%) sepia(96%) saturate(15%) hue-rotate(249deg)
       brightness(100%) contrast(105%);
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 

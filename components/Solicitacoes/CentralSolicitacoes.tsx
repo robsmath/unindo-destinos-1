@@ -40,7 +40,7 @@ type AcaoResposta = {
 
 const CentralSolicitacoes = () => {
   const { invalidateCache } = useCacheInvalidation();
-  const { imagensViagens, recarregarViagens } = usePerfil();
+  const { recarregarViagens } = usePerfil();
   const {
     data: solicitacoes,
     loading: carregando,
@@ -513,7 +513,7 @@ const CentralSolicitacoes = () => {
             setCarregandoViagemId(null);
           }}
           exibirAvisoConvite
-          imagemViagem={imagensViagens[viagemAbertaId]}
+          imagemViagem={undefined}
         />
       )}
 

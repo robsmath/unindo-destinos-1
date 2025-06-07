@@ -5,14 +5,28 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
-import Carousel from "@/components/Common/Carousel";
-import LoadingScreen from "@/components/Common/LoadingScreen";
-import AnimatedStats from "./AnimatedStats";
-import Testimonials from "./Testimonials";
+import dynamic from "next/dynamic";
 import EnhancedHero from "./EnhancedHero";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { useAuth } from "@/app/context/AuthContext";
 import HomeLogada from "./HomeLogada";
+import LoadingScreen from "@/components/Common/LoadingScreen";
+
+// Carregamento dinâmico dos componentes mais pesados
+const AnimatedStats = dynamic(() => import("./AnimatedStats"), {
+  loading: () => <div className="h-32 w-full animate-pulse bg-gray-100 rounded-2xl" />,
+  ssr: false,
+});
+
+const Carousel = dynamic(() => import("@/components/Common/Carousel"), {
+  loading: () => <div className="h-48 w-full animate-pulse bg-gray-100 rounded-2xl" />,
+  ssr: false,
+});
+
+const Testimonials = dynamic(() => import("./Testimonials"), {
+  loading: () => <div className="h-64 w-full animate-pulse bg-gray-100 rounded-2xl" />,
+  ssr: false,
+});
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -58,6 +72,15 @@ export default function Home() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
+  // Detectar mobile para ajustar animações custosas
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
     whileInView: { opacity: 1, y: 0 },
@@ -95,37 +118,42 @@ export default function Home() {
         {/* Background Gradient Animation */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-orange-500/5 to-primary/10 animate-pulse" />
         
-        {/* Floating Elements - Ocultos em telas muito pequenas */}
-        <motion.div
-          animate={{ 
-            y: [0, -20, 0],
-            rotate: [0, 5, 0]
-          }}
-          transition={{ 
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-20 left-4 md:left-10 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary to-orange-500 rounded-full opacity-20 blur-xl hidden sm:block"
-        />
+        {/* Floating Elements – desativados em mobile para performance */}
+        {!isMobile && (
+          <motion.div
+            animate={{ 
+              y: [0, -20, 0],
+              rotate: [0, 5, 0]
+            }}
+            transition={{ 
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-20 left-4 md:left-10 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary to-orange-500 rounded-full opacity-20 blur-xl hidden sm:block"
+          />
+        )}
         
+        {!isMobile && (
         <motion.div
-          animate={{ 
-            y: [0, 20, 0],
-            rotate: [0, -5, 0]
-          }}
-          transition={{ 
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-          className="absolute bottom-20 right-4 md:right-10 w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-orange-500 to-primary rounded-full opacity-15 blur-2xl hidden sm:block"
-        />
+            animate={{ 
+              y: [0, 20, 0],
+              rotate: [0, -5, 0]
+            }}
+            transition={{ 
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2
+            }}
+            className="absolute bottom-20 right-4 md:right-10 w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-orange-500 to-primary rounded-full opacity-15 blur-2xl hidden sm:block"
+          />
+        )}
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center w-full max-w-7xl">
           <EnhancedHero />
         </div>        {/* Scroll Indicator - Responsivo */}
+        {!isMobile && (
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -139,6 +167,7 @@ export default function Home() {
             />
           </div>
         </motion.div>
+        )}
       </motion.section>      {/* About Section */}
       <motion.section 
         {...fadeInUp}

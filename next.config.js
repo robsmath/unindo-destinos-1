@@ -1,8 +1,13 @@
 /** @type {import('next').NextConfig} */
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "http",
@@ -35,6 +40,9 @@ const nextConfig = {
       },
     ];
   },
+  experimental: {
+    // Outras configurações experimentais podem ser adicionadas aqui
+  },
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

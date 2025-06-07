@@ -1,11 +1,9 @@
 "use client";
 
-
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { getUsuarioLogado } from "@/services/userService";
 import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
 import { getMinhasViagens } from "@/services/viagemService";
-import { getImage } from "@/services/unsplashService";
 import { UsuarioDTO } from "@/models/UsuarioDTO";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { MinhasViagensDTO } from "@/models/MinhasViagensDTO";
@@ -15,7 +13,6 @@ interface PerfilContextType {
   usuario: UsuarioDTO | null;
   preferencias: PreferenciasDTO | null;
   viagens: MinhasViagensDTO[];
-  imagensViagens: { [key: number]: string };
   carregarPerfil: (forcar?: boolean) => Promise<void>;
   atualizarViagens: () => Promise<void>;
   recarregarViagens: () => Promise<void>;
@@ -29,25 +26,9 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
   const [usuario, setUsuario] = useState<UsuarioDTO | null>(null);
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
   const [viagens, setViagens] = useState<MinhasViagensDTO[]>([]);
-  const [imagensViagens, setImagensViagens] = useState<{ [key: number]: string }>({});
   const [carregado, setCarregado] = useState(false);
-  const { atualizarUsuario, token, isAuthenticated, logout } = useAuth();  const carregarImagens = useCallback(async (viagensLista: MinhasViagensDTO[]) => {
-    const novasImagens: { [key: number]: string } = {};
-    
-    await Promise.all(
-      viagensLista.map(async ({ viagem }) => {        try {
-          const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
-          const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
-          novasImagens[viagem.id] = imagem || "/images/common/beach.jpg";
-        } catch (error) {
-          console.warn(`Erro ao carregar imagem para viagem ${viagem.id}:`, error);
-          novasImagens[viagem.id] = "/images/common/beach.jpg";
-        }
-      })
-    );
-    
-    setImagensViagens(novasImagens);
-  }, []);
+  const { atualizarUsuario, token, isAuthenticated, logout } = useAuth();
+
   const carregarPerfil = useCallback(async (forcar: boolean = false) => {
     if (!isAuthenticated) {
       console.warn("Usuário não autenticado. Não é possível carregar perfil.");
@@ -74,15 +55,15 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
         email: usuarioRes.email,
         fotoPerfil: usuarioRes.fotoPerfil,
       });
-
-      await carregarImagens(viagensRes);
     } catch (err: any) {
       console.error("Erro ao carregar perfil", err);
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         logout();
       }
     }
-  }, [isAuthenticated, carregado, atualizarUsuario, carregarImagens, logout]);  const atualizarViagens = useCallback(async () => {
+  }, [isAuthenticated, carregado, atualizarUsuario, logout]);
+
+  const atualizarViagens = useCallback(async () => {
     if (viagens.length > 0 && carregado) {
       return;
     }
@@ -90,21 +71,21 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const viagensRes = await getMinhasViagens();
       setViagens(viagensRes);
-      await carregarImagens(viagensRes);
     } catch (err) {
       console.error("Erro ao atualizar viagens", err);
     }
-  }, [viagens.length, carregado, carregarImagens]);
+  }, [viagens.length, carregado]);
 
   const recarregarViagens = useCallback(async () => {
     try {
       const viagensRes = await getMinhasViagens();
       setViagens(viagensRes);
-      await carregarImagens(viagensRes);
     } catch (err) {
       console.error("Erro ao recarregar viagens", err);
-    }  }, [carregarImagens]);
-    const carregarUsuario = useCallback(async (forcar: boolean = false) => {
+    }
+  }, []);
+
+  const carregarUsuario = useCallback(async (forcar: boolean = false) => {
     if (!isAuthenticated) {
       console.warn("Usuário não autenticado. Não é possível carregar dados do usuário.");
       return;
@@ -123,12 +104,14 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
         nome: usuarioRes.nome,
         email: usuarioRes.email,
         fotoPerfil: usuarioRes.fotoPerfil,
-      });    } catch (err: any) {
+      });
+    } catch (err: any) {
       console.error("Erro ao carregar dados do usuário", err);
       // Interceptor da API vai cuidar dos erros 401/403
     }
   }, [isAuthenticated, usuario, carregado, atualizarUsuario, logout]);
-    const carregarPreferencias = useCallback(async (forcar: boolean = false) => {
+
+  const carregarPreferencias = useCallback(async (forcar: boolean = false) => {
     if (!isAuthenticated) {
       console.warn("Usuário não autenticado. Não é possível carregar preferências.");
       return;
@@ -140,11 +123,13 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       const preferenciasRes = await getPreferenciasDoUsuario();
-      setPreferencias(preferenciasRes);    } catch (err: any) {
+      setPreferencias(preferenciasRes);
+    } catch (err: any) {
       console.error("Erro ao carregar preferências", err);
       // Interceptor da API vai cuidar dos erros 401/403
     }
   }, [isAuthenticated, preferencias, carregado, logout]);
+
   useEffect(() => {
     if (isAuthenticated && !carregado) {
       carregarPerfil();
@@ -152,17 +137,16 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       setUsuario(null);
       setPreferencias(null);
       setViagens([]);
-      setImagensViagens({});
       setCarregado(false);
     }
   }, [isAuthenticated, carregado, carregarPerfil]);
 
-  return (    <PerfilContext.Provider
+  return (
+    <PerfilContext.Provider
       value={{
         usuario,
         preferencias,
         viagens,
-        imagensViagens,
         carregarPerfil,
         atualizarViagens,
         recarregarViagens,

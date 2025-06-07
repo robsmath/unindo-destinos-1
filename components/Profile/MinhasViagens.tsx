@@ -22,7 +22,7 @@ import {
 
 const MinhasViagens = () => {
   const router = useRouter();
-  const { viagens, imagensViagens, recarregarViagens } = usePerfil();
+  const { viagens, recarregarViagens } = usePerfil();
   const { registerInvalidationCallback, unregisterInvalidationCallback } = useCacheInvalidation();
 
   const [ordenacao, setOrdenacao] = useState<"dataDesc" | "dataAsc" | "az" | "za">("dataDesc");
@@ -242,7 +242,7 @@ const MinhasViagens = () => {
                 onClick={() => setViagemSelecionadaId(viagem.id)}
               >
                 <div className="relative h-48 overflow-hidden">                  <SmartImage
-                    src={imagensViagens[viagem.id] || "/images/common/beach.jpg"}
+                                              src={viagem.imagemUrl || "/images/common/beach.jpg"}
                     alt={viagem.destino}
                     className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.02] ${
                       ["CONCLUIDA", "CANCELADA"].includes(viagem.status) ? "grayscale" : ""
@@ -408,7 +408,7 @@ const MinhasViagens = () => {
           viagemId={viagemSelecionadaId}
           open={viagemSelecionadaId !== null}
           onClose={() => setViagemSelecionadaId(null)}
-          imagemViagem={imagensViagens[viagemSelecionadaId]}
+          imagemViagem={viagemSelecionadaId ? viagens.find(v => v.viagem.id === viagemSelecionadaId)?.viagem.imagemUrl : undefined}
         />
       )}
     </>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface TypingEffectProps {
   texts: string[];
@@ -59,18 +60,40 @@ const TypingEffect: React.FC<TypingEffectProps> = ({
 };
 
 const FloatingElements = () => {
+  const { shouldReduceMotion } = useReducedMotion();
+
+  if (shouldReduceMotion) {
+    return (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-16 md:top-20 left-[5%] md:left-[10%] text-2xl md:text-4xl hidden sm:block opacity-30">
+          ✈️
+        </div>
+        <div className="absolute top-20 md:top-28 right-[2%] md:right-[8%] lg:right-[12%] text-xl md:text-3xl hidden sm:block opacity-30">
+          🌍
+        </div>
+        <div className="absolute bottom-32 md:bottom-40 left-[10%] md:left-[20%] text-xl md:text-3xl hidden md:block opacity-30">
+          🗺️
+        </div>
+        <div className="absolute bottom-24 md:bottom-32 right-[5%] md:right-[10%] text-2xl md:text-4xl hidden sm:block opacity-30">
+          🎒
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Floating Icons - Responsivos */}
       <motion.div
         animate={{ 
-          y: [0, -20, 0],
+          translateY: [0, -20, 0],
           rotate: [0, 10, 0]
         }}
         transition={{ 
-          duration: 6,
+          duration: 8,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut",
+          repeatType: "reverse"
         }}
         className="absolute top-16 md:top-20 left-[5%] md:left-[10%] text-2xl md:text-4xl hidden sm:block"
       >
@@ -78,14 +101,15 @@ const FloatingElements = () => {
       </motion.div>
         <motion.div
         animate={{ 
-          y: [0, 20, 0],
+          translateY: [0, 20, 0],
           rotate: [0, -10, 0]
         }}
         transition={{ 
-          duration: 8,
+          duration: 10,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: 2
+          delay: 2,
+          repeatType: "reverse"
         }}
         className="absolute top-20 md:top-28 right-[2%] md:right-[8%] lg:right-[12%] text-xl md:text-3xl hidden sm:block z-10"
       >
@@ -94,14 +118,15 @@ const FloatingElements = () => {
       
       <motion.div
         animate={{ 
-          y: [0, -15, 0],
-          x: [0, 10, 0]
+          translateY: [0, -15, 0],
+          translateX: [0, 10, 0]
         }}
         transition={{ 
-          duration: 7,
+          duration: 9,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: 1
+          delay: 1,
+          repeatType: "reverse"
         }}
         className="absolute bottom-32 md:bottom-40 left-[10%] md:left-[20%] text-xl md:text-3xl hidden md:block"
       >
@@ -110,46 +135,49 @@ const FloatingElements = () => {
       
       <motion.div
         animate={{ 
-          y: [0, 25, 0],
+          translateY: [0, 25, 0],
           rotate: [0, 15, 0]
         }}
         transition={{ 
-          duration: 9,
+          duration: 12,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: 3
+          delay: 3,
+          repeatType: "reverse"
         }}
         className="absolute bottom-24 md:bottom-32 right-[5%] md:right-[10%] text-2xl md:text-4xl hidden sm:block"
       >
         🎒
       </motion.div>
 
-      {/* Gradient Orbs - Menores em mobile */}
+      {/* Gradient Orbs - Animação mais suave */}
       <motion.div
         animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.6, 0.3]
-        }}
-        transition={{ 
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        className="absolute top-8 md:top-10 right-10 md:right-20 w-16 h-16 md:w-32 md:h-32 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-full blur-xl hidden sm:block"
-      />
-      
-      <motion.div
-        animate={{ 
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.5, 0.2]
+          scale: [1, 1.1, 1],
+          opacity: [0.2, 0.4, 0.2]
         }}
         transition={{ 
           duration: 6,
           repeat: Infinity,
           ease: "easeInOut",
-          delay: 2
+          repeatType: "reverse"
         }}
-        className="absolute bottom-16 md:bottom-20 left-10 md:left-20 w-20 h-20 md:w-40 md:h-40 bg-gradient-to-br from-orange-500/20 to-primary/20 rounded-full blur-2xl hidden sm:block"
+        className="absolute top-8 md:top-10 right-10 md:right-20 w-16 h-16 md:w-32 md:h-32 bg-gradient-to-br from-primary/15 to-orange-500/15 rounded-full blur-xl hidden sm:block"
+      />
+      
+      <motion.div
+        animate={{ 
+          scale: [1, 1.15, 1],
+          opacity: [0.15, 0.35, 0.15]
+        }}
+        transition={{ 
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 3,
+          repeatType: "reverse"
+        }}
+        className="absolute bottom-16 md:bottom-20 left-10 md:left-20 w-20 h-20 md:w-40 md:h-40 bg-gradient-to-br from-orange-500/15 to-primary/15 rounded-full blur-2xl hidden sm:block"
       />
     </div>
   );
@@ -158,6 +186,7 @@ const FloatingElements = () => {
 const EnhancedHero = () => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const { shouldReduceMotion } = useReducedMotion();
   
   const typingTexts = [
     "novas aventuras",
@@ -181,15 +210,26 @@ const EnhancedHero = () => {
       router.push('/auth/signin');
     }
   };
+
+  // Variantes otimizadas para animações
+  const fadeInVariants = {
+    initial: { opacity: 0, translateY: shouldReduceMotion ? 0 : 30 },
+    animate: { 
+      opacity: 1, 
+      translateY: 0,
+      transition: { duration: shouldReduceMotion ? 0.3 : 0.8 }
+    }
+  };
+
   return (
     <div className="relative w-full hero-section">
       <FloatingElements />
       
       <div className="relative z-10 text-center px-4 py-8 md:py-12 hero-main-content">
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
+          variants={fadeInVariants}
+          initial="initial"
+          animate="animate"
           className="hero-main-title font-bold mb-4 md:mb-6 leading-tight max-w-5xl mx-auto hero-content"
         >
           <span className="bg-gradient-to-r from-gray-900 via-primary to-orange-500 bg-clip-text text-transparent block mb-2 md:mb-0">
@@ -197,15 +237,19 @@ const EnhancedHero = () => {
           </span>
           <div className="hero-typing-container">
             <div className="typing-effect-wrapper">
-              <TypingEffect texts={typingTexts} />
+              <TypingEffect 
+                texts={typingTexts} 
+                speed={shouldReduceMotion ? 50 : 100}
+                deleteSpeed={shouldReduceMotion ? 25 : 50}
+              />
             </div>
           </div>
         </motion.h1>
         
         <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
+          variants={fadeInVariants}
+          initial="initial"
+          animate="animate"
           className="hero-description text-gray-600 mb-6 md:mb-8 font-medium max-w-4xl mx-auto leading-relaxed px-2 hero-content"
         >
           Descubra o mundo através dos olhos de outros viajantes apaixonados. 
@@ -213,9 +257,9 @@ const EnhancedHero = () => {
         </motion.p>
         
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.8 }}
+          variants={fadeInVariants}
+          initial="initial"
+          animate="animate"
           className="hero-buttons-container px-4"
         >          <motion.button
             onClick={handleComeceJornada}

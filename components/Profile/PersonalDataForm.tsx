@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaTimes } from "react-icons/fa";
 
 import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import { toast } from "sonner";
 import { Loader2, EyeOff, Eye, AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -514,9 +515,9 @@ const PersonalDataForm = () => {
             </label>            <div className="relative">
               <div className="phone-input-wrapper">
                 <PhoneInput
-                  country={'br'}
+                  country={"br"}
                   value={userData.telefone || ""}
-                  onChange={(phone) => handleInputChange("telefone", phone)}
+                  onChange={(phone) => handleInputChange("telefone", `+${phone}`)}
                   inputClass={`!w-full !pl-[70px] !pr-4 !py-4 !bg-white/70 !backdrop-blur-sm !border !rounded-2xl !focus:ring-2 !transition-all !duration-300 !text-gray-900 !text-base !h-[56px] !leading-none ${
                     validationErrors.telefone 
                       ? '!border-red-300 !focus:border-red-500 !focus:ring-red-200' 
