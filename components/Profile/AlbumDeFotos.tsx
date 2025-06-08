@@ -82,24 +82,42 @@ const GaleriaModal = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, currentIndex, fotos.length, onClose, onNavigate]);
 
-  // Navegação por swipe no mobile
-  const [startX, setStartX] = useState(0);
+  // Navegação por swipe no mobile - versão melhorada
+  const [swipeState, setSwipeState] = useState({
+    startX: 0,
+    startTime: 0,
+    isDragging: false
+  });
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setStartX(e.touches[0].clientX);
+    const touch = e.touches[0];
+    setSwipeState({
+      startX: touch.clientX,
+      startTime: Date.now(),
+      isDragging: true
+    });
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!swipeState.isDragging) return;
+    
     const endX = e.changedTouches[0].clientX;
-    const diff = startX - endX;
-
-    if (Math.abs(diff) > 50) { // Mínimo de 50px para considerar swipe
-      if (diff > 0 && currentIndex < fotos.length - 1) {
+    const deltaX = swipeState.startX - endX;
+    const deltaTime = Date.now() - swipeState.startTime;
+    const velocity = Math.abs(deltaX) / deltaTime; // pixels/ms
+    
+    // Limiar mais baixo para distância (30px) e considerar velocidade
+    const shouldNavigate = Math.abs(deltaX) > 30 || velocity > 0.5;
+    
+    if (shouldNavigate) {
+      if (deltaX > 0 && currentIndex < fotos.length - 1) {
         onNavigate(currentIndex + 1);
-      } else if (diff < 0 && currentIndex > 0) {
+      } else if (deltaX < 0 && currentIndex > 0) {
         onNavigate(currentIndex - 1);
       }
     }
+    
+    setSwipeState(prev => ({ ...prev, isDragging: false }));
   };
 
   if (!isOpen || !fotoAtual) return null;
