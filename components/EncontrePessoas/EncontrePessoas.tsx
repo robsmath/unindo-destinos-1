@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { UsuarioFiltroDTO } from "@/models/UsuarioFiltroDTO";
-import { buscarUsuarios } from "@/services/userService";
+import { buscarUsuarios, PageResponse } from "@/services/userService";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
@@ -49,6 +49,8 @@ import DenunciaModal from "@/components/Modals/DenunciaModal";
 import BloqueioModal from "@/components/Modals/BloqueioModal";
 import PerguntaBloqueioModal from "@/components/Modals/PerguntaBloqueioModal";
 import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
+import Pagination from "@/components/Common/Pagination";
+import ValueSlider from "@/components/Common/ValueSlider";
 
 const EncontrePessoas = () => {
   const { isAuthenticated } = useAuth();
@@ -74,6 +76,12 @@ const EncontrePessoas = () => {
   const [usuarios, setUsuarios] = useState<UsuarioBuscaDTO[]>([]);
   const [minhasViagens, setMinhasViagens] = useState<MinhasViagensDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(8);
   const [carregandoTela, setCarregandoTela] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioBuscaDTO | null>(null);
@@ -81,11 +89,6 @@ const EncontrePessoas = () => {
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [carregandoPreferencias, setCarregandoPreferencias] = useState(false);
-  const [valorMedioMaxInput, setValorMedioMaxInput] = useState(
-    filtros.valorMedioMax !== null && filtros.valorMedioMax !== undefined
-      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(filtros.valorMedioMax as number)
-      : ""
-  );
 
   // Hook para denúncia e bloqueio
   const {
@@ -196,7 +199,7 @@ const EncontrePessoas = () => {
     };
     return iconMap[tipo] || Car;
   };
-  const buscar = async () => {
+  const buscar = async (page: number = 0) => {
     const idadeMin = filtros.idadeMin;
     const idadeMax = filtros.idadeMax;
 
@@ -226,8 +229,13 @@ const EncontrePessoas = () => {
       if (filtros.acomodacaoCompartilhada !== undefined) filtrosLimpos.acomodacaoCompartilhada = filtros.acomodacaoCompartilhada;
       if (filtros.apenasVerificados !== undefined) filtrosLimpos.apenasVerificados = filtros.apenasVerificados;
 
-      const response = await buscarUsuarios(filtrosLimpos);
-      setUsuarios(response);
+      const response = await buscarUsuarios(filtrosLimpos, page, pageSize);
+      
+      // Atualizar estados de paginação
+      setUsuarios(response.content);
+      setCurrentPage(response.number);
+      setTotalPages(response.totalPages);
+      setTotalElements(response.totalElements);
     } catch (err: any) {
       console.error("Erro na busca:", err);
       console.error("Detalhes do erro:", {
@@ -272,8 +280,16 @@ const EncontrePessoas = () => {
       nome: "",
       email: "",
     });
-    setValorMedioMaxInput("");
     setUsuarios([]);
+    setCurrentPage(0);
+    setTotalPages(0);
+    setTotalElements(0);
+  };
+
+  const handlePageChange = (page: number) => {
+    // Scroll suave para o topo da página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    buscar(page);
   };
 
   const abrirModalConvite = async (usuario: UsuarioBuscaDTO, fecharOutroModal?: () => void) => {
@@ -291,20 +307,10 @@ const EncontrePessoas = () => {
     }
   };
 
-  const handleValorMedioChange = (
-    campo: "valorMedioMax",
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const valor = e.target.value;
-    setValorMedioMaxInput(valor);
-
-    // Remove caracteres não numéricos para conversão
-    const numeroLimpo = valor.replace(/[^\d]/g, "");
-    const numeroConvertido = numeroLimpo ? parseInt(numeroLimpo) / 100 : "";
-
+  const handleValorMedioChange = (valor: number) => {
     setFiltros((prev) => ({
       ...prev,
-      [campo]: numeroConvertido,
+      valorMedioMax: valor,
     }));
   };
 
@@ -345,7 +351,7 @@ const EncontrePessoas = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      buscar();
+      buscar(0);
     }
   };
 
@@ -596,7 +602,7 @@ const EncontrePessoas = () => {
               {/* Botões de Ação */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={buscar}
+                  onClick={() => buscar(0)}
                   className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
                   disabled={loading}
                 >
@@ -744,16 +750,14 @@ const EncontrePessoas = () => {
                   </div>
                   {/* Valor Médio Máximo */}
                   <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">
-                      Valor Médio Máximo (R$)
-                    </label>
-                    <input
-                      type="text"
-                      name="valorMedioMax"
-                      placeholder="Valor máximo..."
-                      value={valorMedioMaxInput}
-                      onChange={(e) => handleValorMedioChange("valorMedioMax", e)}
-                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
+                    <ValueSlider
+                      value={filtros.valorMedioMax || 0}
+                      onChange={handleValorMedioChange}
+                      min={0}
+                      max={20000}
+                      step={100}
+                      label="Valor Médio Máximo (R$)"
+                      className="mt-2"
                     />
                   </div>
                 </div>
@@ -994,6 +998,18 @@ const EncontrePessoas = () => {
                   </motion.div>
                 ))}
               </motion.div>
+            )}
+
+            {/* Paginação */}
+            {!loading && usuarios.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalElements={totalElements}
+                size={pageSize}
+                onPageChange={handlePageChange}
+                loading={loading}
+              />
             )}
           </div>
         </div>

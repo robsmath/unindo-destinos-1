@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ViagemFiltroDTO } from "@/models/ViagemFiltroDTO";
 import { ViagemBuscaDTO } from "@/models/ViagemBuscaDTO";
-import { buscarViagens } from "@/services/viagemService";
+import { buscarViagens, PageResponse } from "@/services/viagemService";
 import SmartImage from "@/components/Common/SmartImage";
 import { 
   Loader2, 
@@ -16,7 +16,12 @@ import {
   Clock,
   Plane,
   User,
-  RefreshCw
+  RefreshCw,
+  Heart,
+  Baby,
+  Cigarette,
+  Wine,
+  Bed
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
@@ -25,6 +30,7 @@ import { useRouter } from "next/navigation";
 import ViagemCardModal from "@/components/Viagens/ViagemCardModal";
 import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
 import ValueSlider from "@/components/Common/ValueSlider";
+import Pagination from "@/components/Common/Pagination";
 
 function limparFiltros(obj: any) {
   const novo: any = {};
@@ -50,10 +56,25 @@ const EncontreViagens = () => {
     dataFim: "",
     valorMedioMax: 0,
     status: undefined,
-    criadorNome: "",
-  });const [viagens, setViagens] = useState<ViagemBuscaDTO[]>([]);
+    generoPreferido: undefined,
+    idadeMinima: undefined,
+    idadeMaxima: undefined,
+    petFriendly: undefined,
+    aceitaCriancas: undefined,
+    aceitaFumantes: undefined,
+    aceitaBebidasAlcoolicas: undefined,
+    acomodacaoCompartilhada: undefined,
+    tipoAcomodacao: undefined,
+    tipoTransporte: undefined,
+  });  const [viagens, setViagens] = useState<ViagemBuscaDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [carregandoTela, setCarregandoTela] = useState(true);
+  
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(8);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [viagemSelecionada, setViagemSelecionada] = useState<ViagemBuscaDTO | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
@@ -82,21 +103,34 @@ const EncontreViagens = () => {
     }));
   };
   // Função removida - agora usa viagem.imagemUrl diretamente 
-  const buscar = async () => {
+  const buscar = async (page: number = 0) => {
+    const idadeMin = filtros.idadeMinima;
+    const idadeMax = filtros.idadeMaxima;
+
+    if (idadeMin !== undefined && idadeMax !== undefined && Number(idadeMin) > Number(idadeMax)) {
+      toast.warning("A idade mínima não pode ser maior que a idade máxima.");
+      return;
+    }
+
     setLoading(true);
     try {
       const filtrosLimpos = limparFiltros({
         ...filtros,
         destino: filtros.destino?.trim() || undefined,
-        criadorNome: filtros.criadorNome?.trim() || undefined,
         valorMedioMax: filtros.valorMedioMax === 0 ? undefined : filtros.valorMedioMax,
       });
 
       const filtrosParaEnviar = Object.keys(filtrosLimpos).length === 0 ? {} : filtrosLimpos;
       
-      const res = await buscarViagens(filtrosParaEnviar);
-      setViagens(res);
-      if (res.length === 0) {
+      const res = await buscarViagens(filtrosParaEnviar, page, pageSize);
+      
+      // Atualizar estados de paginação
+      setViagens(res.content);
+      setCurrentPage(res.number);
+      setTotalPages(res.totalPages);
+      setTotalElements(res.totalElements);
+      
+      if (res.content.length === 0) {
         toast.info("Nenhuma viagem encontrada.");
       }
     } catch (err: any) {
@@ -104,7 +138,8 @@ const EncontreViagens = () => {
     } finally {
       setLoading(false);
     }
-  };const limparTodosFiltros = () => {    setFiltros({
+  };  const limparTodosFiltros = () => {    
+    setFiltros({
       destino: "",
       estiloViagem: undefined,
       categoriaViagem: undefined,
@@ -112,8 +147,27 @@ const EncontreViagens = () => {
       dataFim: "",
       valorMedioMax: 0,
       status: undefined,
-      criadorNome: "",
+      generoPreferido: undefined,
+      idadeMinima: undefined,
+      idadeMaxima: undefined,
+      petFriendly: undefined,
+      aceitaCriancas: undefined,
+      aceitaFumantes: undefined,
+      aceitaBebidasAlcoolicas: undefined,
+      acomodacaoCompartilhada: undefined,
+      tipoAcomodacao: undefined,
+      tipoTransporte: undefined,
     });
+    setViagens([]);
+    setCurrentPage(0);
+    setTotalPages(0);
+    setTotalElements(0);
+  };
+
+  const handlePageChange = (page: number) => {
+    // Scroll suave para o topo da página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    buscar(page);
   };const formatarData = (dataISO: string) => {
     if (!dataISO) return "Data inválida";
     const data = new Date(dataISO);
@@ -288,6 +342,40 @@ const EncontreViagens = () => {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <User className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="truncate">Criador: {formatarNomeCompleto(viagem.criadorNome)}</span>
+          </div>
+
+          {/* Preferências da viagem */}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {viagem.petFriendly && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
+                <Heart className="w-3 h-3" />
+                Pet Friendly
+              </span>
+            )}
+            {viagem.aceitaCriancas && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                <Baby className="w-3 h-3" />
+                Crianças
+              </span>
+            )}
+            {viagem.aceitaFumantes && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                <Cigarette className="w-3 h-3" />
+                Fumantes
+              </span>
+            )}
+            {viagem.aceitaBebidasAlcoolicas && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
+                <Wine className="w-3 h-3" />
+                Bebidas
+              </span>
+            )}
+            {viagem.acomodacaoCompartilhada && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
+                <Bed className="w-3 h-3" />
+                Compartilhada
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -541,7 +629,7 @@ const EncontreViagens = () => {
                     onKeyDown={e => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        buscar();
+                        buscar(0);
                       }
                     }}
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
@@ -552,7 +640,7 @@ const EncontreViagens = () => {
               {/* Botões de Ação */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={buscar}
+                  onClick={() => buscar(0)}
                   className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-3 rounded-lg hover:scale-105 shadow-md transition-all duration-200 font-medium flex-1"
                   disabled={loading}
                 >
@@ -595,8 +683,61 @@ const EncontreViagens = () => {
                   <h3 className="text-lg font-semibold text-gray-800">Filtros Avançados</h3>
                 </div>
                 
-                {/* Linha 1: Tipo + Estilo + Status */}
+                {/* Linha 1: Gênero + Tipo de Acomodação + Tipo de Transporte */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Gênero Preferido */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Gênero Preferido</label>
+                    <select
+                      name="generoPreferido"
+                      value={filtros.generoPreferido || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="">Qualquer</option>
+                      <option value="MASCULINO">Masculino</option>
+                      <option value="FEMININO">Feminino</option>
+                      <option value="OUTRO">Outro</option>
+                      <option value="TANTO_FAZ">Tanto Faz</option>
+                    </select>
+                  </div>
+                  {/* Tipo de Acomodação */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Tipo de Acomodação</label>
+                    <select
+                      name="tipoAcomodacao"
+                      value={filtros.tipoAcomodacao || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="">Não tenho preferência</option>
+                      <option value="HOTEL">Hotel</option>
+                      <option value="HOSTEL">Hostel</option>
+                      <option value="AIRBNB">Airbnb</option>
+                      <option value="CAMPING">Camping</option>
+                    </select>
+                  </div>
+                  {/* Tipo de Transporte */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Tipo de Transporte</label>
+                    <select
+                      name="tipoTransporte"
+                      value={filtros.tipoTransporte || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="">Não tenho preferência</option>
+                      <option value="AVIAO">Avião</option>
+                      <option value="CARRO">Carro</option>
+                      <option value="ÔNIBUS">Ônibus</option>
+                      <option value="TREM">Trem</option>
+                      <option value="NAVIO">Navio</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Linha 2: Tipo do destino + Estilo + Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                   {/* Tipo do destino */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Tipo do destino</label>
@@ -653,8 +794,48 @@ const EncontreViagens = () => {
                   </div>
                 </div>
                 
-                {/* Linha 2: Datas + Valor */}
+                {/* Linha 3: Idades + Valor */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                  {/* Idade Mínima */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Idade Mínima</label>
+                    <input
+                      type="number"
+                      name="idadeMinima"
+                      min={18}
+                      value={filtros.idadeMinima || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  {/* Idade Máxima */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Idade Máxima</label>
+                    <input
+                      type="number"
+                      name="idadeMaxima"
+                      min={18}
+                      value={filtros.idadeMaxima || ""}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  {/* Valor máximo */}
+                  <div>
+                    <ValueSlider
+                      value={filtros.valorMedioMax || 0}
+                      onChange={handleValorMaximoChange}
+                      min={0}
+                      max={20000}
+                      step={100}
+                      label="Valor máximo por pessoa"
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+                
+                {/* Linha 4: Datas */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   {/* Data Inicial (de) */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (de)</label>
@@ -677,32 +858,31 @@ const EncontreViagens = () => {
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
-                  {/* Valor máximo */}
-                  <div>
-                    <ValueSlider
-                      value={filtros.valorMedioMax || 0}
-                      onChange={handleValorMaximoChange}
-                      min={0}
-                      max={20000}
-                      step={100}
-                      label="Valor máximo por pessoa"
-                      className="mt-2"
-                    />
-                  </div>
                 </div>
 
-                {/* Linha 3: Criador */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 block mb-2">Criador</label>
-                    <input
-                      type="text"
-                      name="criadorNome"
-                      placeholder="Nome do criador..."
-                      value={filtros.criadorNome}
-                      onChange={handleChange}
-                      className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
+                {/* Checkboxes de Preferências */}
+                <div className="mt-6">
+                  <label className="text-sm font-medium text-gray-700 block mb-3">Preferências de Viagem</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    {[
+                      { nome: "petFriendly", label: "Pet Friendly", icon: Heart },
+                      { nome: "aceitaCriancas", label: "Aceita Crianças", icon: Baby },
+                      { nome: "aceitaFumantes", label: "Aceita Fumantes", icon: Cigarette },
+                      { nome: "aceitaBebidasAlcoolicas", label: "Aceita Bebidas", icon: Wine },
+                      { nome: "acomodacaoCompartilhada", label: "Acomodação Compartilhada", icon: Bed },
+                    ].map(({ nome, label, icon: Icon }) => (
+                      <label key={nome} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          name={nome}
+                          checked={!!filtros[nome as keyof ViagemFiltroDTO]}
+                          onChange={handleChange}
+                          className="accent-primary rounded"
+                        />
+                        <Icon className="w-4 h-4 text-gray-600" />
+                        <span>{label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
@@ -827,6 +1007,40 @@ const EncontreViagens = () => {
                         </div>
                       </div>
 
+                      {/* Preferências da viagem */}
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {viagem.petFriendly && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
+                            <Heart className="w-3 h-3" />
+                            Pet Friendly
+                          </span>
+                        )}
+                        {viagem.aceitaCriancas && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
+                            <Baby className="w-3 h-3" />
+                            Crianças
+                          </span>
+                        )}
+                        {viagem.aceitaFumantes && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                            <Cigarette className="w-3 h-3" />
+                            Fumantes
+                          </span>
+                        )}
+                        {viagem.aceitaBebidasAlcoolicas && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
+                            <Wine className="w-3 h-3" />
+                            Bebidas
+                          </span>
+                        )}
+                        {viagem.acomodacaoCompartilhada && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
+                            <Bed className="w-3 h-3" />
+                            Compartilhada
+                          </span>
+                        )}
+                      </div>
+
                       {viagem.descricao && (
                         <div className="mt-3">
                           <p className="text-sm text-gray-600 line-clamp-2 italic">
@@ -854,6 +1068,18 @@ const EncontreViagens = () => {
                   </motion.div>
                 ))}
               </motion.div>
+            )}
+
+            {/* Paginação */}
+            {!loading && viagens.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalElements={totalElements}
+                size={pageSize}
+                onPageChange={handlePageChange}
+                loading={loading}
+              />
             )}
           </div>
         </div>

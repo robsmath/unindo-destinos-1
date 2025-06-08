@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 
 interface ValueSliderProps {
   value: number;
@@ -8,7 +9,7 @@ interface ValueSliderProps {
   min?: number;
   max?: number;
   step?: number;
-  label?: string;
+  label: string;
   className?: string;
 }
 
@@ -16,135 +17,114 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
   value,
   onChange,
   min = 0,
-  max = 100,
-  step = 1,
+  max = 20000,
+  step = 100,
   label,
   className = ""
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(Number(e.target.value));
-  };
+  const [isDragging, setIsDragging] = useState(false);
 
-  const formatValue = (val: number) => {
-    if (val >= 1000) {
-      return `R$ ${(val / 1000).toFixed(0)}k`;
-    }
-    return `R$ ${val.toLocaleString("pt-BR")}`;
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value);
+    onChange(newValue);
+  }, [onChange]);
+
+  const handleMouseDown = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const formatValue = (val: number): string => {
+    if (val === 0) return "Sem limite";
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(val);
   };
 
   const percentage = ((value - min) / (max - min)) * 100;
+
   return (
-    <div className={`space-y-3 ${className}`}>
-      {label && (
-        <label className="text-sm font-medium text-gray-700 block">
-          {label}: <span className="text-primary font-semibold">{formatValue(value)}</span>
-        </label>
-      )}
+    <div className={`w-full ${className}`}>
+      <label className="text-sm font-medium text-gray-700 block mb-2">
+        {label}
+      </label>
       
-      <div className="relative h-8 flex items-center">
-        {/* Track Background */}
-        <div className="w-full h-2 bg-gray-200 rounded-full absolute">
-          {/* Progress Fill */}
-          <div 
-            className="h-full bg-gradient-to-r from-primary to-orange-500 rounded-full transition-all duration-200"
-            style={{ width: `${percentage}%` }}
+      <div className="space-y-3">
+        {/* Display do valor */}
+        <motion.div 
+          className="text-center"
+          animate={{ scale: isDragging ? 1.05 : 1 }}
+          transition={{ duration: 0.1 }}
+        >
+          <span className={`inline-block px-3 py-1 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            value > 0 
+              ? 'bg-gradient-to-r from-primary to-orange-500 text-white shadow-md' 
+              : 'bg-gray-100 text-gray-600'
+          }`}>
+            {formatValue(value)}
+          </span>
+        </motion.div>
+
+        {/* Slider customizado */}
+        <div className="relative">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-gradient-to-r from-primary to-orange-500 rounded-full transition-all duration-200"
+              style={{ width: `${percentage}%` }}
+              animate={{ opacity: value > 0 ? 1 : 0.3 }}
+            />
+          </div>
+          
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={handleChange}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onTouchStart={handleMouseDown}
+            onTouchEnd={handleMouseUp}
+            className="absolute top-0 left-0 w-full h-2 opacity-0 cursor-pointer"
+            style={{
+              background: 'transparent',
+              outline: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none'
+            }}
+          />
+          
+          {/* Thumb customizado */}
+          <motion.div
+            className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white shadow-lg transition-all duration-200 ${
+              value > 0 
+                ? 'bg-gradient-to-r from-primary to-orange-500' 
+                : 'bg-gray-400'
+            }`}
+            style={{ left: `calc(${percentage}% - 10px)` }}
+            animate={{ 
+              scale: isDragging ? 1.2 : 1,
+              boxShadow: isDragging 
+                ? '0 4px 20px rgba(234, 88, 12, 0.4)' 
+                : '0 2px 8px rgba(0, 0, 0, 0.15)'
+            }}
+            transition={{ duration: 0.1 }}
           />
         </div>
-        
-        {/* Input Range - positioned above track for proper interaction */}
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={handleChange}
-          className="range-slider w-full h-8 bg-transparent cursor-pointer relative z-10"
-          style={{
-            background: 'transparent',
-          }}
-        />
+
+        {/* Labels de min/max */}
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>{formatValue(min)}</span>
+          <span>{formatValue(max)}</span>
+        </div>
       </div>
-      
-      <div className="flex justify-between text-xs text-gray-500">
-        <span className="font-medium">{formatValue(min)}</span>
-        <span className="font-medium">{formatValue(max)}</span>
-      </div>
-      
-      <style jsx>{`
-        .range-slider {
-          -webkit-appearance: none;
-          appearance: none;
-          background: transparent;
-          outline: none;
-        }
-        
-        .range-slider::-webkit-slider-track {
-          -webkit-appearance: none;
-          appearance: none;
-          background: transparent;
-          height: 8px;
-          border-radius: 4px;
-        }
-        
-        .range-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 20px;
-          height: 20px;
-          background: white;
-          border: 3px solid #f97316;
-          border-radius: 50%;
-          cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-          transition: all 0.2s ease;
-        }
-        
-        .range-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 0 0 2px rgba(249, 115, 22, 0.2);
-        }
-        
-        .range-slider::-webkit-slider-thumb:active {
-          transform: scale(1.05);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 3px rgba(249, 115, 22, 0.3);
-        }
-        
-        .range-slider::-moz-range-track {
-          background: transparent;
-          height: 8px;
-          border-radius: 4px;
-          border: none;
-        }
-        
-        .range-slider::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          background: white;
-          border: 3px solid #f97316;
-          border-radius: 50%;
-          cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          transition: all 0.2s ease;
-        }
-        
-        .range-slider::-moz-range-thumb:hover {
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .range-slider::-moz-range-thumb:active {
-          transform: scale(1.05);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        }
-        
-        /* Firefox specific styles */
-        .range-slider::-moz-range-progress {
-          background: linear-gradient(to right, #f97316, #ea580c);
-          height: 8px;
-          border-radius: 4px;
-        }
-      `}</style>
     </div>
   );
 };
