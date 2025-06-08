@@ -21,7 +21,6 @@ const Page = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100 px-4 pt-40 pb-24">
-      {/* Animated Background */}
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-primary/5 via-orange-500/5 to-transparent"
@@ -36,7 +35,6 @@ const Page = () => {
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         />
-          {/* Floating Elements */}
         {[...Array(12)].map((_, i) => (
           <motion.div
             key={i}
@@ -62,7 +60,7 @@ const Page = () => {
               ease: "easeInOut"
             }}
           />
-        ))}        {/* Large floating orbs */}
+        ))}        
         <motion.div
           className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl"
           animate={{ 
@@ -83,7 +81,6 @@ const Page = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 3 }}
         />
         
-        {/* Additional medium orbs */}
         <motion.div
           className="absolute top-1/2 right-20 w-48 h-48 bg-gradient-to-r from-primary/8 to-orange-500/8 rounded-full blur-2xl"
           animate={{ 
@@ -104,7 +101,7 @@ const Page = () => {
             opacity: [0.25, 0.4, 0.25]
           }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />{/* Support icons floating */}
+        />
         {[...Array(12)].map((_, i) => {
           const icons = [Smile, Mail, MessageCircle];
           const IconComponent = icons[i % 3];
@@ -133,7 +130,6 @@ const Page = () => {
           );
         })}
         
-        {/* Additional floating icons with different patterns */}
         {[...Array(8)].map((_, i) => {
           const icons = [Smile, Mail, MessageCircle];
           const IconComponent = icons[(i + 1) % 3];
@@ -165,7 +161,6 @@ const Page = () => {
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto text-center space-y-10">
-        {/* Cabeçalho */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -195,7 +190,7 @@ const Page = () => {
           <p className="text-gray-600 text-lg max-w-xl mx-auto">
             Essa plataforma é um <strong>projeto acadêmico</strong> em fase de testes. Estamos colhendo <strong>feedbacks</strong> e corrigindo bugs com a sua ajuda! 💜
           </p>
-        </motion.div>        {/* Vídeo */}
+        </motion.div> 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -210,7 +205,6 @@ const Page = () => {
             allowFullScreen
           />
         </motion.div>
-        {/* Campo de feedback */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -232,7 +226,6 @@ const Page = () => {
           </Button>
         </motion.div>
 
-        {/* Contatos por WhatsApp */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

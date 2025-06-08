@@ -31,6 +31,7 @@ import ViagemCardModal from "@/components/Viagens/ViagemCardModal";
 import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
 import ValueSlider from "@/components/Common/ValueSlider";
 import Pagination from "@/components/Common/Pagination";
+import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
 
 function limparFiltros(obj: any) {
   const novo: any = {};
@@ -79,7 +80,10 @@ const EncontreViagens = () => {
   const [viagemSelecionada, setViagemSelecionada] = useState<ViagemBuscaDTO | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
   const [modalDetalhesAberto, setModalDetalhesAberto] = useState(false);
-  const [viagemDetalhesId, setViagemDetalhesId] = useState<number | null>(null);useEffect(() => {
+  const [viagemDetalhesId, setViagemDetalhesId] = useState<number | null>(null);
+  const [idadeMinimaInput, setIdadeMinimaInput] = useState("");
+  const [idadeMaximaInput, setIdadeMaximaInput] = useState("");
+  const [carregandoPreferencias, setCarregandoPreferencias] = useState(false);useEffect(() => {
     if (isAuthenticated === true) {
       setTimeout(() => setCarregandoTela(false), 300);
     }
@@ -89,11 +93,24 @@ const EncontreViagens = () => {
     }
   }, [isAuthenticated]);
 
+  // Sincronizar inputs locais com filtros
+  useEffect(() => {
+    setIdadeMinimaInput(filtros.idadeMinima?.toString() || "");
+    setIdadeMaximaInput(filtros.idadeMaxima?.toString() || "");
+  }, [filtros.idadeMinima, filtros.idadeMaxima]);
+
   const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value, type, checked } = e.target;
     setFiltros((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : (value === "" ? undefined : value),
+    }));
+  };
+
+  const atualizarIdade = (campo: "idadeMinima" | "idadeMaxima", valor: string) => {
+    setFiltros((prev) => ({
+      ...prev,
+      [campo]: valor === "" ? undefined : parseInt(valor, 10),
     }));
   };
   const handleValorMaximoChange = (valor: number) => {
@@ -240,6 +257,56 @@ const EncontreViagens = () => {
   const abrirSolicitacaoParticipacao = (viagem: ViagemBuscaDTO) => {
     setViagemSelecionada(viagem);
     setModalAberto(true);
+  };
+
+  const importarPreferencias = async () => {
+    setCarregandoPreferencias(true);
+    try {
+      const prefs = await getPreferenciasDoUsuario();
+      if (!prefs) {
+        toast.info("Nenhuma preferência encontrada para importar.");
+        return;
+      }
+
+      // Mapear tipos de acomodação compatíveis
+      const tipoAcomodacaoMapeado = (() => {
+        const acomodacao = prefs.tipoAcomodacao;
+        const compativel = ["HOSTEL", "HOTEL", "AIRBNB", "CAMPING", "NAO_TENHO_PREFERENCIA"];
+        return compativel.includes(acomodacao) ? acomodacao as ViagemFiltroDTO["tipoAcomodacao"] : undefined;
+      })();
+
+      // Mapear tipos de transporte compatíveis
+      const tipoTransporteMapeado = (() => {
+        const transporte = prefs.tipoTransporte;
+        const compativel = ["AVIAO", "CARRO", "TREM", "NAVIO", "NAO_TENHO_PREFERENCIA"];
+        if (transporte === "ONIBUS") return "ÔNIBUS" as ViagemFiltroDTO["tipoTransporte"];
+        return compativel.includes(transporte) ? transporte as ViagemFiltroDTO["tipoTransporte"] : undefined;
+      })();
+
+      setFiltros((prev) => ({
+        ...prev,
+        generoPreferido: ["MASCULINO", "FEMININO", "OUTRO", "TANTO_FAZ"].includes(prefs.generoPreferido)
+          ? (prefs.generoPreferido as ViagemFiltroDTO["generoPreferido"])
+          : undefined,
+        idadeMinima: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : undefined,
+        idadeMaxima: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : undefined,
+        valorMedioMax: typeof prefs.valorMedioViagem === "number" ? prefs.valorMedioViagem : undefined,
+        petFriendly: prefs.petFriendly,
+        aceitaCriancas: prefs.aceitaCriancas,
+        aceitaFumantes: prefs.aceitaFumantes,
+        aceitaBebidasAlcoolicas: prefs.aceitaBebidasAlcoolicas,
+        acomodacaoCompartilhada: prefs.acomodacaoCompartilhada,
+        tipoAcomodacao: tipoAcomodacaoMapeado,
+        tipoTransporte: tipoTransporteMapeado,
+      }));
+      
+      toast.success("Preferências importadas com sucesso!");
+    } catch (err) {
+      console.error("Erro ao buscar preferências do usuário:", err);
+      toast.error("Erro ao importar preferências.");
+    } finally {
+      setCarregandoPreferencias(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -800,11 +867,28 @@ const EncontreViagens = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Mínima</label>
                     <input
-                      type="number"
+                      type="text"
                       name="idadeMinima"
-                      min={18}
-                      value={filtros.idadeMinima || ""}
-                      onChange={handleChange}
+                      inputMode="numeric"
+                      value={idadeMinimaInput}
+                      onChange={(e) => setIdadeMinimaInput(e.target.value)}
+                      onBlur={() => {
+                        const min = parseInt(idadeMinimaInput || "0", 10);
+                        const max = filtros.idadeMaxima || 0;
+
+                        if (min < 18) {
+                          toast.warning("A idade mínima não pode ser menor que 18.");
+                          setIdadeMinimaInput("18");
+                          atualizarIdade("idadeMinima", "18");
+                        } else if (max && min > max) {
+                          toast.warning("A idade mínima não pode ser maior que a idade máxima.");
+                          setIdadeMinimaInput(max.toString());
+                          atualizarIdade("idadeMinima", max.toString());
+                        } else {
+                          atualizarIdade("idadeMinima", min === 0 ? "" : min.toString());
+                        }
+                      }}
+                      placeholder="18"
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
@@ -812,11 +896,28 @@ const EncontreViagens = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Máxima</label>
                     <input
-                      type="number"
+                      type="text"
                       name="idadeMaxima"
-                      min={18}
-                      value={filtros.idadeMaxima || ""}
-                      onChange={handleChange}
+                      inputMode="numeric"
+                      value={idadeMaximaInput}
+                      onChange={(e) => setIdadeMaximaInput(e.target.value)}
+                      onBlur={() => {
+                        const max = parseInt(idadeMaximaInput || "0", 10);
+                        const min = filtros.idadeMinima || 0;
+
+                        if (max < 18) {
+                          toast.warning("A idade máxima não pode ser menor que 18.");
+                          setIdadeMaximaInput("18");
+                          atualizarIdade("idadeMaxima", "18");
+                        } else if (min && max < min) {
+                          toast.warning("A idade máxima não pode ser menor que a idade mínima.");
+                          setIdadeMaximaInput(min.toString());
+                          atualizarIdade("idadeMaxima", min.toString());
+                        } else {
+                          atualizarIdade("idadeMaxima", max === 0 ? "" : max.toString());
+                        }
+                      }}
+                      placeholder="60"
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
@@ -886,11 +987,29 @@ const EncontreViagens = () => {
                   </div>
                 </div>
 
-                {/* Botão dentro dos filtros */}
-                <div className="flex justify-center mt-6 pt-6 border-t border-gray-200">
+                {/* Botões dentro dos filtros */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={importarPreferencias}
+                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium flex-1"
+                    disabled={carregandoPreferencias}
+                  >
+                    {carregandoPreferencias ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Importando...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4" />
+                        Importar Preferências
+                      </>
+                    )}
+                  </button>
+
                   <button
                     onClick={limparTodosFiltros}
-                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium"
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors duration-200 font-medium flex-1"
                   >
                     <RefreshCw className="w-4 h-4" />
                     Limpar Filtros

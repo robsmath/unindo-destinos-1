@@ -55,11 +55,9 @@ function FormWithSearchParams() {
 
   return (
     <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 relative overflow-hidden">
-      {/* Inner glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
       
       <div className="relative z-10">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -84,7 +82,6 @@ function FormWithSearchParams() {
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-          {/* Modern Input Fields */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -128,7 +125,7 @@ function FormWithSearchParams() {
             </div>
           </motion.div>
 
-          {/* Submit Button */}          <motion.button
+                 <motion.button
             type={"submit" as const}
             disabled={salvando}
             initial={{ opacity: 0, y: 20 }}
@@ -147,7 +144,6 @@ function FormWithSearchParams() {
             </span>
           </motion.button>
 
-          {/* Back to Sign In Link */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -171,9 +167,7 @@ function FormWithSearchParams() {
 export default function RedefinirSenhaForm() {
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-      {/* Background with Simple Animated Icons */}
       <div className="absolute inset-0 z-10">
-        {/* Animated Background Gradient */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
           animate={{
@@ -186,7 +180,6 @@ export default function RedefinirSenhaForm() {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Simple Floating Particles */}
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
@@ -210,7 +203,6 @@ export default function RedefinirSenhaForm() {
           />
         ))}
 
-        {/* Travel Icons with Simple Animations */}
         <motion.div
           className="absolute top-24 right-20"
           animate={{ 

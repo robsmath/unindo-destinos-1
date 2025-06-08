@@ -96,7 +96,6 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
 
   return (
     <div className="space-y-6">
-      {/* Resumo das avaliações */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,7 +125,6 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
         </div>
       </motion.div>
 
-      {/* Lista de avaliações */}
       <div className="space-y-4">
         {avaliacoes.map((avaliacao, index) => (
           <motion.div
@@ -136,7 +134,6 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
             transition={{ delay: index * 0.1 }}
             className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
           >
-            {/* Header da avaliação */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
                 <img
@@ -159,7 +156,6 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
               </div>
             </div>
 
-            {/* Comentário */}
             {avaliacao.comentario && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-start gap-2">

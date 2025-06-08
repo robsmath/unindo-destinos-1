@@ -291,9 +291,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-      {/* Background Effects */}
       <div className="absolute inset-0">
-        {/* Gradient overlay */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
           animate={{
@@ -330,7 +328,6 @@ export default function ConfiguracoesPage() {
           />
         ))}
 
-        {/* Animated icons */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -457,7 +454,6 @@ export default function ConfiguracoesPage() {
           <FileText className="w-5 h-5 text-cyan-500/30 drop-shadow-lg" />
         </motion.div>
 
-        {/* Gradient orbs */}
         <motion.div
           className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
           animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -472,7 +468,6 @@ export default function ConfiguracoesPage() {
 
       <div className="relative z-10 pt-20">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -490,7 +485,6 @@ export default function ConfiguracoesPage() {
             </p>
           </motion.div>
 
-          {/* Navigation Tabs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -523,7 +517,6 @@ export default function ConfiguracoesPage() {
             </div>
           </motion.div>
 
-          {/* Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

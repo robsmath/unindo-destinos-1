@@ -49,7 +49,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    // Registrar o callback de logout no interceptor da API
     setLogoutCallback(() => logout(true));
 
     const verificarAuth = async () => {

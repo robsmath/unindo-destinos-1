@@ -47,7 +47,6 @@ export default function ModalAvaliacao({
       await criarAvaliacao(dadosAvaliacao);
       toast.success("Avaliação enviada com sucesso!");
       
-      // Reset form
       setNota(0);
       setComentario("");
       
@@ -110,7 +109,6 @@ export default function ModalAvaliacao({
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-all">
-                {/* Header */}
                 <div className="relative px-6 pt-6 pb-4 border-b border-gray-100">
                   <button
                     onClick={handleClose}
@@ -130,9 +128,7 @@ export default function ModalAvaliacao({
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="px-6 py-6 space-y-6">
-                  {/* Foto do usuário */}
                   <div className="flex justify-center">
                     <div className="relative">
                       <img
@@ -146,7 +142,6 @@ export default function ModalAvaliacao({
                     </div>
                   </div>
 
-                  {/* Avaliação por estrelas */}
                   <div className="text-center space-y-3">
                     <label className="block text-sm font-medium text-gray-700">
                       Dê uma nota para {usuarioAvaliado.nome.split(" ")[0]}
@@ -172,7 +167,6 @@ export default function ModalAvaliacao({
                     )}
                   </div>
 
-                  {/* Comentário opcional */}
                   <div className="space-y-3">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <MessageCircle className="w-4 h-4" />
@@ -193,7 +187,6 @@ export default function ModalAvaliacao({
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className="px-6 pb-6 flex gap-3">
                   <button
                     onClick={handleClose}

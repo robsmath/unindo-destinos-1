@@ -9,7 +9,6 @@ export default function OfflinePage() {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    // Verificar status da conexão
     setIsOnline(navigator.onLine);
 
     const handleOnline = () => setIsOnline(true);
@@ -44,7 +43,6 @@ export default function OfflinePage() {
         transition={{ duration: 0.6 }}
         className="max-w-md w-full text-center"
       >
-        {/* Offline Icon */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -56,7 +54,6 @@ export default function OfflinePage() {
           </div>
         </motion.div>
 
-        {/* Title and Description */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -80,7 +77,6 @@ export default function OfflinePage() {
           )}
         </motion.div>
 
-        {/* Tips Card */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -111,7 +107,6 @@ export default function OfflinePage() {
           </ul>
         </motion.div>
 
-        {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -139,7 +134,6 @@ export default function OfflinePage() {
           </Button>
         </motion.div>
 
-        {/* PWA Features */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -155,7 +149,6 @@ export default function OfflinePage() {
           </p>
         </motion.div>
 
-        {/* Connection Status */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -174,7 +167,6 @@ export default function OfflinePage() {
           </div>
         </motion.div>
 
-        {/* Auto-reload when online */}
         {isOnline && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -186,7 +178,6 @@ export default function OfflinePage() {
         )}
       </motion.div>
 
-      {/* Auto-reload script */}
       {isOnline && (
         <script
           dangerouslySetInnerHTML={{

@@ -59,7 +59,7 @@ const EncontrePessoas = () => {
     genero: "",
     idadeMin: "",
     idadeMax: "",
-    valorMedioMax: "",
+    valorMedioMax: 0,
     petFriendly: undefined,
     aceitaCriancas: undefined,
     aceitaFumantes: undefined,
@@ -89,6 +89,8 @@ const EncontrePessoas = () => {
   const [usuarioCarregandoId, setUsuarioCarregandoId] = useState<number | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [carregandoPreferencias, setCarregandoPreferencias] = useState(false);
+  const [idadeMinimaInput, setIdadeMinimaInput] = useState("");
+  const [idadeMaximaInput, setIdadeMaximaInput] = useState("");
 
   // Hook para denúncia e bloqueio
   const {
@@ -141,11 +143,24 @@ const EncontrePessoas = () => {
     }
   }, [isAuthenticated]);
 
+  // Sincronizar inputs locais com filtros
+  useEffect(() => {
+    setIdadeMinimaInput(filtros.idadeMin?.toString() || "");
+    setIdadeMaximaInput(filtros.idadeMax?.toString() || "");
+  }, [filtros.idadeMin, filtros.idadeMax]);
+
   const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value, type, checked } = e.target;
     setFiltros((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const atualizarIdade = (campo: "idadeMin" | "idadeMax", valor: string) => {
+    setFiltros((prev) => ({
+      ...prev,
+      [campo]: valor,
     }));
   };
 
@@ -268,7 +283,7 @@ const EncontrePessoas = () => {
       genero: "",
       idadeMin: "",
       idadeMax: "",
-      valorMedioMax: "",
+      valorMedioMax: 0,
       petFriendly: undefined,
       aceitaCriancas: undefined,
       aceitaFumantes: undefined,
@@ -310,7 +325,7 @@ const EncontrePessoas = () => {
   const handleValorMedioChange = (valor: number) => {
     setFiltros((prev) => ({
       ...prev,
-      valorMedioMax: valor,
+      valorMedioMax: valor === 0 ? "" : valor,
     }));
   };
 
@@ -330,6 +345,7 @@ const EncontrePessoas = () => {
           : "",
         idadeMin: typeof prefs.idadeMinima === "number" ? prefs.idadeMinima : "",
         idadeMax: typeof prefs.idadeMaxima === "number" ? prefs.idadeMaxima : "",
+        valorMedioMax: typeof prefs.valorMedioViagem === "number" ? prefs.valorMedioViagem : 0,
         petFriendly: prefs.petFriendly,
         aceitaCriancas: prefs.aceitaCriancas,
         aceitaFumantes: prefs.aceitaFumantes,
@@ -728,11 +744,28 @@ const EncontrePessoas = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Mínima</label>
                     <input
-                      type="number"
+                      type="text"
                       name="idadeMin"
-                      min={18}
-                      value={filtros.idadeMin}
-                      onChange={handleChange}
+                      inputMode="numeric"
+                      value={idadeMinimaInput}
+                      onChange={(e) => setIdadeMinimaInput(e.target.value)}
+                      onBlur={() => {
+                        const min = parseInt(idadeMinimaInput || "0", 10);
+                        const max = filtros.idadeMax ? parseInt(filtros.idadeMax.toString(), 10) : 0;
+
+                        if (min < 18) {
+                          toast.warning("A idade mínima não pode ser menor que 18.");
+                          setIdadeMinimaInput("18");
+                          atualizarIdade("idadeMin", "18");
+                        } else if (max && min > max) {
+                          toast.warning("A idade mínima não pode ser maior que a idade máxima.");
+                          setIdadeMinimaInput(max.toString());
+                          atualizarIdade("idadeMin", max.toString());
+                        } else {
+                          atualizarIdade("idadeMin", min === 0 ? "" : min.toString());
+                        }
+                      }}
+                      placeholder="18"
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
@@ -740,18 +773,35 @@ const EncontrePessoas = () => {
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Máxima</label>
                     <input
-                      type="number"
+                      type="text"
                       name="idadeMax"
-                      min={18}
-                      value={filtros.idadeMax}
-                      onChange={handleChange}
+                      inputMode="numeric"
+                      value={idadeMaximaInput}
+                      onChange={(e) => setIdadeMaximaInput(e.target.value)}
+                      onBlur={() => {
+                        const max = parseInt(idadeMaximaInput || "0", 10);
+                        const min = filtros.idadeMin ? parseInt(filtros.idadeMin.toString(), 10) : 0;
+
+                        if (max < 18) {
+                          toast.warning("A idade máxima não pode ser menor que 18.");
+                          setIdadeMaximaInput("18");
+                          atualizarIdade("idadeMax", "18");
+                        } else if (min && max < min) {
+                          toast.warning("A idade máxima não pode ser menor que a idade mínima.");
+                          setIdadeMaximaInput(min.toString());
+                          atualizarIdade("idadeMax", min.toString());
+                        } else {
+                          atualizarIdade("idadeMax", max === 0 ? "" : max.toString());
+                        }
+                      }}
+                      placeholder="60"
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   {/* Valor Médio Máximo */}
                   <div>
                     <ValueSlider
-                      value={filtros.valorMedioMax || 0}
+                      value={typeof filtros.valorMedioMax === "number" ? filtros.valorMedioMax : 0}
                       onChange={handleValorMedioChange}
                       min={0}
                       max={20000}

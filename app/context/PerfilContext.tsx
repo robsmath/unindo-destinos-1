@@ -107,7 +107,6 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } catch (err: any) {
       console.error("Erro ao carregar dados do usuário", err);
-      // Interceptor da API vai cuidar dos erros 401/403
     }
   }, [isAuthenticated, usuario, carregado, atualizarUsuario, logout]);
 
@@ -126,7 +125,6 @@ export const PerfilProvider = ({ children }: { children: React.ReactNode }) => {
       setPreferencias(preferenciasRes);
     } catch (err: any) {
       console.error("Erro ao carregar preferências", err);
-      // Interceptor da API vai cuidar dos erros 401/403
     }
   }, [isAuthenticated, preferencias, carregado, logout]);
 

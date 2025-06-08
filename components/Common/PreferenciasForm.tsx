@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { PreferenciasDTO } from "@/models/PreferenciasDTO";
 import { toast } from "sonner";
 import { Users, DollarSign, Home, Car, Baby, Heart, Wine } from "lucide-react";
+import ValueSlider from "@/components/Common/ValueSlider";
 
 interface PreferenciasFormProps {
   preferencias: PreferenciasDTO;
@@ -11,40 +12,14 @@ interface PreferenciasFormProps {
 const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handlePreferenceChange }) => {
   const [idadeMinimaInput, setIdadeMinimaInput] = useState(preferencias.idadeMinima?.toString() || "");
   const [idadeMaximaInput, setIdadeMaximaInput] = useState(preferencias.idadeMaxima?.toString() || "");
-  const [valorMedioInput, setValorMedioInput] = useState(
-    preferencias.valorMedioViagem !== null && preferencias.valorMedioViagem !== undefined
-      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(preferencias.valorMedioViagem)
-      : ""
-  );
 
   // Atualiza inputs caso preferências mudem externamente
   useEffect(() => {
     setIdadeMinimaInput(preferencias.idadeMinima?.toString() || "");
     setIdadeMaximaInput(preferencias.idadeMaxima?.toString() || "");
-    setValorMedioInput(
-      preferencias.valorMedioViagem !== null && preferencias.valorMedioViagem !== undefined
-        ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(preferencias.valorMedioViagem)
-        : ""
-    );
   }, [preferencias]);
 
   const handleValidatedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-
-    if (name === "valorMedioViagem") {
-      const raw = value.replace(/\D/g, "");
-      const valor = raw ? parseFloat(raw) / 100 : null;
-      setValorMedioInput(value);
-
-      handlePreferenceChange({
-        target: {
-          name: "valorMedioViagem",
-          value: valor === null ? "" : valor.toString(),
-        },
-      } as React.ChangeEvent<HTMLInputElement>);
-      return;
-    }
-
     handlePreferenceChange(e);
   };
 
@@ -161,19 +136,9 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
           <label className="text-lg font-semibold text-gray-800">Valor Médio por Viagem</label>
         </div>
         <div className="relative group">
-          <input
-            type="text"
-            name="valorMedioViagem"
-            inputMode="numeric"
-            value={valorMedioInput}
-            onChange={(e) => {
-              const raw = e.target.value.replace(/\D/g, "");
-              const valor = raw ? parseFloat(raw) / 100 : "";
-              const formatado =
-                valor !== ""
-                  ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)
-                  : "";
-              setValorMedioInput(formatado);
+          <ValueSlider
+            value={preferencias.valorMedioViagem || 0}
+            onChange={(valor) => {
               handlePreferenceChange({
                 target: {
                   name: "valorMedioViagem",
@@ -181,8 +146,11 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
                 },
               } as React.ChangeEvent<HTMLInputElement>);
             }}
-            placeholder="Ex: R$ 1.000,00"
-            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 placeholder-gray-500 group-hover:bg-white/80"
+            min={0}
+            max={20000}
+            step={100}
+            label="Valor Médio (R$)"
+            className="mt-2"
           />
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
         </div>

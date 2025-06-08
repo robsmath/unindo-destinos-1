@@ -66,9 +66,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [souCriador, setSouCriador] = useState(false);
   const [limiteGeracaoAtingido, setLimiteGeracaoAtingido] = useState(false);useEffect(() => {
-    // Configurar headers no-cache para esta página
     if (typeof window !== 'undefined') {
-      // Desabilitar cache para esta página
       const meta = document.createElement('meta');
       meta.httpEquiv = 'Cache-Control';
       meta.content = 'no-cache, no-store, must-revalidate';
@@ -91,7 +89,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       try {
         setLoadingTela(true);
         
-        // Limpar cache na primeira visita desta sessão
         if (typeof window !== 'undefined') {
           const refreshKey = `fresh_data_${viagemId}`;
           const shouldRefresh = !sessionStorage.getItem(refreshKey);
@@ -105,7 +102,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         const viagemData = await getViagemById(Number(viagemId));
         setViagem(viagemData);
         setSouCriador(viagemData.criadorViagemId === usuario?.id);
-          // Força dados frescos com timestamp único para evitar qualquer cache
         const roteiro = await getRoteiroByViagemId(Number(viagemId));
         if (roteiro) {
           setRoteiroId(roteiro.id);
@@ -120,7 +116,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           );
           setTipoViagem(roteiro.tipoViagem || "CONFORTAVEL");
           
-          // Verificar se atingiu o limite de 3 gerações
           if (roteiro.tentativasGeracaoRoteiro && roteiro.tentativasGeracaoRoteiro >= 3) {
             setLimiteGeracaoAtingido(true);
           }
@@ -130,18 +125,14 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           setObservacoesFinais(resultado.observacoesFinais);
           setRoteiroInexistente(false);
         } else {
-          // Roteiro não existe (404) - isso é normal, mostra a mensagem amigável
           setRoteiroInexistente(true);
         }
       } catch (error) {
         console.error("Erro ao carregar dados da viagem:", error);
         
-        // Verificar se é erro de roteiro (404) vs erro real da viagem
         if (error?.response?.status === 404) {
-          // 404 do roteiro é normal, só marca como inexistente
           setRoteiroInexistente(true);
         } else {
-          // Só mostra toast para erros reais da viagem
           toast.error("Erro ao carregar dados da viagem");
           setRoteiroInexistente(true);
         }
@@ -288,7 +279,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           : "R$ 0,00"                      );
                       setTipoViagem(roteiro.tipoViagem || "CONFORTAVEL");
                       
-                      // Verificar se atingiu o limite de 3 gerações
                       if (roteiro.tentativasGeracaoRoteiro && roteiro.tentativasGeracaoRoteiro >= 3) {
                         setLimiteGeracaoAtingido(true);
                       }
@@ -301,15 +291,13 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                       toast.success("Roteiro gerado e preenchido com sucesso!");
                     }} catch (error: any) {
                     console.error("Erro ao substituir roteiro:", error);
-                      // Verificar se é erro de limite de geração
                     if (error?.response?.data?.message?.includes("Limite máximo de 3 gerações de roteiro atingido")) {
                       setLimiteGeracaoAtingido(true);
                       toast.error("Limite máximo de 3 gerações atingido para esta viagem. Você só pode editar o roteiro manualmente agora.", {
                         icon: <AlertTriangle className="text-red-600" />,
                         duration: 6000,
                       });
-                    } else if (error?.response?.status !== 404) {
-                      // Não mostrar toast para 404 - é normal após deletar o roteiro
+                    } else if (error?.response?.status !== 404) { 
                       toast.error("Erro ao substituir o roteiro.");
                     }
                   } finally {
@@ -350,7 +338,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
             : "R$ 0,00"
         );        setTipoViagem(roteiroGerado.tipoViagem || "CONFORTAVEL");
         
-        // Verificar se atingiu o limite de 3 gerações
         if (roteiroGerado.tentativasGeracaoRoteiro && roteiroGerado.tentativasGeracaoRoteiro >= 3) {
           setLimiteGeracaoAtingido(true);
         }
@@ -366,7 +353,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         });
       }} catch (error: any) {
       console.error("Erro ao gerar roteiro:", error);
-        // Verificar se é erro de limite de geração
       if (error?.response?.data?.message?.includes("Limite máximo de 3 gerações de roteiro atingido")) {
         setLimiteGeracaoAtingido(true);
         toast.error("Limite máximo de 3 gerações atingido para esta viagem. Você só pode editar o roteiro manualmente agora.", {
@@ -374,7 +360,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           duration: 6000,
         });
       } else if (error?.response?.status !== 404) {
-        // Não mostrar toast para 404 - pode ser normal se o roteiro não foi gerado ainda
         toast.error("Erro ao gerar o roteiro. Tente novamente.", {
           icon: <AlertTriangle className="text-red-600" />,
         });
@@ -385,7 +370,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   };  const forcarLimpezaCompleta = async () => {
     if (typeof window !== 'undefined') {
       try {
-        // Limpar apenas os dados relacionados ao roteiro
         const keysToRemove = [
           `roteiro_cache_${viagemId}`,
           `fresh_data_${viagemId}`,
@@ -397,10 +381,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           localStorage.removeItem(key);
         });
         
-        // Limpar cache do roteiro específico
         await clearRoteiroCache(Number(viagemId));
         
-        // Aguardar um pouco e recarregar
         setTimeout(() => {
           window.location.reload();
         }, 100);
@@ -422,17 +404,14 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       setLoadingPdf(true);
       const blob = await baixarRoteiroPdf(roteiroId);
       
-      // Criar URL temporária para o blob
       const url = window.URL.createObjectURL(blob);
       
-      // Criar elemento de link temporário para download
       const link = document.createElement('a');
       link.href = url;
       link.download = `roteiro-${viagem?.destino || 'viagem'}.pdf`;
       document.body.appendChild(link);
       link.click();
       
-      // Limpar recursos
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
@@ -451,7 +430,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         {loading && <LoadingOverlay />}
       </AnimatePresence>
 
-      <div className="relative min-h-screen overflow-hidden">        {/* Background animado */}
+      <div className="relative min-h-screen overflow-hidden">        
         <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
           <motion.div
             className="absolute inset-0"
@@ -465,7 +444,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* Simple Floating Particles */}
           {Array.from({ length: 15 }).map((_, i) => (
             <motion.div
               key={i}
@@ -489,7 +467,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
             />
           ))}
 
-          {/* Route/Travel Icons with Smooth Animations */}
           <motion.div
             className="absolute top-32 right-16"
             animate={{ 
@@ -600,7 +577,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           </motion.div>
         </div>
 
-        {/* Header */}
         <div className="relative z-20 bg-white/80 backdrop-blur-xl shadow-sm border-b border-white/20 pt-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
             <div className="flex items-center justify-between">
@@ -659,7 +635,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           </div>
         </div>
 
-        {/* Conteúdo principal */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 py-8">
           <AnimatePresence mode="wait">
             {loadingTela ? (
@@ -697,7 +672,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                 transition={{ duration: 0.6 }}
                 className="space-y-8"
               >
-                {/* Alert para roteiro inexistente */}
                 {roteiroInexistente ? (
                   <motion.div 
                     className="bg-amber-50/80 backdrop-blur-xl border border-amber-200/50 rounded-3xl p-6 shadow-lg"
@@ -772,9 +746,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                       </div>
                     </div>
                   </motion.div>
-                )}                {/* Grid principal */}
+                )}                
                 <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-                  {/* Configurações do roteiro */}
                   <motion.div 
                     className="lg:col-span-2 bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}
@@ -789,7 +762,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     </div>
 
                     <div className="p-4 sm:p-6 space-y-6">
-                      {/* Modo de criação */}
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <Wand2 className="w-4 h-4" />
@@ -829,7 +801,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                         </div>
                       </div>
 
-                      {/* Observação */}
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <FileText className="w-4 h-4" />
@@ -842,7 +813,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           placeholder="Descreva suas preferências para o roteiro..."
                           className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary resize-none h-24 disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                      </div>                      {/* Tipo de viagem */}
+                      </div>                      
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <Target className="w-4 h-4" />
@@ -876,7 +847,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                         </div>
                       </div>
 
-                      {/* Valor estimado */}
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <DollarSign className="w-4 h-4" />
@@ -890,7 +860,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           placeholder="R$ 0,00"
                           className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                      </div>                      {/* Botões de ação para configuração */}
+                      </div>                      
                       {souCriador && (
                         <div className="flex flex-col gap-3 pt-4">
                           {limiteGeracaoAtingido && (
@@ -952,7 +922,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     </div>
                   </motion.div>
 
-                  {/* Sidebar de informações e ações */}
                   <motion.div 
                     className="space-y-6"
                     initial={{ opacity: 0, x: 20 }}
@@ -985,7 +954,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                       </div>
                     )}
 
-                    {/* Ações do roteiro */}
                     {!roteiroInexistente && (
                       <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6">                        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <Settings className="w-5 h-5 text-primary" />
@@ -1020,7 +988,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           </motion.button>
                         </div>
                       </div>
-                    )}                    {/* Dicas */}
+                    )}                   
                     <div className="bg-gradient-to-br from-orange-50/80 to-amber-50/80 backdrop-blur-xl rounded-3xl border border-orange-100/50 p-6 shadow-lg">
                       <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-primary" />
@@ -1040,7 +1008,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           <p>Compartilhe o PDF com todos os participantes</p>
                         </div>
                         
-                        {/* Botão de limpeza de cache para situações especiais */}
                         {roteiroInexistente && (
                           <div className="mt-4 pt-3 border-t border-orange-200/50">
                             <p className="text-xs text-gray-500 mb-2">
@@ -1062,7 +1029,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                   </motion.div>
                 </div>
 
-                {/* Editor manual de roteiro */}
                 {modoCriacao === "MANUAL" && !roteiroInexistente && souCriador && (
                   <motion.div 
                     className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 overflow-hidden"
@@ -1088,7 +1054,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                     </div>
 
                     <div className="p-4 sm:p-6 space-y-6">
-                      {/* Dias do roteiro */}
                       <div className="space-y-4">
                         <AnimatePresence>
                           {diasRoteiro.map((dia, index) => (                            <motion.div
@@ -1143,7 +1108,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                         </AnimatePresence>
                       </div>
 
-                      {/* Observações finais */}
                       <div className="space-y-3">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                           <FileText className="w-4 h-4" />
@@ -1162,7 +1126,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
             )}
           </AnimatePresence>
         </div>
-      </div>      {/* Modal de envio por email */}
+      </div>      
       <AnimatePresence>
         {mostrarModalEmail && roteiroId !== null && (
           <EnviarRoteiroModal

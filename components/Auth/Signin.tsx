@@ -52,7 +52,6 @@ const Signin = () => {
     try {
       const response = await signIn(data.email, data.senha);
       
-      // Atualizar o contexto de autenticação com o token e dados do usuário
       login(response.token, {
         id: response.usuario.id!,
         nome: response.usuario.nome,
@@ -62,7 +61,6 @@ const Signin = () => {
       
       toast.success("Login realizado com sucesso!");
       
-      // O redirecionamento será feito automaticamente pelo contexto de autenticação
     } catch (error: any) {
       console.error("Erro no login:", error);
       
@@ -71,16 +69,12 @@ const Signin = () => {
       } else if (error.response?.status === 401) {
         setError("E-mail ou senha inválidos. Verifique suas credenciais.");
       } else if (error.response?.status === 400) {
-        // Erro de validação (dados inválidos)
         setError("E-mail ou senha inválidos. Verifique suas credenciais.");
       } else if (error.response?.status >= 500) {
-        // Erro interno do servidor
         setError("Erro no servidor. Tente novamente mais tarde.");
       } else if (error.code === 'NETWORK_ERROR' || !error.response) {
-        // Erro de rede
         setError("Erro de conexão. Verifique sua internet e tente novamente.");
       } else {
-        // Para outros erros, verificar se há mensagem específica do servidor
         const serverMessage = error.response?.data?.message;
         if (serverMessage && serverMessage.toLowerCase().includes('credenciais')) {
           setError("E-mail ou senha inválidos. Verifique suas credenciais.");
@@ -97,9 +91,7 @@ const Signin = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100 flex flex-col">
-      {/* Background with Simple Animated Icons */}
       <div className="absolute inset-0 z-10">
-        {/* Background Gradient - estático se movimento reduzido */}
         {shouldReduceMotion ? (
           <div className="absolute inset-0 bg-gradient-to-br from-sky-100/15 via-orange-50/10 to-blue-50/20" />
         ) : (
@@ -115,7 +107,6 @@ const Signin = () => {
           />
         )}
 
-        {/* Floating Particles - reduzidos para movimento limitado */}
         {!shouldReduceMotion && Array.from({ length: 6 }).map((_, i) => (
           <motion.div
             key={i}
@@ -139,7 +130,6 @@ const Signin = () => {
           />
         ))}
 
-        {/* Travel Icons - otimizados */}
         {shouldReduceMotion ? (
           <>
             <div className="absolute top-24 right-20">
@@ -226,7 +216,6 @@ const Signin = () => {
           </>
         )}
 
-        {/* Menos ícones em movimento reduzido para não sobrecarregar */}
         {!shouldReduceMotion && (
           <>
             <motion.div
@@ -316,7 +305,6 @@ const Signin = () => {
         )}
       </div>
 
-      {/* Loading Overlay */}
       {loading && (
         <motion.div 
           className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex items-center justify-center p-4"
@@ -352,13 +340,10 @@ const Signin = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="w-full max-w-sm sm:max-w-md lg:max-w-lg xl:max-w-xl mx-auto my-4 sm:my-6 md:my-8"
         >
-          {/* Glass Morphism Container */}
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 relative overflow-hidden">
-            {/* Inner glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent rounded-3xl" />
             
             <div className="relative z-10">
-              {/* Header */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -376,7 +361,6 @@ const Signin = () => {
               </motion.div>
 
               <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6 md:space-y-7 lg:space-y-8">
-                {/* Modern Input Fields */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -417,7 +401,6 @@ const Signin = () => {
                   </div>
                 </motion.div>
 
-                {/* Error Message */}
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -428,7 +411,6 @@ const Signin = () => {
                   </motion.div>
                 )}
 
-                {/* Forgot Password Link */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -443,7 +425,6 @@ const Signin = () => {
                   </Link>
                 </motion.div>
 
-                {/* Submit Button */}
                 <motion.button
                   type="submit"
                   disabled={loading}
@@ -463,7 +444,6 @@ const Signin = () => {
                   </span>
                 </motion.button>
 
-                {/* Sign Up Link */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

@@ -196,7 +196,6 @@ const Signup = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     
-    // Validações básicas primeiro
     if (form.senha !== form.confirmSenha) {
       toast.error("Senhas não coincidem. Verifique e tente novamente.");
       return;
@@ -218,7 +217,6 @@ const Signup = () => {
       return;
     }
 
-    // Mostrar modal de termos
     setShowTermsModal(true);
   };
 
