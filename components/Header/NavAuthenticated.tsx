@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, LogOut, Settings } from "lucide-react";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useUnreadGroupMessages } from "@/hooks/useUnreadGroupMessages";
 import ChatDropdown from "@/components/Chat/ChatDropdown";
 
 interface TokenPayload {
@@ -20,6 +21,7 @@ const NavAuthenticated = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const { hasUnreadMessages } = useUnreadMessages(5000); // 5 segundos para atualização rápida do badge global
+  const { hasUnreadGroupMessages } = useUnreadGroupMessages(30000); // 30 segundos para grupos
   const [chatDropdownOpen, setChatDropdownOpen] = useState(false);
 
   const isValidToken = (token: unknown): token is string => {
@@ -47,6 +49,8 @@ const NavAuthenticated = () => {
     }
   }, [token, usuario]);
 
+
+
   return (
     <div className="relative flex items-center gap-4">
       {firstName && (
@@ -65,7 +69,7 @@ const NavAuthenticated = () => {
           isOpen={chatDropdownOpen}
           onClose={() => setChatDropdownOpen(false)}
           onToggle={() => setChatDropdownOpen(!chatDropdownOpen)}
-          hasUnreadMessages={hasUnreadMessages}
+          hasUnreadMessages={hasUnreadMessages || hasUnreadGroupMessages}
         />
       </div>
 

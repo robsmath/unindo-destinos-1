@@ -18,6 +18,8 @@ import {
   EstiloViagem,
 } from "@/models/PreferenciasDTO";
 import SmartImage from "@/components/Common/SmartImage";
+import { useAuth } from "@/app/context/AuthContext";
+import ChatGrupo from "@/components/Chat/ChatGrupo";
 import { 
   Loader2, 
   X,
@@ -53,7 +55,8 @@ import {
   Briefcase,
   Dog,
   Settings,
-  FileText
+  FileText,
+  MessageCircle
 } from "lucide-react";
 
 interface Props {
@@ -112,11 +115,14 @@ export default function ViagemDetalhesModal({
   onClose,
   exibirAvisoConvite = false,
   imagemViagem,
-}: Props) {  const [viagem, setViagem] = useState<ViagemDTO | null>(null);
+}: Props) {
+  const { usuario } = useAuth();
+  const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [preferencias, setPreferencias] = useState<PreferenciasDTO | null>(null);
   const [participantes, setParticipantes] = useState<any[]>([]);
   const [imagem, setImagem] = useState<string>("");
-  const [carregando, setCarregando] = useState(false);useEffect(() => {
+  const [carregando, setCarregando] = useState(false);
+  const [chatGrupoAberto, setChatGrupoAberto] = useState(false);useEffect(() => {
     if (open) {
       carregarDados();    } else {
       setViagem(null);
@@ -259,14 +265,27 @@ export default function ViagemDetalhesModal({
                         )}
 
                         <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-                          <div className="flex items-center gap-3">
-                            <Users className="w-5 h-5 text-primary" />
-                            <div>
-                              <span className="text-sm font-medium text-gray-700">Participantes</span>
-                              <p className="text-lg font-semibold text-gray-800">
-                                {participantes.length} de {viagem.numeroMaximoParticipantes || "∞"}
-                              </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Users className="w-5 h-5 text-primary" />
+                              <div>
+                                <span className="text-sm font-medium text-gray-700">Participantes</span>
+                                <p className="text-lg font-semibold text-gray-800">
+                                  {participantes.length} de {viagem.numeroMaximoParticipantes || "∞"}
+                                </p>
+                              </div>
                             </div>
+
+                            {/* Botão Chat da Viagem */}
+                            {usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && (
+                              <button
+                                onClick={() => setChatGrupoAberto(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                                <span className="text-sm font-medium">Chat da Viagem</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -429,6 +448,50 @@ export default function ViagemDetalhesModal({
           </div>
         </div>
       </Dialog>
+
+      {/* Chat em Grupo Modal */}
+      {chatGrupoAberto && viagem?.grupoMensagemId && (
+        <Transition appear show={chatGrupoAberto}>
+          <Dialog as="div" className="relative z-50" onClose={() => setChatGrupoAberto(false)}>
+            <TransitionChild
+              enter="ease-out duration-200"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-150"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+            </TransitionChild>
+
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4">
+                <TransitionChild
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95 translate-y-4"
+                  enterTo="opacity-100 scale-100 translate-y-0"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100 translate-y-0"
+                  leaveTo="opacity-0 scale-95 translate-y-4"
+                >
+                  <DialogPanel className="w-full max-w-2xl h-[80vh] transform overflow-hidden">
+                    <ChatGrupo
+                      grupoId={viagem.grupoMensagemId}
+                      nomeGrupo={`Chat - ${viagem.destino}`}
+                      onFechar={() => setChatGrupoAberto(false)}
+                      onSairGrupo={() => {
+                        setChatGrupoAberto(false);
+                        // Recarregar dados da viagem após sair do grupo
+                        window.location.reload();
+                      }}
+                    />
+                  </DialogPanel>
+                </TransitionChild>
+              </div>
+            </div>
+          </Dialog>
+        </Transition>
+      )}
     </Transition>
   );
 }

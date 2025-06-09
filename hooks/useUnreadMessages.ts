@@ -18,10 +18,8 @@ export const useUnreadMessages = (pollingInterval = 10000) => {
   };
 
   useEffect(() => {
-    // Fetch inicial
     fetchMensagensNaoLidas();
     
-    // Polling
     const interval = setInterval(fetchMensagensNaoLidas, pollingInterval);
     return () => clearInterval(interval);
   }, [pollingInterval]);
@@ -33,7 +31,6 @@ export const useUnreadMessages = (pollingInterval = 10000) => {
   const markConversationAsRead = async (userId: number) => {
     try {
       await marcarConversaComoVisualizada(userId);
-      // Remove mensagens não lidas deste usuário
       setMensagensNaoLidas(prev => prev.filter(msg => msg.remetenteId !== userId));
     } catch (err) {
       console.error("Erro ao marcar conversa como visualizada:", err);

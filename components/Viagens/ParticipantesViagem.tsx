@@ -8,9 +8,11 @@ import { useParams, useRouter } from "next/navigation";
 import { getParticipantesDaViagem, getViagemById } from "@/services/viagemService";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
-import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin, X, Star } from "lucide-react";
+import { ArrowLeft, Users, Plane, Compass, Camera, Map, Luggage, Globe, Heart, MapPin, X, Star, MessageCircle } from "lucide-react";
 import ChatPrivado from "@/components/Chat/ChatPrivado";
+import ChatGrupo from "@/components/Chat/ChatGrupo";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useUnreadGroupMessages } from "@/hooks/useUnreadGroupMessages";
 import { useDenunciaEBloqueio } from "@/hooks/useDenunciaEBloqueio";
 import DenunciaModal from "@/components/Modals/DenunciaModal";
 import BloqueioModal from "@/components/Modals/BloqueioModal";
@@ -26,11 +28,13 @@ const ParticipantesViagem = () => {
   const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [chatAberto, setChatAberto] = useState(false);
+  const [chatGrupoAberto, setChatGrupoAberto] = useState(false);
   const [participanteSelecionado, setParticipanteSelecionado] = useState<UsuarioBuscaDTO | null>(null);
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
   const [usuarioParaAvaliar, setUsuarioParaAvaliar] = useState<UsuarioBuscaDTO | null>(null);
   const [participantesAvaliados, setParticipantesAvaliados] = useState<Set<number>>(new Set());
   const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
+  const { getUnreadCountForGroup, refreshGroups } = useUnreadGroupMessages(5000);
 
   // Hook para denúncia e bloqueio
   const {
@@ -113,6 +117,8 @@ const ParticipantesViagem = () => {
         
         setViagem(dadosViagem);
         setParticipantes(dadosParticipantes);
+
+        // Nada necessário aqui, o hook global já cuida do polling
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
       } finally {
@@ -121,7 +127,9 @@ const ParticipantesViagem = () => {
     };
 
     fetchDados();
-  }, [id]);
+
+    // Cleanup não necessário, o hook global cuida disso
+  }, [id, usuario]);
 
   const criador = participantes.find((p) => p.criador);
   const usuarioEhCriador = criador?.id === usuario?.id;
@@ -394,6 +402,36 @@ const ParticipantesViagem = () => {
               </motion.h1>
             </div>
 
+            {/* Botão Chat da Viagem */}
+            {viagem && usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="mb-4"
+              >
+                <button
+                  onClick={() => {
+                    setChatGrupoAberto(true);
+                    // As mensagens são marcadas como lidas dentro do próprio componente ChatGrupo
+                  }}
+                  className="relative inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary to-orange-500 text-white rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-medium"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Chat da Viagem</span>
+                  {viagem.grupoMensagemId && getUnreadCountForGroup(viagem.grupoMensagemId) > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg"
+                    >
+                      {getUnreadCountForGroup(viagem.grupoMensagemId) > 9 ? '9+' : getUnreadCountForGroup(viagem.grupoMensagemId)}
+                    </motion.span>
+                  )}
+                </button>
+              </motion.div>
+            )}
+
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -570,6 +608,43 @@ const ParticipantesViagem = () => {
           onAvaliacaoEnviada={handleAvaliacaoEnviada}
         />
       )}
+
+      {/* Modal do Chat em Grupo */}
+      <AnimatePresence>
+        {chatGrupoAberto && viagem?.grupoMensagemId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setChatGrupoAberto(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 400 }}
+              className="relative w-full max-w-2xl h-[80vh] max-h-[700px] bg-white rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ChatGrupo
+                grupoId={viagem.grupoMensagemId}
+                nomeGrupo={`Chat - ${viagem.destino}`}
+                onFechar={() => {
+                  setChatGrupoAberto(false);
+                  // Atualizar badges após fechar o chat
+                  refreshGroups();
+                }}
+                onSairGrupo={() => {
+                  setChatGrupoAberto(false);
+                  // Atualizar a lista de participantes após sair do grupo
+                  window.location.reload();
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
