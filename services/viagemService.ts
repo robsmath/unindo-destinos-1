@@ -13,7 +13,6 @@ interface ApiResponse<T> {
   data: T;
 }
 
-// Interface para suporte à paginação
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;
@@ -72,7 +71,6 @@ export const sairDaViagem = async (viagemId: number): Promise<void> => {
   await api.delete(`/viagens/${viagemId}/sair`);
 };
 
-// Versão com paginação
 export const buscarViagens = async (
   filtros: ViagemFiltroDTO,
   page: number = 0,
@@ -85,7 +83,6 @@ export const buscarViagens = async (
   return response.data.data;
 };
 
-// Manter versão antiga para compatibilidade (se necessário)
 export const buscarViagensSemPaginacao = async (
   filtros: ViagemFiltroDTO
 ): Promise<ViagemBuscaDTO[]> => {

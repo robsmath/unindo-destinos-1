@@ -19,16 +19,21 @@ import {
   Map,
   Compass,
   Luggage,
-  Heart
+  Heart,
+  Trash2,
+  AlertTriangle,
+  EyeOff,
+  Loader2
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { UsuarioBloqueadoDTO } from "@/models/UsuarioBloqueadoDTO";
 import { listarUsuariosBloqueados, desbloquearUsuario } from "@/services/usuarioBloqueadoService";
+import { deletarConta, validarSenhaParaDeletar } from "@/services/userService";
 import { toast } from "sonner";
 import Image from "next/image";
 
-type AbaAtiva = "bloqueados" | "privacidade" | "notificacoes" | "conta";
+type AbaAtiva = "bloqueados" | "privacidade" | "conta";
 
 const abas = [
   {
@@ -46,13 +51,6 @@ const abas = [
     descricao: "Configure suas preferências de privacidade"
   },
   {
-    id: "notificacoes" as const,
-    nome: "Notificações",
-    nomeMobile: "Notif.",
-    icone: Bell,
-    descricao: "Personalize suas notificações"
-  },
-  {
     id: "conta" as const,
     nome: "Conta",
     nomeMobile: "Conta",
@@ -62,12 +60,21 @@ const abas = [
 ];
 
 export default function ConfiguracoesPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const [abaAtiva, setAbaAtiva] = useState<AbaAtiva>("bloqueados");
   const [usuariosBloqueados, setUsuariosBloqueados] = useState<UsuarioBloqueadoDTO[]>([]);
   const [carregandoBloqueados, setCarregandoBloqueados] = useState(false);
   const [desbloqueandoId, setDesbloqueandoId] = useState<number | null>(null);
+  
+  // Estados para deletar conta
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteStep, setDeleteStep] = useState(1); // 1: Aviso inicial, 2: Confirmação de senha
+  const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated === false) {
@@ -94,19 +101,69 @@ export default function ConfiguracoesPage() {
     }
   };
 
-  const handleDesbloquear = async (usuarioId: number, nome: string) => {
-    setDesbloqueandoId(usuarioId);
+  const handleDesbloquear = async (id: number) => {
+    setDesbloqueandoId(id);
     try {
-      await desbloquearUsuario(usuarioId);
-      toast.success(`${nome} foi desbloqueado com sucesso!`);
-      // Remove da lista local
-      setUsuariosBloqueados(prev => prev.filter(u => u.bloqueadoId !== usuarioId));
+      await desbloquearUsuario(id);
+      setUsuariosBloqueados(prev => prev.filter(u => u.bloqueadoId !== id));
+      toast.success("Usuário desbloqueado com sucesso!");
     } catch (error) {
       console.error("Erro ao desbloquear usuário:", error);
       toast.error("Erro ao desbloquear usuário");
     } finally {
       setDesbloqueandoId(null);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    setDeleteStep(1);
+    setShowDeleteModal(true);
+  };
+
+  const handleContinueDelete = () => {
+    setDeleteStep(2);
+    setSenha("");
+    setConfirmarSenha("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!senha || !confirmarSenha) {
+      toast.error("Por favor, digite a senha nos dois campos.");
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      await validarSenhaParaDeletar(senha);
+      await deletarConta();
+      
+      toast.success("Conta deletada com sucesso!");
+      logout(false);
+      router.push("/");
+    } catch (error: any) {
+      console.error("Erro ao deletar conta:", error);
+      if (error.response?.status === 401) {
+        toast.error("Senha incorreta. Tente novamente.");
+      } else {
+        toast.error("Erro ao deletar conta. Tente novamente.");
+      }
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
+  const resetDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteStep(1);
+    setSenha("");
+    setConfirmarSenha("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   if (isAuthenticated === false) {
@@ -170,7 +227,7 @@ export default function ConfiguracoesPage() {
               </div>
 
               <motion.button
-                onClick={() => handleDesbloquear(usuario.bloqueadoId, usuario.nome)}
+                onClick={() => handleDesbloquear(usuario.bloqueadoId)}
                 disabled={desbloqueandoId === usuario.bloqueadoId}
                 className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 disabled:cursor-not-allowed text-sm flex-shrink-0 w-full sm:w-auto"
                 whileHover={desbloqueandoId !== usuario.bloqueadoId ? { scale: 1.02 } : {}}
@@ -220,33 +277,6 @@ export default function ConfiguracoesPage() {
     </div>
   );
 
-  const renderNotificacoes = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Preferências de Notificação
-        </h3>
-        <p className="text-sm text-gray-600">
-          Escolha quando e como você quer ser notificado.
-        </p>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <div className="flex items-center gap-3">
-            <Bell className="w-5 h-5 text-amber-600" />
-            <div>
-              <h4 className="font-semibold text-amber-800">Em desenvolvimento</h4>
-              <p className="text-sm text-amber-700">
-                As configurações de notificação estarão disponíveis em breve.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   const renderConta = () => (
     <div className="space-y-6">
       <div>
@@ -259,13 +289,52 @@ export default function ConfiguracoesPage() {
       </div>
       
       <div className="space-y-4">
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+        {/* Zona de Perigo - Deletar Conta */}
+        <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-red-800 mb-2">Zona de Perigo</h4>
+              <h5 className="font-medium text-red-700 mb-3">Deletar Conta Permanentemente</h5>
+              <p className="text-sm text-red-700 mb-4">
+                Esta ação é <strong>irreversível</strong>. Ao deletar sua conta, você perderá:
+              </p>
+              <ul className="text-sm text-red-700 mb-6 ml-4 space-y-1">
+                <li>• Todas as suas viagens criadas e participações</li>
+                <li>• Todas as solicitações enviadas e recebidas</li>
+                <li>• Seu histórico de avaliações e comentários</li>
+                <li>• Todas as fotos e informações do perfil</li>
+                <li>• Todas as conversas e mensagens</li>
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <motion.button
+                  onClick={handleDeleteAccount}
+                  disabled={true}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-400 cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200 opacity-60"
+                  whileHover={{ scale: 1 }}
+                  whileTap={{ scale: 1 }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Deletar Minha Conta
+                </motion.button>
+                <div className="text-xs text-red-600 self-center">
+                  Você precisará confirmar sua senha para continuar
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Aviso de Funcionalidade em Desenvolvimento */}
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
           <div className="flex items-center gap-3">
-            <Key className="w-5 h-5 text-amber-600" />
+            <Settings className="w-5 h-5 text-blue-600" />
             <div>
-              <h4 className="font-semibold text-amber-800">Em desenvolvimento</h4>
-              <p className="text-sm text-amber-700">
-                As configurações da conta estarão disponíveis em breve.
+              <h4 className="font-semibold text-blue-800">Funcionalidade em Desenvolvimento</h4>
+              <p className="text-sm text-blue-700">
+                Estamos finalizando a implementação desta funcionalidade. Em breve estará disponível para uso.
               </p>
             </div>
           </div>
@@ -280,8 +349,6 @@ export default function ConfiguracoesPage() {
         return renderBloqueados();
       case "privacidade":
         return renderPrivacidade();
-      case "notificacoes":
-        return renderNotificacoes();
       case "conta":
         return renderConta();
       default:
@@ -527,6 +594,193 @@ export default function ConfiguracoesPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Modal de Confirmação para Deletar Conta */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            >
+              {deleteStep === 1 ? (
+                // Primeiro passo: Aviso sobre a exclusão
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Confirmar Exclusão da Conta
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Esta ação não pode ser desfeita
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
+                      <h4 className="font-medium text-red-800 mb-2">⚠️ ATENÇÃO</h4>
+                      <p className="text-sm text-red-700 mb-3">
+                        Ao deletar sua conta, <strong>TUDO será perdido permanentemente</strong>:
+                      </p>
+                      <ul className="text-sm text-red-700 space-y-1 ml-4">
+                        <li>• Suas viagens criadas serão canceladas</li>
+                        <li>• Participações em viagens serão removidas</li>
+                        <li>• Solicitações pendentes serão canceladas</li>
+                        <li>• Histórico de avaliações será apagado</li>
+                        <li>• Fotos e álbum serão deletados</li>
+                        <li>• Conversas e mensagens serão perdidas</li>
+                        <li>• Dados pessoais serão removidos</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h4 className="font-medium text-yellow-800 mb-2">🚫 NÃO HÁ VOLTA</h4>
+                      <p className="text-sm text-yellow-700">
+                        Uma vez deletada, sua conta <strong>não poderá ser recuperada</strong>. 
+                        Você precisará criar uma nova conta do zero se quiser usar nossa plataforma novamente.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <motion.button
+                      onClick={resetDeleteModal}
+                      className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Cancelar
+                    </motion.button>
+                    <motion.button
+                      onClick={handleContinueDelete}
+                      className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Continuar
+                    </motion.button>
+                  </div>
+                </div>
+              ) : (
+                // Segundo passo: Confirmação da senha
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Digite sua Senha
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Para confirmar que é você mesmo
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <p className="text-sm text-gray-700 mb-4">
+                      Digite sua senha atual <strong>duas vezes</strong> para confirmar a exclusão da conta:
+                    </p>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Senha atual
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            value={senha}
+                            onChange={(e) => setSenha(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
+                            placeholder="Digite sua senha"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Confirme sua senha
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={confirmarSenha}
+                            onChange={(e) => setConfirmarSenha(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
+                            placeholder="Digite sua senha novamente"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <motion.button
+                      onClick={resetDeleteModal}
+                      className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Cancelar
+                    </motion.button>
+                    <motion.button
+                      onClick={handleConfirmDelete}
+                      disabled={deletingAccount || !senha || !confirmarSenha}
+                      className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                      whileHover={{ scale: deletingAccount ? 1 : 1.02 }}
+                      whileTap={{ scale: deletingAccount ? 1 : 0.98 }}
+                    >
+                      {deletingAccount ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          >
+                            <Loader2 className="w-4 h-4" />
+                          </motion.div>
+                          Deletando...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4" />
+                          Deletar Conta
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 } 

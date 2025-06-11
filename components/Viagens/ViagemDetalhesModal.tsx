@@ -20,6 +20,7 @@ import {
 import SmartImage from "@/components/Common/SmartImage";
 import { useAuth } from "@/app/context/AuthContext";
 import ChatGrupo from "@/components/Chat/ChatGrupo";
+import { buscarParticipantesGrupo } from "@/services/mensagemGrupoService";
 import { 
   Loader2, 
   X,
@@ -122,7 +123,10 @@ export default function ViagemDetalhesModal({
   const [participantes, setParticipantes] = useState<any[]>([]);
   const [imagem, setImagem] = useState<string>("");
   const [carregando, setCarregando] = useState(false);
-  const [chatGrupoAberto, setChatGrupoAberto] = useState(false);useEffect(() => {
+  const [chatGrupoAberto, setChatGrupoAberto] = useState(false);
+  const [usuarioEstaNoGrupo, setUsuarioEstaNoGrupo] = useState(true);
+
+  useEffect(() => {
     if (open) {
       carregarDados();    } else {
       setViagem(null);
@@ -148,6 +152,20 @@ export default function ViagemDetalhesModal({
       // Carregar participantes para contar
       const dadosParticipantes = await getParticipantesDaViagem(viagemId);
       setParticipantes(dadosParticipantes);
+
+            // VERIFICAÇÃO SIMPLES E DIRETA: Se o usuário está na lista de participantes do grupo
+      if (dadosViagem.grupoMensagemId && usuario?.id) {
+        try {
+          const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
+          const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
+          setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
+        } catch (error: any) {
+          // Se der qualquer erro, assume que NÃO está no grupo (mais seguro)
+          setUsuarioEstaNoGrupo(false);
+        }
+      } else {
+        setUsuarioEstaNoGrupo(false);
+      }
 
       if (!imagemViagem) {
         // Usar a imagem da viagem carregada ou a imagem padrão
@@ -276,8 +294,8 @@ export default function ViagemDetalhesModal({
                               </div>
                             </div>
 
-                            {/* Botão Chat da Viagem */}
-                            {usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && (
+                            {/* Botão Chat da Viagem - só aparece se o usuário estiver no grupo */}
+                            {usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
                               <button
                                 onClick={() => setChatGrupoAberto(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
@@ -478,11 +496,18 @@ export default function ViagemDetalhesModal({
                     <ChatGrupo
                       grupoId={viagem.grupoMensagemId}
                       nomeGrupo={`Chat - ${viagem.destino}`}
+                      viagemId={viagem.id}
+                      usuarioEhCriador={participantes.some(p => p.criador && p.id === usuario?.id)}
                       onFechar={() => setChatGrupoAberto(false)}
                       onSairGrupo={() => {
                         setChatGrupoAberto(false);
-                        // Recarregar dados da viagem após sair do grupo
-                        window.location.reload();
+                        setUsuarioEstaNoGrupo(false);
+                        carregarDados();
+                      }}
+                      onRemovidoDoGrupo={() => {
+                        setChatGrupoAberto(false);
+                        setUsuarioEstaNoGrupo(false);
+                        carregarDados();
                       }}
                     />
                   </DialogPanel>

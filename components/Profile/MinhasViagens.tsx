@@ -4,10 +4,11 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { usePerfil } from "@/app/context/PerfilContext";
-import { deletarViagem, sairDaViagem } from "@/services/viagemService";
+import { deletarViagem } from "@/services/viagemService";
 import { toast } from "sonner";
 import { confirm } from "@/components/ui/confirm";
 import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
+import SairViagemModal from "@/components/Modals/SairViagemModal";
 import SmartImage from "@/components/Common/SmartImage";
 import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
 import { 
@@ -29,6 +30,11 @@ const MinhasViagens = () => {
   const [filtroStatus, setFiltroStatus] = useState<string>("TODOS");
   const [filtroTipo, setFiltroTipo] = useState<"TODOS" | "CRIADOR" | "PARTICIPANTE">("TODOS");
   const [viagemSelecionadaId, setViagemSelecionadaId] = useState<number | null>(null);
+  const [sairViagemModal, setSairViagemModal] = useState<{ aberto: boolean; viagemId: number | null; destino: string }>({ 
+    aberto: false, 
+    viagemId: null, 
+    destino: "" 
+  });
 
   const [loadingCadastrar, setLoadingCadastrar] = useState(false);
   const [loadingActions, setLoadingActions] = useState<{[key: string]: boolean}>({});
@@ -115,30 +121,24 @@ const MinhasViagens = () => {
       setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
     }
   };
-  const handleSairDaViagem = async (id: number) => {
-    const actionKey = `leave-${id}`;
-    setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
-    
-    const confirmacao = await confirm({
-      title: "Sair da Viagem",
-      description: "Tem certeza que deseja sair desta viagem?",
-      cancelText: "Cancelar",
+  const handleAbrirModalSair = (viagemId: number, destino: string) => {
+    setSairViagemModal({
+      aberto: true,
+      viagemId,
+      destino
     });
+  };
 
-    if (!confirmacao) {
-      setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
-      return;
-    }
+  const handleFecharModalSair = () => {
+    setSairViagemModal({
+      aberto: false,
+      viagemId: null,
+      destino: ""
+    });
+  };
 
-    try {
-      await sairDaViagem(id);
-      toast.success("Você saiu da viagem.");
-      await recarregarViagens(); 
-    } catch (error) {
-      toast.error("Erro ao sair da viagem. Tente novamente.");
-    } finally {
-      setLoadingActions(prev => ({ ...prev, [actionKey]: false }));
-    }
+  const handleSaidaConfirmada = async () => {
+    await recarregarViagens();
   };
 
   return (
@@ -352,13 +352,13 @@ const MinhasViagens = () => {
                       ) : (                        <motion.button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSairDaViagem(viagem.id);
+                            handleAbrirModalSair(viagem.id, viagem.destino);
                           }}                          className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
                           title="Sair da Viagem"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
-                          {loadingActions[`leave-${viagem.id}`] ? <Loader2 className="animate-spin w-4 h-4" /> : <LogOut size={16} />}
+                          <LogOut size={16} />
                         </motion.button>
                       )}
                     </div>
@@ -409,6 +409,16 @@ const MinhasViagens = () => {
           open={viagemSelecionadaId !== null}
           onClose={() => setViagemSelecionadaId(null)}
           imagemViagem={viagemSelecionadaId ? viagens.find(v => v.viagem.id === viagemSelecionadaId)?.viagem.imagemUrl : undefined}
+        />
+      )}
+
+      {sairViagemModal.aberto && sairViagemModal.viagemId && (
+        <SairViagemModal
+          isOpen={sairViagemModal.aberto}
+          onClose={handleFecharModalSair}
+          viagemId={sairViagemModal.viagemId}
+          viagemDestino={sairViagemModal.destino}
+          onSaidaConfirmada={handleSaidaConfirmada}
         />
       )}
     </>

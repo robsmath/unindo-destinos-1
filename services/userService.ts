@@ -11,7 +11,6 @@ interface ApiResponse<T> {
   data: T;
 }
 
-// Interface para suporte à paginação
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;
@@ -38,7 +37,14 @@ export const deletarUsuarioLogado = async (): Promise<void> => {
   await api.delete("/usuarios/me");
 };
 
-// Versão com paginação
+export const deletarConta = async (): Promise<void> => {
+  await api.delete("/usuarios/me");
+};
+
+export const validarSenhaParaDeletar = async (senha: string): Promise<void> => {
+  await api.post("/usuarios/me/validar-senha", { senha });
+};
+
 export const buscarUsuarios = async (
   filtros: UsuarioFiltroDTO,
   page: number = 0,
@@ -51,7 +57,6 @@ export const buscarUsuarios = async (
   return response.data.data;
 };
 
-// Manter versão antiga para compatibilidade (se necessário)
 export const buscarUsuariosSemPaginacao = async (
   filtros: UsuarioFiltroDTO
 ): Promise<UsuarioBuscaDTO[]> => {

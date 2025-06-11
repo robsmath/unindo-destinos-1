@@ -3,9 +3,8 @@
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { useAuth } from "@/app/context/AuthContext";
 import { toast } from "sonner";
-import { removerParticipanteDaViagem, sairDaViagem } from "@/services/viagemService";
 import { useState } from "react";
-import { Loader2, MessageCircle, Star } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import MiniPerfilModal from "@/components/EncontrePessoas/MiniPerfilModal";
 import Image from "next/image";
@@ -18,8 +17,9 @@ import {
   FaCrown,
   FaDoorOpen,
 } from "react-icons/fa";
-import { confirm } from "@/components/ui/confirm";
 import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
+import SairViagemModal from "@/components/Modals/SairViagemModal";
+import RemoverParticipanteModal from "@/components/Modals/RemoverParticipanteModal";
 
 interface Props {
   participante: UsuarioBuscaDTO;
@@ -31,6 +31,7 @@ interface Props {
   onBloquear: (usuario: { id: number; nome: string }) => void;
   podeAvaliar?: boolean;
   onAvaliar?: (participante: UsuarioBuscaDTO) => void;
+  viagemDestino?: string;
 }
 
 const formatarNome = (nome: string) => {
@@ -48,12 +49,14 @@ const ParticipanteCard = ({
   onDenunciar,
   onBloquear,
   podeAvaliar,
-  onAvaliar
+  onAvaliar,
+  viagemDestino
 }: Props) => {
   const { usuario } = useAuth();
   const router = useRouter();
-  const [carregando, setCarregando] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [sairViagemModal, setSairViagemModal] = useState(false);
+  const [removerParticipanteModal, setRemoverParticipanteModal] = useState(false);
 
   const ehCriador = participante.criador;
 
@@ -65,46 +68,20 @@ const ParticipanteCard = ({
   const podeSair =
     usuario?.id === participante.id && !ehCriador;
 
-  const handleRemover = async () => {
-    const ok = await confirm({
-      title: "Remover Participante",
-      description: `Deseja realmente remover ${formatarNome(participante.nome)} da viagem?`,
-      cancelText: "Cancelar",
-    });
-
-    if (!ok) return;
-
-    try {
-      setCarregando(true);
-      await removerParticipanteDaViagem(viagemId, participante.id);
-      toast.success("Participante removido com sucesso.");
-      window.location.reload();
-    } catch (err) {
-      toast.error("Erro ao remover participante.");
-    } finally {
-      setCarregando(false);
-    }
+  const handleAbrirModalRemover = () => {
+    setRemoverParticipanteModal(true);
   };
 
-  const handleSairDaViagem = async () => {
-    const ok = await confirm({
-      title: "Sair da Viagem",
-      description: `Deseja realmente sair desta viagem?`,
-      cancelText: "Cancelar",
-    });
+  const handleAbrirModalSair = () => {
+    setSairViagemModal(true);
+  };
 
-    if (!ok) return;
+  const handleRemocaoConfirmada = () => {
+    window.location.reload();
+  };
 
-    try {
-      setCarregando(true);
-      await sairDaViagem(viagemId);
-      toast.success("Você saiu da viagem.");
-      router.push("/profile?tab=viagens"); // 🔥 Redireciona para perfil na aba Viagens
-    } catch (err) {
-      toast.error("Erro ao sair da viagem.");
-    } finally {
-      setCarregando(false);
-    }
+  const handleSaidaConfirmada = () => {
+    router.push("/profile?tab=viagens");
   };
 
   return (
@@ -239,18 +216,13 @@ const ParticipanteCard = ({
                 title="Remover Participante"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleRemover();
+                  handleAbrirModalRemover();
                 }}
-                disabled={carregando}
                 className="relative w-8 h-8 bg-red-50/80 hover:bg-red-100 rounded-lg flex items-center justify-center text-red-600 transition-all duration-200 group/btn border border-red-100/50"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {carregando ? (
-                  <Loader2 className="animate-spin w-3 h-3" />
-                ) : (
-                  <FaTrash className="w-3 h-3" />
-                )}
+                <FaTrash className="w-3 h-3" />
               </motion.button>
             )}
 
@@ -260,18 +232,13 @@ const ParticipanteCard = ({
                 title="Sair da Viagem"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleSairDaViagem();
+                  handleAbrirModalSair();
                 }}
-                disabled={carregando}
                 className="relative w-8 h-8 bg-orange-50/80 hover:bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 transition-all duration-200 group/btn border border-orange-100/50"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {carregando ? (
-                  <Loader2 className="animate-spin w-3 h-3" />
-                ) : (
-                  <FaDoorOpen className="w-3 h-3" />
-                )}
+                <FaDoorOpen className="w-3 h-3" />
               </motion.button>
             )}
           </div>
@@ -288,6 +255,29 @@ const ParticipanteCard = ({
         onDenunciar={onDenunciar}
         onBloquear={onBloquear}
       />
+
+      {/* Modal de Sair da Viagem */}
+      {sairViagemModal && (
+        <SairViagemModal
+          isOpen={sairViagemModal}
+          onClose={() => setSairViagemModal(false)}
+          viagemId={viagemId}
+          viagemDestino={viagemDestino || "Esta viagem"}
+          onSaidaConfirmada={handleSaidaConfirmada}
+        />
+      )}
+
+      {/* Modal de Remover Participante */}
+      {removerParticipanteModal && (
+        <RemoverParticipanteModal
+          isOpen={removerParticipanteModal}
+          onClose={() => setRemoverParticipanteModal(false)}
+          viagemId={viagemId}
+          participanteId={participante.id}
+          participanteNome={participante.nome}
+          onRemocaoConfirmada={handleRemocaoConfirmada}
+        />
+      )}
     </>
   );
 };

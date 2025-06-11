@@ -50,6 +50,19 @@ export const buscarGruposComMensagensNaoLidas = async (): Promise<any[]> => {
   return response.data.data;
 };
 
+export const buscarParticipantesGrupo = async (grupoId: number): Promise<number[]> => {
+  const response = await api.get<ApiResponse<number[]>>(`${BASE_URL}/${grupoId}/participantes`);
+  return response.data.data;
+};
+
+export const adicionarParticipanteGrupo = async (grupoId: number, usuarioId: number): Promise<void> => {
+  await api.post(`${BASE_URL}/${grupoId}/participantes/${usuarioId}`);
+};
+
+export const removerParticipanteGrupo = async (grupoId: number, usuarioId: number): Promise<void> => {
+  await api.delete(`${BASE_URL}/${grupoId}/participantes/${usuarioId}`);
+};
+
 const mensagemGrupoService = {
   buscarMensagensGrupo,
   enviarMensagemGrupo,
@@ -57,6 +70,9 @@ const mensagemGrupoService = {
   silenciarGrupo,
   sairDoGrupo,
   buscarGruposComMensagensNaoLidas,
+  buscarParticipantesGrupo,
+  adicionarParticipanteGrupo,
+  removerParticipanteGrupo,
 };
 
 export default mensagemGrupoService; 

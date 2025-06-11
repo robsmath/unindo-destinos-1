@@ -36,7 +36,8 @@ export default function ConviteViagemModal({
       viagens.filter(
         (v) =>
           v.criador && // 🔥 Só as que você é criador
-          ["RASCUNHO", "PENDENTE", "CONFIRMADA"].includes(v.viagem.status) // 🔥 E com status permitido
+          ["RASCUNHO", "PENDENTE", "CONFIRMADA"].includes(v.viagem.status) && // 🔥 E com status permitido
+          (!v.viagem.numeroMaximoParticipantes || v.quantidadeParticipantes < v.viagem.numeroMaximoParticipantes) // 🔥 E que não estão lotadas
       ),
     [viagens]
   );
@@ -147,7 +148,7 @@ export default function ConviteViagemModal({
                     <option value="">Escolha uma viagem...</option>
                     {viagensFiltradas.length === 0 && (
                       <option disabled value="">
-                        Nenhuma viagem disponível
+                        Nenhuma viagem disponível para convites
                       </option>
                     )}
                     {viagensFiltradas.map((v) => (
@@ -186,6 +187,14 @@ export default function ConviteViagemModal({
                               {formatarData(viagemSelecionada.viagem.dataInicio)} até {formatarData(viagemSelecionada.viagem.dataFim)}
                             </span>
                           </div>
+                          {viagemSelecionada.viagem.numeroMaximoParticipantes && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <User className="w-4 h-4 text-primary" />
+                              <span>
+                                {viagemSelecionada.quantidadeParticipantes}/{viagemSelecionada.viagem.numeroMaximoParticipantes} participantes
+                              </span>
+                            </div>
+                          )}
                         </div>
                       );
                     })()}

@@ -14,6 +14,7 @@ import ChatGrupo from "@/components/Chat/ChatGrupo";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useUnreadGroupMessages } from "@/hooks/useUnreadGroupMessages";
 import { useDenunciaEBloqueio } from "@/hooks/useDenunciaEBloqueio";
+import { buscarParticipantesGrupo } from "@/services/mensagemGrupoService";
 import DenunciaModal from "@/components/Modals/DenunciaModal";
 import BloqueioModal from "@/components/Modals/BloqueioModal";
 import PerguntaBloqueioModal from "@/components/Modals/PerguntaBloqueioModal";
@@ -33,6 +34,7 @@ const ParticipantesViagem = () => {
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
   const [usuarioParaAvaliar, setUsuarioParaAvaliar] = useState<UsuarioBuscaDTO | null>(null);
   const [participantesAvaliados, setParticipantesAvaliados] = useState<Set<number>>(new Set());
+  const [usuarioEstaNoGrupo, setUsuarioEstaNoGrupo] = useState(true);
   const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
   const { getUnreadCountForGroup, refreshGroups } = useUnreadGroupMessages(5000);
 
@@ -118,6 +120,20 @@ const ParticipantesViagem = () => {
         setViagem(dadosViagem);
         setParticipantes(dadosParticipantes);
 
+        // VERIFICAÇÃO SIMPLES E DIRETA: Se o usuário está na lista de participantes do grupo
+        if (dadosViagem.grupoMensagemId && usuario?.id) {
+          try {
+            const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
+            const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
+            setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
+          } catch (error: any) {
+            // Se der qualquer erro, assume que NÃO está no grupo (mais seguro)
+            setUsuarioEstaNoGrupo(false);
+          }
+        } else {
+          setUsuarioEstaNoGrupo(false);
+        }
+
         // Nada necessário aqui, o hook global já cuida do polling
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
@@ -130,6 +146,8 @@ const ParticipantesViagem = () => {
 
     // Cleanup não necessário, o hook global cuida disso
   }, [id, usuario]);
+
+
 
   const criador = participantes.find((p) => p.criador);
   const usuarioEhCriador = criador?.id === usuario?.id;
@@ -402,8 +420,8 @@ const ParticipantesViagem = () => {
               </motion.h1>
             </div>
 
-            {/* Botão Chat da Viagem */}
-            {viagem && usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && (
+            {/* Botão Chat da Viagem - só aparece se o usuário estiver no grupo */}
+            {viagem && usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -530,6 +548,7 @@ const ParticipantesViagem = () => {
                       onBloquear={handleBloquear}
                       podeAvaliar={podeAvaliar(usuario)}
                       onAvaliar={handleAvaliar}
+                      viagemDestino={viagem?.destino}
                     />
                   </motion.div>
                 ))}
@@ -630,15 +649,21 @@ const ParticipantesViagem = () => {
               <ChatGrupo
                 grupoId={viagem.grupoMensagemId}
                 nomeGrupo={`Chat - ${viagem.destino}`}
+                viagemId={viagem.id}
+                usuarioEhCriador={usuarioEhCriador}
                 onFechar={() => {
                   setChatGrupoAberto(false);
-                  // Atualizar badges após fechar o chat
                   refreshGroups();
                 }}
                 onSairGrupo={() => {
                   setChatGrupoAberto(false);
-                  // Atualizar a lista de participantes após sair do grupo
-                  window.location.reload();
+                  setUsuarioEstaNoGrupo(false);
+                  refreshGroups();
+                }}
+                onRemovidoDoGrupo={() => {
+                  setChatGrupoAberto(false);
+                  setUsuarioEstaNoGrupo(false);
+                  refreshGroups();
                 }}
               />
             </motion.div>

@@ -306,7 +306,7 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
                   onSairGrupo={() => {
                     handleCloseChatGrupo();
                     // Recarregar dados após sair do grupo
-                    setTimeout(fetchRemetentes, 1000);
+                    setTimeout(fetchRemetentes, 500);
                   }}
                 />
               </motion.div>
