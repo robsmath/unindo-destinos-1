@@ -10,7 +10,12 @@ const frases = [
   { text: "Finalizando detalhes...", icon: CheckCircle, color: "from-green-500 to-emerald-500" },
 ];
 
-const LoadingOverlay = () => {
+interface LoadingOverlayProps {
+  isVisible: boolean;
+  message?: string;
+}
+
+const LoadingOverlay = ({ isVisible, message }: LoadingOverlayProps) => {
   const [fraseAtual, setFraseAtual] = useState(0);
 
   useEffect(() => {
@@ -19,6 +24,9 @@ const LoadingOverlay = () => {
     }, 3000);
     return () => clearInterval(intervalo);
   }, []);
+
+  if (!isVisible) return null;
+
   const fraseInfo = frases[fraseAtual];
   const IconeAtual = fraseInfo.icon;
   
@@ -109,10 +117,10 @@ const LoadingOverlay = () => {
               className="text-center w-full"
             >
               <h2 className={`text-xl sm:text-2xl font-bold mb-2 bg-gradient-to-r ${fraseInfo.color} bg-clip-text text-transparent`}>
-                {fraseInfo.text}
+                {message || fraseInfo.text}
               </h2>
               <p className="text-gray-600 text-sm sm:text-base">
-                Estamos preparando a melhor experiência!
+                {message ? "Por favor, aguarde..." : "Estamos preparando a melhor experiência!"}
               </p>
             </motion.div>
           </AnimatePresence>
