@@ -23,6 +23,7 @@ import {
   FaHome 
 } from "react-icons/fa";
 import { Loader2, ImageIcon } from "lucide-react";
+import OwnershipGuard from "@/components/Common/OwnershipGuard";
 
 interface CadastroPetProps {
   petId?: number;
@@ -31,6 +32,7 @@ interface CadastroPetProps {
 const CadastroPet = ({ petId }: CadastroPetProps) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [petOwnerId, setPetOwnerId] = useState<number | undefined>(undefined);
   const [pet, setPet] = useState<PetDTO>({
     nome: "",
     raca: "",
@@ -44,20 +46,24 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  
   useEffect(() => {
     const carregarPet = async () => {
       if (petId) {
         try {
           const petExistente = await getPetById(petId);
           setPet(petExistente);
+          setPetOwnerId(petExistente.idUsuario);
         } catch (err) {
           toast.error("Erro ao carregar dados do pet.");
-          router.push("/perfil?tab=meus-pets");
+          router.push("/profile?tab=meus-pets");
         }
       }
     };
     carregarPet();
-  }, [petId, router]);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  }, [petId, router]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setPet((prev) => ({ ...prev, [name]: value }));
   };
@@ -192,7 +198,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
     } finally {
       setSaving(false);
     }
-  };  return (
+  };  const content = (
     <div className="relative min-h-screen overflow-hidden">          {/* Background animado */}
       <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
         <motion.div
@@ -693,6 +699,23 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
       </section>
     </div>
   );
+
+  // Se for edição, aplicar o OwnershipGuard
+  if (petId) {
+    return (
+      <OwnershipGuard
+        resourceOwnerId={petOwnerId}
+        resourceType="pet"
+        resourceId={petId}
+        fallbackRoute="/profile?tab=meus-pets"
+      >
+        {content}
+      </OwnershipGuard>
+    );
+  }
+
+  // Se for criação, renderizar diretamente
+  return content;
 };
 
 export default CadastroPet;

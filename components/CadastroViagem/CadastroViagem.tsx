@@ -30,6 +30,7 @@ import {
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { useAuth } from "@/app/context/AuthContext";
 import paisesTraduzidos from "@/models/paisesTraduzidos";
+import OwnershipGuard from "@/components/Common/OwnershipGuard";
 
 interface CadastroViagemProps {
   viagemId?: string;
@@ -44,7 +45,10 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [loading, setLoading] = useState(false);
   const [cidadeInternacional, setCidadeInternacional] = useState("");
   const [consultaImagem, setConsultaImagem] = useState<{ [key: number]: string }>({});
-  const [paisSelecionado, setPaisSelecionado] = useState("");  const [form, setForm] = useState<Omit<ViagemDTO, "id" | "criadorViagemId">>({
+  const [paisSelecionado, setPaisSelecionado] = useState("");
+  const [voyageOwner, setVoyageOwner] = useState<number | undefined>(undefined);
+
+  const [form, setForm] = useState<Omit<ViagemDTO, "id" | "criadorViagemId">>({
     destino: "",
     dataInicio: "",
     dataFim: "",
@@ -138,7 +142,13 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   
     const carregarViagem = async () => {
       if (id) {
-        try {          const viagem = await getViagemById(id);          setForm({
+        try {
+          const viagem = await getViagemById(id);
+          
+          // Definir o proprietário da viagem
+          setVoyageOwner(viagem.criadorViagemId);
+          
+          setForm({
             destino: viagem.destino,
             dataInicio: viagem.dataInicio,
             dataFim: viagem.dataFim,
@@ -149,7 +159,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             numeroMaximoParticipantes: viagem.numeroMaximoParticipantes,
             imagemUrl: viagem.imagemUrl
           });
-  
+
           if (viagem.categoriaViagem === "NACIONAL") {
             const [cidadeSalva, estadoSalvo] = viagem.destino.split(" - ");
             if (cidadeSalva && estadoSalvo) {
@@ -187,7 +197,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             }
           }
 
-  
           const preferenciasSalvas = await getPreferenciaByViagemId(id);
           if (preferenciasSalvas !== null) {
             setPreferencias(preferenciasSalvas);
@@ -196,19 +205,14 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             setSemPreferencias(true);
           }
         } catch (error) {
-          console.error("Erro ao carregar viagem ou preferências para edição", error);
+          console.error("Erro ao carregar viagem:", error);
+          toast.error("Erro ao carregar dados da viagem.");
+          router.push("/profile?tab=viagens");
         }
-      } else {
-        // Para novo cadastro, sempre mostrar aviso de preferências não cadastradas
-        setSemPreferencias(true);
-        
-        // Para viagens novas, mostrar seção de preferências expandida por padrão
-        setShowPreferences(true);
       }
     };
-  
     carregarViagem();
-  }, [id]);
+  }, [id, router]);
   
 
   if (!hasMounted) return null;  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -357,7 +361,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     }
   };
   
-  return (
+  const content = (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
       <div className="absolute inset-0 z-10">
         <motion.div
@@ -1094,6 +1098,23 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       </div>
     </section>
   );
+
+  // Se for edição, aplicar o OwnershipGuard
+  if (id) {
+    return (
+      <OwnershipGuard
+        resourceOwnerId={voyageOwner}
+        resourceType="viagem"
+        resourceId={id}
+        fallbackRoute="/profile?tab=viagens"
+      >
+        {content}
+      </OwnershipGuard>
+    );
+  }
+
+  // Se for criação, renderizar diretamente
+  return content;
 };
 
 export default CadastroViagem;

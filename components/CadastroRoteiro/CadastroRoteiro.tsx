@@ -39,6 +39,7 @@ import {
   Target
 } from "lucide-react";
 import { ViagemDTO } from "@/models/ViagemDTO";
+import OwnershipGuard from "@/components/Common/OwnershipGuard";
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 
@@ -62,10 +63,14 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   const [roteiroInexistente, setRoteiroInexistente] = useState(false);
   const [diasRoteiro, setDiasRoteiro] = useState([{ titulo: "", descricao: "" }]);
   const [observacoesFinais, setObservacoesFinais] = useState("");
-  const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");  const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
+  const [modoCriacao, setModoCriacao] = useState<"MANUAL" | "IA">("MANUAL");
+  const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
   const [viagem, setViagem] = useState<ViagemDTO | null>(null);
   const [souCriador, setSouCriador] = useState(false);
-  const [limiteGeracaoAtingido, setLimiteGeracaoAtingido] = useState(false);useEffect(() => {
+  const [limiteGeracaoAtingido, setLimiteGeracaoAtingido] = useState(false);
+  const [viagemOwnerId, setViagemOwnerId] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const meta = document.createElement('meta');
       meta.httpEquiv = 'Cache-Control';
@@ -82,7 +87,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       expires.content = '0';
       document.head.appendChild(expires);
     }
-  }, []);  useEffect(() => {
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!viagemId) return;
       
@@ -101,6 +108,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         
         const viagemData = await getViagemById(Number(viagemId));
         setViagem(viagemData);
+        setViagemOwnerId(viagemData.criadorViagemId);
         setSouCriador(viagemData.criadorViagemId === usuario?.id);
         const roteiro = await getRoteiroByViagemId(Number(viagemId));
         if (roteiro) {
@@ -367,7 +375,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
     } finally {
       setLoading(false);
     }
-  };  const forcarLimpezaCompleta = async () => {
+  };
+
+  const forcarLimpezaCompleta = async () => {
     if (typeof window !== 'undefined') {
       try {
         const keysToRemove = [
@@ -424,11 +434,59 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
     }
   };
 
-  return (
+  const content = (
     <>
       <AnimatePresence>
-        {loading && <LoadingOverlay />}
+        {(loading || loadingPdf || loadingEmail) && (
+          <LoadingOverlay
+            isVisible={loading || loadingPdf || loadingEmail}
+            message={
+              loading 
+                ? "Gerando roteiro..."
+                : loadingPdf 
+                ? "Gerando PDF..."
+                : "Enviando roteiro..."
+            }
+          />
+        )}
       </AnimatePresence>
+
+      <div className="fixed inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 -z-10">
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            background: [
+              "linear-gradient(45deg, rgba(249, 115, 22, 0.08), rgba(251, 146, 60, 0.12), rgba(234, 88, 12, 0.08))",
+              "linear-gradient(135deg, rgba(234, 88, 12, 0.08), rgba(249, 115, 22, 0.12), rgba(251, 146, 60, 0.08))",
+              "linear-gradient(45deg, rgba(249, 115, 22, 0.08), rgba(251, 146, 60, 0.12), rgba(234, 88, 12, 0.08))"
+            ]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {Array.from({ length: 12 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-r from-primary/30 to-orange-500/30 rounded-full"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+            }}
+            animate={{ 
+              y: [0, -100, 0],
+              x: [0, Math.random() * 30 - 15, 0],
+              opacity: [0, 0.6, 0],
+              scale: [0, 1, 0]
+            }}
+            transition={{ 
+              duration: 8 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 8,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
 
       <div className="relative min-h-screen overflow-hidden">        
         <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
@@ -1139,6 +1197,17 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         )}
       </AnimatePresence>
     </>
+  );
+
+  return (
+    <OwnershipGuard
+      resourceOwnerId={viagemOwnerId}
+      resourceType="roteiro"
+      resourceId={viagemId}
+      fallbackRoute="/profile?tab=viagens"
+    >
+      {content}
+    </OwnershipGuard>
   );
 };
 
