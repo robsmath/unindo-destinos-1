@@ -32,7 +32,6 @@ const SkipLinks = ({ links }: SkipLinksProps) => {
     };
 
     const handleBlur = () => {
-      // Pequeno delay para permitir que o próximo elemento receba o foco
       setTimeout(() => {
         if (!document.activeElement?.closest('.skip-links')) {
           setIsVisible(false);
@@ -65,7 +64,6 @@ const SkipLinks = ({ links }: SkipLinksProps) => {
             className="px-4 py-2 bg-primary text-white text-sm font-medium rounded hover:bg-primary/90 focus:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
             onFocus={() => setIsVisible(true)}
             onBlur={(e) => {
-              // Se o próximo elemento focado não é um skip link, esconder
               if (!e.relatedTarget?.closest('.skip-links')) {
                 setIsVisible(false);
               }

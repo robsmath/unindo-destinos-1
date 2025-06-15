@@ -119,7 +119,6 @@ const EnviarRoteiroModal = ({
             className="bg-white/90 backdrop-blur-xl rounded-3xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto border border-white/20"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header com gradiente */}
             <div className="relative mb-6">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl opacity-10"></div>
               <div className="relative flex items-center justify-between p-4">
@@ -146,7 +145,6 @@ const EnviarRoteiroModal = ({
             <p className="text-gray-600 mb-6 text-center">
               Escolha para quem deseja enviar este roteiro por e-mail
             </p>            <div className="space-y-4">
-              {/* Opção: Para o meu e-mail */}
               <motion.label
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -174,7 +172,6 @@ const EnviarRoteiroModal = ({
                 <span className="font-medium">Para o meu e-mail</span>
               </motion.label>
 
-              {/* Opção: Para participantes - apenas para criadores */}
               {souCriador && (
                 <motion.label
                   whileHover={{ scale: 1.02 }}
@@ -204,7 +201,6 @@ const EnviarRoteiroModal = ({
                 </motion.label>
               )}
 
-              {/* Opção: Para outro e-mail - apenas para criadores */}
               {souCriador && (
                 <motion.label
                   whileHover={{ scale: 1.02 }}
@@ -234,7 +230,6 @@ const EnviarRoteiroModal = ({
                 </motion.label>
               )}
 
-              {/* Mensagem informativa para participantes */}
               {!souCriador && (
                 <div className="bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-4">
                   <div className="flex items-center gap-3 mb-2">
@@ -247,7 +242,6 @@ const EnviarRoteiroModal = ({
                 </div>
               )}
 
-              {/* Detalhes das opções selecionadas */}
               <AnimatePresence mode="wait">
                 {destino === "CRIADOR" && usuario?.email && (
                   <motion.div
@@ -342,7 +336,6 @@ const EnviarRoteiroModal = ({
               </AnimatePresence>
             </div>
 
-            {/* Botões de ação */}
             <div className="flex gap-3 mt-8">
               <motion.button
                 whileHover={{ scale: 1.02 }}

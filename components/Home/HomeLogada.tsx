@@ -36,7 +36,6 @@ const HomeLogada = () => {
 
   const firstName = usuario?.nome ? usuario.nome.split(" ")[0] : "Explorador";
 
-  // Visão e Valores da empresa
   const visionAndValues = [
     { 
       icon: "🌟", 
@@ -64,7 +63,6 @@ const HomeLogada = () => {
     }
   ];
 
-  // Features principais
   const features = [
     {
       icon: Users,
@@ -96,7 +94,6 @@ const HomeLogada = () => {
     }
   ];
 
-  // Destinos em alta com imagens da API
   const trendingDestinations = [
     { 
       name: "Fernando de Noronha", 
@@ -124,7 +121,6 @@ const HomeLogada = () => {
     }
   ];
 
-  // Função para scroll to top nos links
   const handleLinkClick = (href: string) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => {
@@ -134,9 +130,7 @@ const HomeLogada = () => {
 
   return (
     <div ref={containerRef} className="relative min-h-screen overflow-hidden">
-      {/* Background Hero Section */}
       <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-        {/* Animated Background Elements */}
         <div className="absolute inset-0">
           <motion.div
             style={{ y: backgroundY }}
@@ -151,7 +145,6 @@ const HomeLogada = () => {
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* Floating Travel Icons */}
           {[Plane, MapPin, Camera, Compass, Globe, Luggage].map((Icon, i) => (
             <motion.div
               key={i}
@@ -176,7 +169,6 @@ const HomeLogada = () => {
             </motion.div>
           ))}
 
-          {/* Large floating orbs */}
           <motion.div
             className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl"
             animate={{ 
@@ -198,7 +190,6 @@ const HomeLogada = () => {
           />
         </div>
 
-        {/* Hero Content */}
         <motion.div
           style={{ y: textY }}
           className="relative z-10 text-center px-4 max-w-6xl mx-auto"
@@ -275,7 +266,6 @@ const HomeLogada = () => {
           </motion.div>
         </motion.div>
 
-        {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -296,7 +286,6 @@ const HomeLogada = () => {
         </motion.div>
       </section>
 
-      {/* Statistics Section */}
       <section className="py-20 bg-white relative">
         <div className="container mx-auto px-4">
           <motion.div
@@ -350,7 +339,6 @@ const HomeLogada = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
         <div className="container mx-auto px-4">
           <motion.div
@@ -408,7 +396,6 @@ const HomeLogada = () => {
         </div>
       </section>
 
-      {/* Trending Destinations */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
@@ -490,7 +477,6 @@ const HomeLogada = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
       <section className="py-20 bg-gradient-to-br from-primary via-orange-500 to-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
         <motion.div

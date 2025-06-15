@@ -13,7 +13,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
   const [idadeMinimaInput, setIdadeMinimaInput] = useState(preferencias.idadeMinima?.toString() || "");
   const [idadeMaximaInput, setIdadeMaximaInput] = useState(preferencias.idadeMaxima?.toString() || "");
 
-  // Atualiza inputs caso preferências mudem externamente
   useEffect(() => {
     setIdadeMinimaInput(preferencias.idadeMinima?.toString() || "");
     setIdadeMaximaInput(preferencias.idadeMaxima?.toString() || "");
@@ -32,7 +31,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
     } as React.ChangeEvent<HTMLInputElement>);
   };  return (
     <div className="space-y-8">
-      {/* Gender Preference */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
@@ -56,7 +54,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <p className="text-sm text-gray-500">Gênero dos participantes que você prefere na viagem.</p>
       </div>
 
-      {/* Age Range */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Baby className="h-5 w-5 text-primary" />
@@ -129,7 +126,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <p className="text-sm text-gray-500">Faixa etária dos viajantes que você prefere.</p>
       </div>
 
-      {/* Budget */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-primary" />
@@ -157,7 +153,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <p className="text-sm text-gray-500">Quanto você está disposto(a) a gastar por viagem, em média.</p>
       </div>
 
-      {/* Preferences Checkboxes */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Heart className="h-5 w-5 text-primary" />
@@ -195,7 +190,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         </div>
       </div>
 
-      {/* Accommodation Type */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Home className="h-5 w-5 text-primary" />
@@ -223,7 +217,6 @@ const PreferenciasForm: React.FC<PreferenciasFormProps> = ({ preferencias, handl
         <p className="text-sm text-gray-500">Tipo de hospedagem preferido.</p>
       </div>
 
-      {/* Transportation Type */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Car className="h-5 w-5 text-primary" />

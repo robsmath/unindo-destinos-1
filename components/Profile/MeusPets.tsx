@@ -26,7 +26,7 @@ const MeusPets = () => {
       toast.error("Erro ao carregar seus pets.");
       throw err;
     }
-  }, 'pets'); // Adicionando cache key
+  }, 'pets');
 
   useEffect(() => {
     loadData();
@@ -49,7 +49,6 @@ const MeusPets = () => {
     try {
       await deletarPet(id);
       toast.success(`Pet ${nome} deletado com sucesso!`);
-      // Recarregar a lista de pets
       loadData();
     } catch (error) {
       console.error("Erro ao deletar pet:", error);
@@ -95,7 +94,6 @@ const MeusPets = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Header Section */}
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2">
           <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
@@ -105,7 +103,6 @@ const MeusPets = () => {
         <p className="text-gray-600">Gerencie o perfil dos seus companheiros de quatro patas</p>
       </div>
 
-      {/* Loading State */}
       {loading && (
         <motion.div 
           className="text-center py-12"
@@ -117,7 +114,7 @@ const MeusPets = () => {
             <p className="text-lg font-medium text-gray-700">Carregando seus pets...</p>
           </div>
         </motion.div>
-      )}      {/* Empty State */}
+      )}
       {!loading && (!pets || pets.length === 0) && (
         <motion.div 
           className="text-center py-16"
@@ -134,7 +131,7 @@ const MeusPets = () => {
             </p>
           </div>
         </motion.div>
-      )}{/* Pets Grid */}
+      )}
       {!loading && pets && pets.length > 0 && (
         <motion.div 
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
@@ -152,11 +149,9 @@ const MeusPets = () => {
               whileHover={{ y: -8, scale: 1.02 }}
               onClick={() => handleAbrirModal(pet)}
             >
-              {/* Pet Photo */}
               <div className="relative mb-6 flex justify-center">
                 {pet.foto ? (
                   <div className="relative w-28 h-28">
-                    {/* Gradient Ring */}
                     <div className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-full p-1">
                       <div className="bg-white rounded-full p-1 w-full h-full">
                         <img
@@ -169,7 +164,6 @@ const MeusPets = () => {
                   </div>
                 ) : (
                   <div className="relative w-28 h-28">
-                    {/* Gradient Ring */}
                     <div className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-full p-1">
                       <div className="bg-white rounded-full p-1 w-full h-full">
                         <div className="w-full h-full bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
@@ -181,13 +175,11 @@ const MeusPets = () => {
                 )}
               </div>
 
-              {/* Pet Info */}
               <div className="text-center space-y-3">
                 <h3 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors duration-300">
                   {pet.nome}
                 </h3>
                 
-                {/* Pet Details */}
                 <div className="space-y-2">
                   {pet.raca && (
                     <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
@@ -215,7 +207,6 @@ const MeusPets = () => {
                   </div>
                 </div>
                 
-                {/* Action Indicator */}
                 <div className="pt-2 border-t border-gray-200/50">
                   <div className="inline-flex items-center gap-2 text-sm text-gray-500 group-hover:text-primary transition-colors duration-300">
                     <span className="w-2 h-2 bg-primary rounded-full group-hover:animate-pulse"></span>
@@ -223,9 +214,7 @@ const MeusPets = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  {/* Edit Button */}
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -238,7 +227,6 @@ const MeusPets = () => {
                     Editar
                   </motion.button>
 
-                  {/* Delete Button */}
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -263,7 +251,6 @@ const MeusPets = () => {
         </motion.div>
       )}
 
-      {/* Add Pet Button */}
       <motion.div 
         className="text-center"
         initial={{ opacity: 0, y: 10 }}
@@ -276,7 +263,6 @@ const MeusPets = () => {
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
         >
-          {/* Animated Background */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             initial={{ x: '-100%' }}
@@ -290,7 +276,6 @@ const MeusPets = () => {
           </span>        </motion.button>
       </motion.div>
 
-      {/* Modal de Detalhes do Pet */}
       <PetDetalhesModal
         pet={selectedPet}
         isOpen={isModalOpen}

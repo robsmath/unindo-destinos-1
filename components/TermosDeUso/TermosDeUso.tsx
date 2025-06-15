@@ -5,7 +5,7 @@ import { FileText } from "lucide-react";
 
 const TermosDeUso = () => {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">      {/* Animated Background */}
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-primary/5 via-orange-500/5 to-transparent"
@@ -21,7 +21,6 @@ const TermosDeUso = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         />
         
-        {/* Floating Elements */}
         {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
@@ -49,7 +48,6 @@ const TermosDeUso = () => {
           />
         ))}
 
-        {/* Large floating orbs */}
         <motion.div
           className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl"
           animate={{ 
@@ -70,7 +68,6 @@ const TermosDeUso = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 3 }}
         />
 
-        {/* Document icons floating */}
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={`document-${i}`}
@@ -97,7 +94,6 @@ const TermosDeUso = () => {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-20">
-        {/* Cabeçalho */}
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -131,7 +127,6 @@ const TermosDeUso = () => {
           </p>
         </motion.div>
 
-        {/* Conteúdo */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/30 shadow-lg p-10 text-gray-700 leading-relaxed space-y-8 text-justify">
           <p><strong>1. Aceitação dos Termos:</strong> Ao utilizar o Unindo Destinos, você concorda com estes Termos de Uso. Caso não concorde, interrompa imediatamente o uso da plataforma.</p>
 

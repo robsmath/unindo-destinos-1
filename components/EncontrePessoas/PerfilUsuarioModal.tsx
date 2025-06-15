@@ -100,7 +100,6 @@ export default function PerfilUsuarioModal({
                   </div>
                 ) : usuario ? (
                   <div className="flex flex-col items-center text-center p-8">
-                    {/* Foto do Usuário */}
                     <img
                       src={usuario.fotoPerfil || "/images/user/avatar.png"}
                       alt="Foto"
@@ -116,12 +115,10 @@ export default function PerfilUsuarioModal({
                       {usuario.genero} • {usuario.idade} anos
                     </p>
 
-                    {/* Descrição */}
                     {usuario.descricao && (
                       <p className="mt-4 text-gray-800 text-sm italic">"{usuario.descricao}"</p>
                     )}
 
-                    {/* Preferências */}
                     <div className="mt-6 text-left w-full text-sm space-y-2">
                       {usuario.tipoAcomodacao && (
                         <p className="flex items-center gap-2">
@@ -167,7 +164,6 @@ export default function PerfilUsuarioModal({
                       )}
                     </div>
 
-                    {/* Aviso */}
                     {deveExibirAviso && (
                       <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
                         <div className="flex items-start gap-3">
@@ -182,7 +178,6 @@ export default function PerfilUsuarioModal({
                       </div>
                     )}
 
-                    {/* Botões de Denúncia e Bloqueio */}
                     <div className="mt-6 flex justify-center">
                       <DenunciaEBloqueioButtons
                         usuario={usuario}

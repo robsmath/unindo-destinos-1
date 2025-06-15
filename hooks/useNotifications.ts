@@ -37,14 +37,12 @@ export function useNotifications() {
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 
   useEffect(() => {
-    // Verificar suporte a notificações
     setIsSupported('Notification' in window && 'serviceWorker' in navigator);
     
     if ('Notification' in window) {
       setPermission(Notification.permission);
     }
 
-    // Verificar se já existe uma subscription
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
         registration.pushManager.getSubscription().then(sub => {
@@ -54,7 +52,6 @@ export function useNotifications() {
     }
   }, []);
 
-  // Solicitar permissão para notificações
   const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
     if (!isSupported) {
       throw new Error('Notificações não são suportadas neste navegador');
@@ -70,7 +67,6 @@ export function useNotifications() {
     return result;
   }, [isSupported, permission]);
 
-  // Mostrar notificação no app (toast)
   const showInAppNotification = useCallback((options: NotificationOptions) => {
     const { title, message, type = 'info', duration = 4000, persistent, action, icon } = options;
 
@@ -95,7 +91,6 @@ export function useNotifications() {
     }
   }, []);
 
-  // Mostrar notificação do sistema
   const showSystemNotification = useCallback(async (options: NotificationOptions): Promise<void> => {
     if (permission !== 'granted') {
       throw new Error('Permissão para notificações não foi concedida');
@@ -116,7 +111,6 @@ export function useNotifications() {
       }
     };
 
-    // Auto-fechar após duração especificada
     if (!options.persistent && options.duration) {
       setTimeout(() => {
         notification.close();
@@ -124,12 +118,9 @@ export function useNotifications() {
     }
   }, [permission]);
 
-  // Mostrar notificação (app + sistema se permitido)
   const showNotification = useCallback(async (options: NotificationOptions) => {
-    // Sempre mostrar notificação no app
     showInAppNotification(options);
 
-    // Mostrar notificação do sistema se permitido e app não está em foco
     if (permission === 'granted' && document.hidden) {
       try {
         await showSystemNotification(options);
@@ -139,7 +130,6 @@ export function useNotifications() {
     }
   }, [permission, showInAppNotification, showSystemNotification]);
 
-  // Configurar push notifications
   const subscribeToPush = useCallback(async (vapidKey?: string): Promise<PushSubscription | null> => {
     if (!isSupported || permission !== 'granted') {
       throw new Error('Push notifications não estão disponíveis');
@@ -155,7 +145,6 @@ export function useNotifications() {
 
       setSubscription(sub);
       
-      // Enviar subscription para o servidor
       await fetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: {
@@ -171,14 +160,12 @@ export function useNotifications() {
     }
   }, [isSupported, permission]);
 
-  // Cancelar push notifications
   const unsubscribeFromPush = useCallback(async (): Promise<void> => {
     if (subscription) {
       try {
         await subscription.unsubscribe();
         setSubscription(null);
         
-        // Notificar servidor
         await fetch('/api/notifications/unsubscribe', {
           method: 'POST',
           headers: {
@@ -193,7 +180,6 @@ export function useNotifications() {
     }
   }, [subscription]);
 
-  // Enviar push notification para teste
   const sendTestPushNotification = useCallback(async (data: PushNotificationData) => {
     if (!subscription) {
       throw new Error('Não há subscription ativa');
@@ -216,7 +202,6 @@ export function useNotifications() {
     }
   }, [subscription]);
 
-  // Notificações pré-definidas para casos comuns
   const notificationPresets = {
     success: (message: string) => showNotification({
       type: 'success',
@@ -288,29 +273,24 @@ export function useNotifications() {
   };
 
   return {
-    // Estado
     permission,
     isSupported,
     subscription,
     isSubscribed: !!subscription,
 
-    // Métodos principais
     requestPermission,
     showNotification,
     showInAppNotification,
     showSystemNotification,
 
-    // Push notifications
     subscribeToPush,
     unsubscribeFromPush,
     sendTestPushNotification,
 
-    // Presets
     ...notificationPresets,
   };
 }
-
-// Utility para converter VAPID key
+  
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)

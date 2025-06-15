@@ -32,24 +32,20 @@ export default function OwnershipGuard({
   useEffect(() => {
     const checkOwnership = () => {
       if (!usuario || !usuario.id) {
-        // Usuário não logado
         setIsOwner(false);
         setIsLoading(false);
         return;
       }
 
       if (resourceOwnerId === undefined) {
-        // Ainda carregando os dados do recurso
         return;
       }
 
-      // Verificar se o usuário é o proprietário
       const userIsOwner = usuario.id === resourceOwnerId;
       setIsOwner(userIsOwner);
       setIsLoading(false);
 
       if (!userIsOwner) {
-        // Não é o proprietário - mostrar erro e redirecionar
         const resourceMessages = {
           viagem: "Você não tem permissão para editar esta viagem. Apenas o criador pode fazer alterações.",
           pet: "Você não tem permissão para editar este pet. Apenas o dono pode fazer alterações.",
@@ -65,7 +61,6 @@ export default function OwnershipGuard({
           duration: 4000,
         });
 
-        // Redirecionar após um breve delay
         setTimeout(() => {
           if (fallbackRoute) {
             router.push(fallbackRoute);
@@ -85,7 +80,6 @@ export default function OwnershipGuard({
     checkOwnership();
   }, [usuario, resourceOwnerId, resourceType, resourceId, router, fallbackRoute]);
 
-  // Loading state
   if (isLoading) {
     if (loadingComponent) {
       return <>{loadingComponent}</>;
@@ -115,7 +109,6 @@ export default function OwnershipGuard({
     );
   }
 
-  // Access denied state
   if (isOwner === false) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-red-100">
@@ -158,6 +151,5 @@ export default function OwnershipGuard({
     );
   }
 
-  // Access granted - render children
   return <>{children}</>;
 } 

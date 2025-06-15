@@ -81,7 +81,6 @@ const InitialLoading = ({
           transition={{ duration: 0.5 }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 via-white to-orange-500/5 dark:from-gray-900 dark:via-black dark:to-gray-800"
         >
-          {/* Logo animado */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -89,7 +88,6 @@ const InitialLoading = ({
             className="mb-8"
           >
             <div className="relative">
-              {/* Círculo de fundo animado */}
               <motion.div
                 className="absolute inset-0 w-32 h-32 bg-gradient-to-r from-primary to-orange-500 rounded-full opacity-20"
                 animate={{
@@ -103,7 +101,6 @@ const InitialLoading = ({
                 }}
               />
               
-              {/* Logo */}
               <div className="relative z-10 w-32 h-32 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-2xl">
                 <motion.div
                   animate={{
@@ -122,7 +119,6 @@ const InitialLoading = ({
             </div>
           </motion.div>
 
-          {/* Título */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -137,7 +133,6 @@ const InitialLoading = ({
             </p>
           </motion.div>
 
-          {/* Barra de progresso */}
           {showProgress && (
             <motion.div
               initial={{ width: 0, opacity: 0 }}
@@ -160,7 +155,6 @@ const InitialLoading = ({
             </motion.div>
           )}
 
-          {/* Dicas de carregamento */}
           {showTips && (
             <motion.div
               initial={{ y: 20, opacity: 0 }}
@@ -191,7 +185,6 @@ const InitialLoading = ({
             </motion.div>
           )}
 
-          {/* Pontos de carregamento animados */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -215,7 +208,6 @@ const InitialLoading = ({
             ))}
           </motion.div>
 
-          {/* Fallback para carregamento muito lento */}
           {progress < 30 && (
             <motion.button
               initial={{ opacity: 0 }}

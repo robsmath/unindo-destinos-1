@@ -133,7 +133,6 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop */}
           <motion.div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={handleClose}
@@ -142,7 +141,6 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
             exit={{ opacity: 0 }}
           />
 
-          {/* Modal */}
           <motion.div
             className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -150,7 +148,6 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            {/* Header */}
             <div className="relative bg-gradient-to-r from-primary to-orange-500 text-white p-6">
               <motion.button
                 onClick={handleClose}
@@ -175,9 +172,7 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-              {/* Trip Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
@@ -220,7 +215,7 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
                       <p className="font-semibold text-gray-800">{formatarNomeCompleto(viagem.criadorNome)}</p>
                     </div>
                   </div>
-                </div>              </div>              {/* Descrição */}
+                </div>              </div>
               {viagem.descricao && (
                 <div className="space-y-3">
                   <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
@@ -235,7 +230,6 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
                 </div>
               )}
 
-              {/* Status */}
               <div className="flex items-center justify-center">
                 <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(viagem.status)}`}>
                   <Clock className="w-4 h-4" />
@@ -243,7 +237,6 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
                 </span>
               </div>
 
-              {/* Message Input */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <MessageCircle className="w-4 h-4 text-primary" />
@@ -262,7 +255,6 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-3 pt-4">
                 <motion.button
                   onClick={handleClose}

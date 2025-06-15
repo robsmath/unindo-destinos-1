@@ -98,7 +98,6 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <DialogPanel className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-lg border border-white/20 shadow-2xl transition-all">
-                {/* Botão de Fechar */}
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 z-10 p-2 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-105"
@@ -108,18 +107,15 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                 </button>
 
                 <div className="flex flex-col p-6 sm:p-8">
-                  {/* Header com foto e nome */}
                   <motion.div 
                     className="flex flex-col items-center text-center mb-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                   >
-                    {/* Foto do Pet */}
                     <div className="relative mb-4">
                       {pet.foto && !imageError ? (
                         <div className="relative">
-                          {/* Gradient Ring */}
                           <div className="bg-gradient-to-r from-primary to-orange-500 rounded-full p-1 w-32 h-32 mx-auto">
                             <div className="bg-white rounded-full p-1 w-full h-full">
                               <img
@@ -133,7 +129,6 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                         </div>
                       ) : (
                         <div className="relative">
-                          {/* Gradient Ring */}
                           <div className="bg-gradient-to-r from-primary to-orange-500 rounded-full p-1 w-32 h-32 mx-auto">
                             <div className="bg-white rounded-full p-1 w-full h-full">
                               <div className="w-full h-full bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-full flex items-center justify-center">
@@ -145,12 +140,10 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                       )}
                     </div>
 
-                    {/* Nome */}
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">
                       {pet.nome}
                     </h2>
 
-                    {/* Informações básicas */}
                     <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
                       {pet.raca && (
                         <div className="flex items-center gap-1">
@@ -173,14 +166,12 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                     </div>
                   </motion.div>
 
-                  {/* Informações detalhadas */}
                   <motion.div 
                     className="space-y-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    {/* Data de nascimento e idade */}
                     {infoNascimento && (
                       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -194,7 +185,6 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                       </div>
                     )}
 
-                    {/* Descrição */}
                     {pet.descricao && pet.descricao.trim() && (
                       <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -205,7 +195,6 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                       </div>
                     )}
 
-                    {/* Observações */}
                     {pet.observacao && pet.observacao.trim() && (
                       <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -216,7 +205,6 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                       </div>
                     )}
 
-                    {/* Se não há descrição nem observações */}
                     {(!pet.descricao || !pet.descricao.trim()) && (!pet.observacao || !pet.observacao.trim()) && (
                       <div className="bg-gray-50 rounded-2xl p-4 text-center">
                         <FaPaw className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -227,7 +215,6 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                     )}
                   </motion.div>
 
-                  {/* Botão de Editar */}
                   <motion.div 
                     className="mt-6 pt-4 border-t border-gray-200/50"
                     initial={{ opacity: 0, y: 20 }}

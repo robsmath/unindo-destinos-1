@@ -12,7 +12,6 @@ const AccessibilityToolbar = () => {
   const [screenReader, setScreenReader] = useState(false);
 
   useEffect(() => {
-    // Verificar preferências salvas no localStorage
     const savedPrefs = localStorage.getItem('accessibility-prefs');
     if (savedPrefs) {
       const prefs = JSON.parse(savedPrefs);
@@ -21,13 +20,11 @@ const AccessibilityToolbar = () => {
       setReducedMotion(prefs.reducedMotion || false);
     }
 
-    // Detectar se usuário prefere movimento reduzido
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
       setReducedMotion(true);
     }
 
-    // Detectar uso de teclado
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.altKey && e.key === 'a') {
         e.preventDefault();
@@ -40,7 +37,6 @@ const AccessibilityToolbar = () => {
   }, [isVisible]);
 
   useEffect(() => {
-    // Aplicar mudanças de acessibilidade
     const root = document.documentElement;
     
     root.style.fontSize = `${fontSize}px`;
@@ -57,7 +53,6 @@ const AccessibilityToolbar = () => {
       root.style.removeProperty('--motion-reduce');
     }
 
-    // Salvar preferências
     const prefs = {
       fontSize,
       highContrast,
@@ -98,7 +93,6 @@ const AccessibilityToolbar = () => {
 
   return (
     <>
-      {/* Botão de acesso rápido */}
       <button
         onClick={() => setIsVisible(!isVisible)}
         className="fixed bottom-4 left-4 z-50 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
@@ -108,7 +102,6 @@ const AccessibilityToolbar = () => {
         <Eye className="h-5 w-5" />
       </button>
 
-      {/* Toolbar de acessibilidade */}
       <AnimatePresence>
         {isVisible && (
           <motion.div
@@ -133,7 +126,6 @@ const AccessibilityToolbar = () => {
                 </button>
               </div>
 
-              {/* Tamanho da fonte */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tamanho da Fonte
@@ -166,7 +158,6 @@ const AccessibilityToolbar = () => {
                 </div>
               </div>
 
-              {/* Alto contraste */}
               <div>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -181,7 +172,6 @@ const AccessibilityToolbar = () => {
                 </label>
               </div>
 
-              {/* Movimento reduzido */}
               <div>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -195,8 +185,6 @@ const AccessibilityToolbar = () => {
                   </span>
                 </label>
               </div>
-
-              {/* Dicas de navegação */}
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Navegação por Teclado
@@ -209,7 +197,6 @@ const AccessibilityToolbar = () => {
                 </div>
               </div>
 
-              {/* Botão de anúncio para leitores de tela */}
               <button
                 onClick={() => {
                   setScreenReader(!screenReader);
@@ -231,7 +218,6 @@ const AccessibilityToolbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Estilos CSS para alto contraste */}
       <style jsx global>{`
         .high-contrast {
           filter: contrast(150%) brightness(150%);

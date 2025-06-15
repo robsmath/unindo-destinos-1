@@ -34,7 +34,6 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    // Desabilitar mouse tracking se movimento reduzido
     if (shouldReduceMotion) return;
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -44,7 +43,6 @@ const Header = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [shouldReduceMotion]);
 
-  // Navegação por teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!navigationOpen) return;
@@ -76,7 +74,6 @@ const Header = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [navigationOpen, focusedItem]);
 
-  // Fechar menu ao clicar fora
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Element;
@@ -119,7 +116,6 @@ const Header = () => {
       role="banner"
       aria-label="Navegação principal"
     >
-      {/* Skip to main content link for screen readers */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-primary text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
@@ -127,7 +123,6 @@ const Header = () => {
         Pular para o conteúdo principal
       </a>
 
-      {/* Magical gradient overlay - desabilitar se movimento reduzido */}
       {!shouldReduceMotion && (
         <div
           className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-700"
@@ -139,7 +134,6 @@ const Header = () => {
       )}
       
       <div className="relative mx-auto flex max-w-c-1390 items-center justify-between px-4 md:px-8 2xl:px-0">
-        {/* Logo with enhanced animations */}
         <motion.div 
           className="flex items-center gap-4 relative"
           whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
@@ -182,7 +176,7 @@ const Header = () => {
         </Link>
       </motion.div>
 
-      {/* Enhanced Nav Menu */}        <nav 
+      <nav 
         className="hidden xl:flex items-center gap-1"
         role="navigation"
         aria-label="Menu principal"
@@ -204,7 +198,6 @@ const Header = () => {
                     : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
                 }`}
               >
-                {/* Active background */}
                 {pathUrl === menuItem.path && (
                   <motion.div
                     layoutId="activeTab"
@@ -215,7 +208,6 @@ const Header = () => {
                   />
                 )}
                 
-                {/* Hover background - só se movimento não reduzido */}
                 {!shouldReduceMotion && (
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -226,7 +218,6 @@ const Header = () => {
                 
                 <span className="relative z-10">{menuItem.title}</span>
                 
-                {/* Magic underline effect - só se movimento não reduzido */}
                 {!shouldReduceMotion && (
                   <motion.div
                     className="absolute bottom-1 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-primary to-orange-500 rounded-full"
@@ -239,7 +230,7 @@ const Header = () => {
             </motion.div>
           ) : null
         )}
-      </nav>        {/* Enhanced Auth Buttons */}
+      </nav>
       <motion.div 
         className="flex items-center gap-6"
         initial={{ opacity: 0, x: 20 }}
@@ -253,7 +244,6 @@ const Header = () => {
         )}
       </motion.div>
 
-      {/* Revolutionary Mobile Button */}
       <motion.button
         aria-label="Mobile Menu"
         className="block xl:hidden relative w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-gray-700 dark:text-gray-300 focus:outline-none overflow-hidden group"
@@ -261,7 +251,6 @@ const Header = () => {
         whileHover={{ scale: shouldReduceMotion ? 1 : 1.1 }}
         whileTap={{ scale: shouldReduceMotion ? 1 : 0.9 }}
       >
-        {/* Magical background */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           animate={{ 
@@ -271,7 +260,6 @@ const Header = () => {
           transition={{ duration: 0.3 }}
         />
         
-        {/* Animated hamburger lines */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-5 h-4">
             <motion.span
@@ -303,7 +291,7 @@ const Header = () => {
           </div>
         </div>
       </motion.button>
-    </div>      {/* Revolutionary Mobile Menu */}
+    </div>
     <AnimatePresence>
       {navigationOpen && (
         <motion.div
@@ -313,7 +301,6 @@ const Header = () => {
           exit="exit"
           className="xl:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl dark:bg-black/95 border-t border-white/20 dark:border-white/10 shadow-2xl"
         >
-          {/* Background magic */}
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-orange-500/5 to-transparent" />
           
           <div className="relative container mx-auto px-4 py-8">
@@ -336,7 +323,6 @@ const Header = () => {
                       }`}
                       onClick={() => setNavigationOpen(false)}
                     >
-                      {/* Active/Hover background */}
                       {pathUrl === menuItem.path ? (
                         <motion.div
                           className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 rounded-2xl"
@@ -367,7 +353,6 @@ const Header = () => {
               )}
             </motion.div>
             
-            {/* Mobile Auth Section */}
             {!isAuthenticated && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -376,7 +361,6 @@ const Header = () => {
                 className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
               >
                 <div className="flex flex-col space-y-3">
-                  {/* Entrar */}
                   <Link
                     href="/auth/signin"
                     className="flex items-center justify-center py-3 px-6 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-white transition-all duration-300 bg-white/50 backdrop-blur-sm"
@@ -387,7 +371,6 @@ const Header = () => {
                     </span>
                   </Link>
                   
-                  {/* Criar Conta */}
                   <Link
                     href="/auth/signup"
                     className="flex items-center justify-center py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-orange-500 text-white font-semibold hover:shadow-lg transition-all duration-300"

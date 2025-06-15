@@ -96,7 +96,6 @@ const ParticipanteCard = ({
           background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(249,250,251,0.95) 100%)'
         }}
       >
-        {/* Status Indicator */}
         {ehCriador && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
@@ -108,10 +107,8 @@ const ParticipanteCard = ({
           </motion.div>
         )}
 
-        {/* Subtle gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/2 via-transparent to-orange-500/3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
 
-        {/* Avatar Section */}
         <div className="relative mb-3 mx-auto w-14 h-14 sm:w-16 sm:h-16">
           <div className="w-full h-full rounded-xl overflow-hidden ring-2 ring-white shadow-md group-hover:ring-primary/20 transition-all duration-300">
             <Image
@@ -123,13 +120,11 @@ const ParticipanteCard = ({
             />
           </div>
           
-          {/* Online indicator */}
           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
             <div className="w-1 h-1 bg-white rounded-full animate-pulse" />
           </div>
         </div>
 
-        {/* User Info */}
         <div className="text-center mb-3">
           <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-1 group-hover:text-primary transition-colors duration-300 line-clamp-1 leading-tight">
             {formatarNome(participante.nome)}
@@ -139,10 +134,8 @@ const ParticipanteCard = ({
           </p>
         </div>
 
-        {/* Action Buttons - Mais compacto e elegante */}
         <div className="absolute bottom-3 left-3 right-3">
           <div className="flex items-center justify-center gap-1 flex-wrap min-h-[32px]">
-            {/* Perfil */}
             <motion.button
               title="Ver Perfil"
               onClick={(e) => {
@@ -156,7 +149,6 @@ const ParticipanteCard = ({
               <FaUser className="w-3 h-3" />
             </motion.button>
 
-            {/* Chat */}
             <motion.button
               title="Enviar Mensagem"
               onClick={(e) => {
@@ -180,7 +172,6 @@ const ParticipanteCard = ({
               )}
             </motion.button>
 
-            {/* Denúncia e Bloqueio - versão compacta */}
             <div 
               onClick={(e) => e.stopPropagation()}
               className="flex gap-0.5"
@@ -194,7 +185,6 @@ const ParticipanteCard = ({
               />
             </div>
 
-            {/* Avaliação */}
             {podeAvaliar && onAvaliar && (
               <motion.button
                 title="Avaliar Participante"
@@ -210,7 +200,6 @@ const ParticipanteCard = ({
               </motion.button>
             )}
 
-            {/* Remover */}
             {podeRemover && (
               <motion.button
                 title="Remover Participante"
@@ -226,7 +215,6 @@ const ParticipanteCard = ({
               </motion.button>
             )}
 
-            {/* Sair */}
             {podeSair && (
               <motion.button
                 title="Sair da Viagem"
@@ -244,7 +232,6 @@ const ParticipanteCard = ({
           </div>
         </div>
 
-        {/* Hover Glow Effect - mais sutil */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 to-orange-500/0 group-hover:from-primary/3 group-hover:to-orange-500/3 transition-all duration-500 pointer-events-none" />
       </motion.div>
 
@@ -256,7 +243,6 @@ const ParticipanteCard = ({
         onBloquear={onBloquear}
       />
 
-      {/* Modal de Sair da Viagem */}
       {sairViagemModal && (
         <SairViagemModal
           isOpen={sairViagemModal}
@@ -267,7 +253,6 @@ const ParticipanteCard = ({
         />
       )}
 
-      {/* Modal de Remover Participante */}
       {removerParticipanteModal && (
         <RemoverParticipanteModal
           isOpen={removerParticipanteModal}

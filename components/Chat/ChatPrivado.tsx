@@ -25,13 +25,12 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
   const [mostrarScrollDown, setMostrarScrollDown] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);  // Carregar dados iniciais
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const carregarDados = async () => {
       try {
         setCarregando(true);
         
-        // Carregar dados do destinatário
         const dadosDestinatario = await getUsuarioById(usuarioId);
         const nomeFormatado = dadosDestinatario.nome.split(' ');
         const primeiroUltimoNome = nomeFormatado.length > 1 
@@ -43,7 +42,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
           fotoPerfil: dadosDestinatario.fotoPerfil
         });
 
-        // Carregar conversa
         const conversaData = await buscarConversa(usuarioId);
         setMensagens(conversaData);
         
@@ -60,7 +58,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
     }
   }, [usuarioId, usuarioLogado]);
 
-  // Atualização automática da conversa (polling)
   useEffect(() => {
     if (!usuarioId || !usuarioLogado) return;
 
@@ -73,17 +70,14 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
       }
     };
 
-    // Polling a cada 5 segundos
     const interval = setInterval(atualizarConversa, 5000);
     return () => clearInterval(interval);
   }, [usuarioId, usuarioLogado]);
 
-  // Scroll automático para última mensagem
   useEffect(() => {
     scrollToBottom();
   }, [mensagens]);
 
-  // Detectar scroll para mostrar botão "voltar ao final"
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
@@ -123,7 +117,7 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
       toast.error("Erro ao enviar mensagem");
-      setNovaMensagem(conteudoMensagem); // Restaurar texto em caso de erro
+      setNovaMensagem(conteudoMensagem);
     } finally {
       setEnviando(false);
     }
@@ -155,7 +149,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
     }
   };
 
-  // Agrupar mensagens por data
   const mensagensAgrupadas = mensagens.reduce((grupos, mensagem) => {
     const data = formatarData(mensagem.dataEnvio);
     if (!grupos[data]) {
@@ -191,14 +184,12 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="flex flex-col h-full bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 overflow-hidden backdrop-blur-xl"
     >
-      {/* Header do Chat */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="bg-gradient-to-r from-primary to-orange-500 px-6 py-4 text-white relative overflow-hidden"
-      >
-        {/* Background decorativo */}
+      >   
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"
           animate={{ x: ["-100%", "100%"] }}
@@ -240,7 +231,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
         </div>
       </motion.div>
 
-      {/* Área de Mensagens */}
       <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto px-4 py-4 space-y-4 relative"
@@ -278,7 +268,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-3"
               >
-                {/* Separador de Data */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -289,7 +278,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
                   </span>
                 </motion.div>
 
-                {/* Mensagens do dia */}
                 {mensagensData.map((mensagem, index) => {
                   const isMinhaMsg = mensagem.remetenteId === usuarioLogado?.id;
                   
@@ -310,7 +298,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
                               : "bg-white text-gray-800 border border-gray-100"
                           }`}
                         >
-                          {/* Bolha de fala */}
                           <div
                             className={`absolute top-4 w-3 h-3 transform rotate-45 ${
                               isMinhaMsg
@@ -350,7 +337,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Botão Scroll to Bottom */}
       <AnimatePresence>
         {mostrarScrollDown && (
           <motion.button
@@ -367,7 +353,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
         )}
       </AnimatePresence>
 
-      {/* Input de Nova Mensagem */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -387,7 +372,7 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
                 style={{ 
                   minHeight: "48px",
                   maxHeight: "120px",
-                  fontSize: "16px" // Previne zoom no iOS
+                  fontSize: "16px"
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -397,7 +382,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
                 }}
               />
               
-              {/* Contador de caracteres */}
               {novaMensagem.length > 200 && (
                 <span className={`absolute bottom-1 right-3 text-xs ${
                   novaMensagem.length > 500 ? "text-red-500" : "text-gray-400"
@@ -429,7 +413,6 @@ export default function ChatPrivado({ usuarioId, onFechar }: ChatPrivadoProps) {
         </form>
       </motion.div>
 
-      {/* Efeitos decorativos */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent" />
     </motion.div>

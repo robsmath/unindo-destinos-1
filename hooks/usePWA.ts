@@ -25,7 +25,6 @@ export function usePWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    // Registrar service worker
     const registerSW = async () => {
       if ('serviceWorker' in navigator) {
         try {
@@ -33,7 +32,6 @@ export function usePWA() {
             scope: '/',
           });
 
-          // Verificar atualizações
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
@@ -54,7 +52,6 @@ export function usePWA() {
 
     registerSW();
 
-    // Verificar se é PWA instalado
     const checkIfInstalled = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isIOSStandalone = (navigator as any).standalone === true;
@@ -64,18 +61,15 @@ export function usePWA() {
       }));
     };
 
-    // Listener para evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setPwaState(prev => ({ ...prev, isInstallable: true }));
     };
 
-    // Listeners para status de conexão
     const handleOnline = () => setPwaState(prev => ({ ...prev, isOnline: true }));
     const handleOffline = () => setPwaState(prev => ({ ...prev, isOnline: false }));
 
-    // Adicionar event listeners
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);

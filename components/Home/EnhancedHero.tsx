@@ -83,7 +83,6 @@ const FloatingElements = () => {
   
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Floating Icons - Responsivos */}
       <motion.div
         animate={{ 
           translateY: [0, -20, 0],
@@ -150,7 +149,6 @@ const FloatingElements = () => {
         🎒
       </motion.div>
 
-      {/* Gradient Orbs - Animação mais suave */}
       <motion.div
         animate={{ 
           scale: [1, 1.1, 1],
@@ -211,7 +209,6 @@ const EnhancedHero = () => {
     }
   };
 
-  // Variantes otimizadas para animações
   const fadeInVariants = {
     initial: { opacity: 0, translateY: shouldReduceMotion ? 0 : 30 },
     animate: { 
@@ -317,7 +314,7 @@ const EnhancedHero = () => {
               transition={{ duration: 0.3 }}
             />
           </motion.button>
-        </motion.div>        {/* Social Proof */}
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

@@ -24,7 +24,6 @@ export default function DenunciaEBloqueioButtons({
 }: Props) {
   const { usuario: usuarioLogado } = useAuth();
 
-  // Não mostrar os botões para o próprio usuário
   if (usuarioLogado?.id === usuario.id) {
     return null;
   }
@@ -61,7 +60,6 @@ export default function DenunciaEBloqueioButtons({
 
   return (
     <div className={`${containerClasses} ${className}`}>
-      {/* Botão Denunciar */}
       <motion.button
         title="Denunciar usuário"
         onClick={handleDenunciar}
@@ -73,7 +71,6 @@ export default function DenunciaEBloqueioButtons({
         <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 to-orange-600/0 group-hover/btn:from-orange-500/10 group-hover/btn:to-orange-600/10 transition-all duration-300" />
       </motion.button>
 
-      {/* Botão Bloquear */}
       <motion.button
         title="Bloquear usuário"
         onClick={handleBloquear}

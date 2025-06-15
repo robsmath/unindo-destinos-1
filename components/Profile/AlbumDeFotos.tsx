@@ -27,15 +27,11 @@ import {
 } from "@/services/albumFotoService";
 
 interface AlbumDeFotosProps {
-  /** Se true, permite upload e remoção (modo perfil próprio) */
   isOwner?: boolean;
-  /** ID do usuário para visualizar fotos (modo visualização de outro usuário) */
   usuarioId?: number;
-  /** Classe CSS adicional */
   className?: string;
 }
 
-// Galeria Modal Simples e Eficiente
 const GaleriaModal = ({
   fotos,
   currentIndex,
@@ -64,7 +60,6 @@ const GaleriaModal = ({
     }
   }, [fotoAtual]);
 
-  // Controle de teclado
   useEffect(() => {
     if (!isOpen) return;
 
@@ -82,7 +77,6 @@ const GaleriaModal = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, currentIndex, fotos.length, onClose, onNavigate]);
 
-  // Navegação por swipe no mobile - versão melhorada
   const [swipeState, setSwipeState] = useState({
     startX: 0,
     startTime: 0,
@@ -104,9 +98,8 @@ const GaleriaModal = ({
     const endX = e.changedTouches[0].clientX;
     const deltaX = swipeState.startX - endX;
     const deltaTime = Date.now() - swipeState.startTime;
-    const velocity = Math.abs(deltaX) / deltaTime; // pixels/ms
+    const velocity = Math.abs(deltaX) / deltaTime;
     
-    // Limiar mais baixo para distância (30px) e considerar velocidade
     const shouldNavigate = Math.abs(deltaX) > 30 || velocity > 0.5;
     
     if (shouldNavigate) {
@@ -130,7 +123,6 @@ const GaleriaModal = ({
       className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center"
       onClick={onClose}
     >
-      {/* Header com controles */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/50 to-transparent">
         <div className="flex items-center justify-between text-white">
           <div className="flex items-center gap-3">
@@ -147,7 +139,6 @@ const GaleriaModal = ({
         </div>
       </div>
 
-      {/* Navegação Esquerda */}
       {currentIndex > 0 && (
         <button
           onClick={(e) => {
@@ -160,7 +151,6 @@ const GaleriaModal = ({
         </button>
       )}
 
-      {/* Navegação Direita */}
       {currentIndex < fotos.length - 1 && (
         <button
           onClick={(e) => {
@@ -173,7 +163,6 @@ const GaleriaModal = ({
         </button>
       )}
 
-      {/* Imagem Principal */}
       <div
         className="relative max-w-full max-h-full m-4"
         onClick={(e) => e.stopPropagation()}
@@ -187,7 +176,6 @@ const GaleriaModal = ({
           draggable={false}
         />
 
-        {/* Legenda */}
         {fotoAtual.legenda && (
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
             <p className="text-white text-sm text-center">
@@ -197,7 +185,6 @@ const GaleriaModal = ({
         )}
       </div>
 
-      {/* Indicadores de navegação */}
       {fotos.length > 1 && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
           {fotos.map((_, index) => (
@@ -235,7 +222,6 @@ const AlbumDeFotos = ({
 
   const MAX_FOTOS = 6;
 
-  // Detectar plataforma
   const isMobile = useCallback(() => {
     if (typeof window === 'undefined') return false;
     return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -247,7 +233,6 @@ const AlbumDeFotos = ({
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }, []);
 
-  // Carregar fotos
   const carregarFotos = useCallback(async () => {
     try {
       setLoading(true);
@@ -277,7 +262,6 @@ const AlbumDeFotos = ({
     carregarFotos();
   }, [carregarFotos]);
 
-  // Compressão otimizada para todos os formatos
   const compressImage = useCallback(async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
@@ -286,14 +270,12 @@ const AlbumDeFotos = ({
       
       img.onload = () => {
         try {
-          // Configurações responsivas
           const MAX_WIDTH = isMobile() ? 1080 : 1920;
           const MAX_HEIGHT = isMobile() ? 1080 : 1920;
           const QUALITY = 0.85;
           
           let { width, height } = img;
           
-          // Redimensionar mantendo proporção
           if (width > MAX_WIDTH || height > MAX_HEIGHT) {
             const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
             width *= ratio;
@@ -307,7 +289,6 @@ const AlbumDeFotos = ({
             throw new Error('Canvas context não disponível');
           }
           
-          // Fundo branco para JPEGs
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, width, height);
           ctx.drawImage(img, 0, 0, width, height);
@@ -341,12 +322,10 @@ const AlbumDeFotos = ({
     });
   }, [isMobile]);
 
-  // Upload de foto
   const handleUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validação de formato (incluindo HEIC/HEIF do iOS)
     const validExtensions = /\.(jpg|jpeg|png|webp|heic|heif)$/i;
     const validMimeTypes = [
       'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
@@ -358,7 +337,6 @@ const AlbumDeFotos = ({
       return;
     }
 
-    // Validação de tamanho (20MB para compatibilidade máxima)
     if (file.size > 20 * 1024 * 1024) {
       toast.error('Arquivo muito grande. Limite: 20MB');
       return;
@@ -368,10 +346,8 @@ const AlbumDeFotos = ({
       setUploading(true);
       const loadingToast = toast.loading('Processando foto...', { duration: 30000 });
 
-      // Comprimir
       const processedFile = await compressImage(file);
       
-      // Upload
       const novaFoto = await uploadFotoAlbum(processedFile);
       
       if (novaFoto) {
@@ -383,13 +359,11 @@ const AlbumDeFotos = ({
       toast.error("Erro ao adicionar foto. Tente novamente.");
     } finally {
       setUploading(false);
-      // Limpar inputs
       if (cameraInputRef.current) cameraInputRef.current.value = '';
       if (galleryInputRef.current) galleryInputRef.current.value = '';
     }
   }, [compressImage]);
 
-  // Remover foto
   const handleRemover = useCallback(async (fotoId: number) => {
     try {
       setRemovingIds(prev => new Set(prev).add(fotoId));
@@ -417,13 +391,11 @@ const AlbumDeFotos = ({
     }
   }, []);
 
-  // Abrir galeria
   const abrirGaleria = useCallback((index: number) => {
     setFotoAtualIndex(Math.max(0, Math.min(index, fotos.length - 1)));
     setGaleriaAberta(true);
   }, [fotos.length]);
 
-  // Navegação da galeria
   const navegarGaleria = useCallback((novoIndex: number) => {
     setFotoAtualIndex(Math.max(0, Math.min(novoIndex, fotos.length - 1)));
   }, [fotos.length]);
@@ -444,7 +416,6 @@ const AlbumDeFotos = ({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -461,7 +432,6 @@ const AlbumDeFotos = ({
                   <span className="text-primary"> • {fotosRestantes} restante{fotosRestantes !== 1 ? 's' : ''}</span>
                 )}
               </p>
-              {/* Debug temporário */}
               {process.env.NODE_ENV === 'development' && (
                 <p className="text-xs text-red-500">
                   Debug: fotos.length={fotos.length}, MAX_FOTOS={MAX_FOTOS}, fotosRestantes={fotosRestantes}
@@ -470,7 +440,6 @@ const AlbumDeFotos = ({
             </div>
           </div>
 
-          {/* Botões de Upload para Mobile */}
           {isOwner && isMobile() && (
             <div className="flex gap-2">
               <button
@@ -498,7 +467,6 @@ const AlbumDeFotos = ({
             </div>
           )}
 
-          {/* Botão de Upload para Desktop */}
           {isOwner && !isMobile() && (
             <button
               onClick={() => galleryInputRef.current?.click()}
@@ -524,7 +492,6 @@ const AlbumDeFotos = ({
           )}
         </div>
 
-        {/* Descrição para owners */}
         {isOwner && (
           <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
             <p className="text-sm text-blue-700/80 leading-relaxed">
@@ -534,10 +501,8 @@ const AlbumDeFotos = ({
         )}
       </div>
 
-      {/* Inputs de Upload */}
       {isOwner && (
         <>
-          {/* Input para Câmera */}
           <input
             ref={cameraInputRef}
             type="file"
@@ -547,7 +512,6 @@ const AlbumDeFotos = ({
             className="hidden"
           />
           
-          {/* Input para Galeria */}
           <input
             ref={galleryInputRef}
             type="file"
@@ -558,10 +522,8 @@ const AlbumDeFotos = ({
         </>
       )}
 
-      {/* Grid de Fotos com Slots Vazios */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         <AnimatePresence mode="popLayout">
-          {/* Fotos existentes */}
           {fotos.map((foto, index) => {
             const isRemoving = removingIds.has(foto.id);
             
@@ -581,14 +543,12 @@ const AlbumDeFotos = ({
                 }`}
                 onClick={() => !isRemoving && abrirGaleria(index)}
               >
-                {/* Loading overlay */}
                 {isRemoving && (
                   <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center z-10">
                     <Loader2 className="w-4 h-4 text-red-500 animate-spin" />
                   </div>
                 )}
 
-                {/* Botão remover */}
                 {isOwner && !isRemoving && (
                   <button
                     onClick={(e) => {
@@ -601,14 +561,12 @@ const AlbumDeFotos = ({
                   </button>
                 )}
 
-                {/* Indicador de legenda */}
                 {foto.legenda && (
                   <div className="absolute top-1 left-1 p-1 bg-black/60 text-white rounded-full z-10">
                     <Type className="w-3 h-3" />
                   </div>
                 )}
 
-                {/* Imagem */}
                 <img
                   src={foto.urlFoto}
                   alt={foto.legenda || `Foto ${index + 1}`}
@@ -617,7 +575,6 @@ const AlbumDeFotos = ({
                   draggable={false}
                 />
                 
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                   <ZoomIn className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -625,7 +582,6 @@ const AlbumDeFotos = ({
             );
           })}
 
-          {/* Slots vazios para upload (só para owners) */}
           {isOwner && Array.from({ length: fotosRestantes }, (_, index) => (
             <motion.div
               key={`empty-${index}`}
@@ -655,7 +611,6 @@ const AlbumDeFotos = ({
         </AnimatePresence>
       </div>
 
-      {/* Estado quando não é owner e não tem fotos */}
       {!isOwner && fotos.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -668,7 +623,6 @@ const AlbumDeFotos = ({
         </div>
       )}
 
-      {/* Modal da Galeria */}
       <AnimatePresence>
         {galeriaAberta && fotos.length > 0 && (
           <GaleriaModal

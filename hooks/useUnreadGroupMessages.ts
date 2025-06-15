@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { buscarGruposComMensagensNaoLidas } from '@/services/mensagemGrupoService';
 import { GrupoComMensagensDTO } from '@/models/GrupoComMensagensDTO';
 
-export const useUnreadGroupMessages = (pollingInterval = 30000) => { // 30 segundos
+export const useUnreadGroupMessages = (pollingInterval = 30000) => {
   const [grupos, setGrupos] = useState<GrupoComMensagensDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -13,13 +13,11 @@ export const useUnreadGroupMessages = (pollingInterval = 30000) => { // 30 segun
       setGrupos(gruposData);
     } catch (err) {
       console.error('Erro ao buscar grupos com mensagens não lidas:', err);
-      // Manter dados anteriores em caso de erro
     } finally {
       setLoading(false);
     }
   };
 
-  // Polling simples e direto
   useEffect(() => {
     fetchGruposNaoLidos();
     const interval = setInterval(fetchGruposNaoLidos, pollingInterval);

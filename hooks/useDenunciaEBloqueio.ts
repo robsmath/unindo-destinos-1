@@ -23,7 +23,6 @@ export function useDenunciaEBloqueio() {
 
   const fecharDenunciaModal = () => {
     setDenunciaModalOpen(false);
-    // NÃO limpar usuarioSelecionado aqui, pois ainda pode ser usado no modal de pergunta
   };
 
   const abrirBloqueioModal = (usuario: UsuarioInfo) => {
@@ -46,7 +45,6 @@ export function useDenunciaEBloqueio() {
 
   const handleDenunciaEnviada = () => {
     console.log("🚨 handleDenunciaEnviada chamado");
-    // Após enviar denúncia, perguntar se quer bloquear
     fecharDenunciaModal();
     console.log("🚨 Abrindo modal de pergunta de bloqueio");
     abrirPerguntaBloqueioModal();
@@ -59,7 +57,7 @@ export function useDenunciaEBloqueio() {
       await bloquearUsuario(usuarioSelecionado.id);
       toast.success(`${usuarioSelecionado.nome} foi bloqueado com sucesso!`);
       fecharPerguntaBloqueioModal();
-      setUsuarioSelecionado(null); // Limpar apenas após todo o fluxo terminar
+      setUsuarioSelecionado(null);
     } catch (error) {
       console.error("Erro ao bloquear usuário:", error);
       toast.error("Erro ao bloquear usuário. Tente novamente.");
@@ -68,31 +66,26 @@ export function useDenunciaEBloqueio() {
 
   const handleNaoBloquearAposDenuncia = () => {
     fecharPerguntaBloqueioModal();
-    setUsuarioSelecionado(null); // Limpar apenas após todo o fluxo terminar
+    setUsuarioSelecionado(null);
   };
 
   const handleUsuarioBloqueado = () => {
-    // Callback chamado quando usuário é bloqueado diretamente
     fecharBloqueioModal();
   };
 
   return {
-    // Estados dos modais
     denunciaModalOpen,
     bloqueioModalOpen,
     perguntaBloqueioModalOpen,
     usuarioSelecionado,
     
-    // Funções para abrir modais
     abrirDenunciaModal,
     abrirBloqueioModal,
     
-    // Funções para fechar modais
     fecharDenunciaModal,
     fecharBloqueioModal,
     fecharPerguntaBloqueioModal,
     
-    // Handlers de eventos
     handleDenunciaEnviada,
     handleBloquearAposDenuncia,
     handleNaoBloquearAposDenuncia,

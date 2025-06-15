@@ -25,7 +25,7 @@ function classNames(...classes: string[]) {
 
 const Profile = () => {
   const { isAuthenticated, usuario, atualizarFotoPerfil } = useAuth();
-  const { } = usePerfil(); // Dados já são carregados automaticamente pelo context
+  const { } = usePerfil();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -94,7 +94,6 @@ const Profile = () => {
     if (!isAuthenticated) {
       router.push("/auth/signin");
     } else {
-      // PerfilContext já carrega todos os dados automaticamente
       setAbasCarregadas(prev => new Set(prev).add(0));
       setTimeout(() => {
         setLoadingPage(false);
@@ -119,18 +118,14 @@ const Profile = () => {
     const newUrl = `/profile?tab=${tab.param}`;
     window.history.pushState({}, '', newUrl);
 
-    // Todos os dados já são carregados pelo PerfilContext automaticamente
-    // Só precisamos marcar a aba como carregada
     setAbasCarregadas(prev => new Set(prev).add(index));
   };
 
-  // Função para detectar se é iOS
   const isIOS = () => {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   };
 
-  // Função para detectar formatos HEIC/HEIF do iPhone
   const isHeicFile = (file: File): boolean => {
     const heicExtensions = ['.heic', '.heif', '.HEIC', '.HEIF'];
     const heicMimeTypes = ['image/heic', 'image/heif'];
@@ -141,23 +136,19 @@ const Profile = () => {
     return hasHeicExtension || hasHeicMimeType;
   };
 
-  // Função para verificar se o arquivo é uma imagem válida
   const isValidImageFile = (file: File): boolean => {
     const validImageTypes = [
       'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'
     ];
     
-    // No iOS, também aceitar HEIC/HEIF
     if (isIOS()) {
       validImageTypes.push('image/heic', 'image/heif');
     }
     
-    // Verificar por tipo MIME
     if (validImageTypes.includes(file.type.toLowerCase())) {
       return true;
     }
     
-    // Verificar por extensão (fallback para alguns casos onde o tipo MIME não é detectado)
     const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
     if (isIOS()) {
       validExtensions.push('.heic', '.heif');
@@ -170,7 +161,6 @@ const Profile = () => {
     return hasValidExtension;
   };
 
-  // Função para extrair e aplicar orientação EXIF (especialmente importante para iPhone)
   const getExifOrientation = (file: File): Promise<number> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -178,9 +168,8 @@ const Profile = () => {
         const arrayBuffer = e.target?.result as ArrayBuffer;
         const dataView = new DataView(arrayBuffer);
         
-        // Verificar se é JPEG
         if (dataView.getUint16(0, false) !== 0xFFD8) {
-          resolve(1); // Sem orientação específica
+          resolve(1);
           return;
         }
         
@@ -191,12 +180,11 @@ const Profile = () => {
           marker = dataView.getUint16(offset, false);
           offset += 2;
           
-          if (marker === 0xFFE1) { // Marker EXIF
+          if (marker === 0xFFE1) {
             const exifLength = dataView.getUint16(offset, false);
             const exifStart = offset + 2;
             
-            // Procurar por orientação
-            if (dataView.getUint32(exifStart, false) === 0x45786966) { // "Exif"
+            if (dataView.getUint32(exifStart, false) === 0x45786966) {
               const tiffStart = exifStart + 6;
               const littleEndian = dataView.getUint16(tiffStart, false) === 0x4949;
               
@@ -207,7 +195,7 @@ const Profile = () => {
                 const tagOffset = tiffStart + ifdOffset + 2 + (i * 12);
                 const tag = dataView.getUint16(tagOffset, littleEndian);
                 
-                if (tag === 0x0112) { // Tag de orientação
+                if (tag === 0x0112) {
                   const orientation = dataView.getUint16(tagOffset + 8, littleEndian);
                   resolve(orientation);
                   return;
@@ -220,66 +208,56 @@ const Profile = () => {
           }
         }
         
-        resolve(1); // Orientação padrão
+        resolve(1);
       };
       
       reader.onerror = () => resolve(1);
-      reader.readAsArrayBuffer(file.slice(0, 64 * 1024)); // Ler apenas os primeiros 64KB
+      reader.readAsArrayBuffer(file.slice(0, 64 * 1024));
     });
   };
 
-  // Função para aplicar rotação baseada na orientação EXIF
   const applyExifRotation = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, img: HTMLImageElement, orientation: number) => {
     const { width, height } = canvas;
     
     switch (orientation) {
       case 2:
-        // Flip horizontal
         ctx.translate(width, 0);
         ctx.scale(-1, 1);
         break;
       case 3:
-        // Rotação 180°
         ctx.translate(width, height);
         ctx.rotate(Math.PI);
         break;
       case 4:
-        // Flip vertical
         ctx.translate(0, height);
         ctx.scale(1, -1);
         break;
       case 5:
-        // Rotação 90° + flip horizontal
         ctx.rotate(Math.PI / 2);
         ctx.scale(1, -1);
         break;
       case 6:
-        // Rotação 90° horário
         canvas.width = height;
         canvas.height = width;
         ctx.rotate(Math.PI / 2);
         ctx.translate(0, -height);
         break;
       case 7:
-        // Rotação 90° + flip vertical
         ctx.rotate(Math.PI / 2);
         ctx.translate(width, -height);
         ctx.scale(-1, 1);
         break;
-      case 8:
-        // Rotação 90° anti-horário
+      case 8:   
         canvas.width = height;
         canvas.height = width;
         ctx.rotate(-Math.PI / 2);
         ctx.translate(-width, 0);
         break;
       default:
-        // Sem rotação (orientação 1)
         break;
     }
   };
 
-  // Função melhorada para comprimir imagem com tratamento especial para iOS
   const compressImage = async (file: File): Promise<File> => {
     console.log('📱 Iniciando compressão para:', {
       name: file.name,
@@ -295,20 +273,17 @@ const Profile = () => {
         const ctx = canvas.getContext('2d');
         const img = new Image();
         
-        // Obter orientação EXIF (especialmente importante para iPhone)
         const orientation = await getExifOrientation(file);
         console.log('🔄 Orientação EXIF detectada:', orientation);
         
         img.onload = () => {
           try {
-            // Configurações mais agressivas para iPhone
             const MAX_WIDTH = isIOS() ? 1000 : 1200;
             const MAX_HEIGHT = isIOS() ? 1000 : 1200;
             const QUALITY = isIOS() ? 0.7 : 0.8;
             
             let { width, height } = img;
             
-            // Redimensionar mantendo proporção
             if (width > height) {
               if (width > MAX_WIDTH) {
                 height = (height * MAX_WIDTH) / width;
@@ -321,7 +296,6 @@ const Profile = () => {
               }
             }
             
-            // Ajustar canvas para orientação
             if (orientation >= 5 && orientation <= 8) {
               canvas.width = height;
               canvas.height = width;
@@ -334,16 +308,13 @@ const Profile = () => {
               throw new Error('❌ Não foi possível criar contexto do canvas');
             }
 
-            // Aplicar correção de orientação EXIF
             applyExifRotation(canvas, ctx, img, orientation);
             
-            // Desenhar imagem com as dimensões corretas
             const drawWidth = orientation >= 5 && orientation <= 8 ? height : width;
             const drawHeight = orientation >= 5 && orientation <= 8 ? width : height;
             
             ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
             
-            // Converter para blob JPEG (forçar JPEG para compatibilidade)
             canvas.toBlob(
               (blob) => {
                 if (blob) {
@@ -355,9 +326,9 @@ const Profile = () => {
                   });
                   
                   const compressedFile = new File([blob], 
-                    file.name.replace(/\.[^/.]+$/, '.jpg'), // Forçar extensão .jpg
+                    file.name.replace(/\.[^/.]+$/, '.jpg'),
                     {
-                      type: 'image/jpeg', // Forçar tipo JPEG
+                      type: 'image/jpeg',
                       lastModified: Date.now(),
                     }
                   );
@@ -366,7 +337,7 @@ const Profile = () => {
                   throw new Error('❌ Falha ao comprimir a imagem');
                 }
               },
-              'image/jpeg', // Sempre forçar JPEG
+              'image/jpeg',
               QUALITY
             );
           } catch (error) {
@@ -380,11 +351,9 @@ const Profile = () => {
           reject(new Error('Erro ao carregar a imagem para processamento'));
         };
         
-        // Criar URL da imagem
         const imageUrl = URL.createObjectURL(file);
         img.src = imageUrl;
         
-        // Limpar URL após uso
         img.onload = (originalOnload => function() {
           URL.revokeObjectURL(imageUrl);
           return originalOnload?.call(this);
@@ -410,7 +379,6 @@ const Profile = () => {
       isHeic: isHeicFile(file)
     });
 
-    // Verificar se é arquivo de imagem válido
     if (!isValidImageFile(file)) {
       console.error('❌ Arquivo não é uma imagem válida:', {
         type: file.type,
@@ -429,8 +397,7 @@ const Profile = () => {
       return;
     }
 
-    // Verificar tamanho (mais permissivo para iPhone)
-    const MAX_SIZE_MB = isIOS() ? 20 : 10; // iPhone pode ter fotos muito maiores
+    const MAX_SIZE_MB = isIOS() ? 20 : 10;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       console.error('❌ Arquivo muito grande:', {
         size: file.size,
@@ -441,7 +408,6 @@ const Profile = () => {
       return;
     }
 
-    // Mostrar modal de confirmação
     setPendingFile(file);
     setShowConfirmModal(true);
   };
@@ -453,13 +419,12 @@ const Profile = () => {
     setUploading(true);
     
     const loadingToast = toast.loading('Processando sua foto...', {
-      duration: 15000 // Mais tempo para processar fotos do iPhone
+      duration: 15000
     });
 
     try {
       console.log('🚀 Iniciando processamento do arquivo...');
       
-      // Sempre comprimir/processar a imagem (especialmente importante para iPhone)
       const processedFile = await compressImage(pendingFile);
       
       console.log('📤 Enviando arquivo processado:', {
@@ -529,13 +494,11 @@ const Profile = () => {
     setShowPhotoOptions(false);
     
     if (fileInputRef.current) {
-      // Configurações específicas para iOS
       if (isIOS()) {
         if (useCamera) {
           fileInputRef.current.setAttribute('accept', 'image/*');
           fileInputRef.current.setAttribute('capture', 'environment');
         } else {
-          // Para galeria no iOS, aceitar HEIC também
           fileInputRef.current.setAttribute('accept', 'image/*,image/heic,image/heif');
           fileInputRef.current.removeAttribute('capture');
         }
@@ -558,9 +521,7 @@ const Profile = () => {
   return (
     <CacheInvalidationProvider>
       <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-        {/* Background Effects */}
         <div className="absolute inset-0">
-          {/* Animated Gradient Background */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
             animate={{
@@ -573,7 +534,6 @@ const Profile = () => {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* Simple Floating Particles */}
           {Array.from({ length: 12 }).map((_, i) => (
             <motion.div
               key={i}
@@ -597,7 +557,6 @@ const Profile = () => {
             />
           ))}
 
-          {/* Profile-themed Icons with Smooth Animations */}
           <motion.div
             className="absolute top-32 right-16"
             animate={{ 
@@ -732,7 +691,6 @@ const Profile = () => {
 
             {!loadingPage && (
               <>
-                {/* Header Section with Avatar */}
                 <motion.div
                   className="text-center mb-12"
                   initial={{ opacity: 0, y: 20 }}
@@ -748,14 +706,12 @@ const Profile = () => {
                     Gerencie suas informações, viagens e preferências em um só lugar
                   </p>
 
-                  {/* Enhanced Avatar Section */}
                   <motion.div 
                     className="relative inline-block"
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
                     <div className="relative">
-                      {/* Gradient Ring */}
                       <div className="bg-gradient-to-r from-primary to-orange-500 rounded-full p-1">
                         <div className="bg-white rounded-full p-1">
                           <img
@@ -766,7 +722,6 @@ const Profile = () => {
                         </div>
                       </div>
                       
-                      {/* Upload Overlay */}
                       {uploading && (
                         <motion.div 
                           className="absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-full"
@@ -779,7 +734,6 @@ const Profile = () => {
                         </motion.div>
                       )}
                       
-                      {/* Camera Button */}
                       <motion.button
                         type="button"
                         onClick={handleAvatarClick}
@@ -802,7 +756,6 @@ const Profile = () => {
                     </div>
                   </motion.div>
 
-                  {/* Modal de Confirmação */}
                   <AnimatePresence>
                     {showConfirmModal && (
                       <motion.div
@@ -858,7 +811,6 @@ const Profile = () => {
                       </motion.div>
                     )}
 
-                    {/* Modal de Opções de Foto */}
                     {showPhotoOptions && (
                       <motion.div
                         className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4"

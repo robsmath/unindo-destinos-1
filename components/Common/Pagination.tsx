@@ -21,7 +21,6 @@ const Pagination: React.FC<PaginationProps> = ({
   totalElements = 0,
   size = 8
 }) => {
-  // Se não há páginas, não renderiza
   if (totalPages <= 1) return null;
 
   const generatePageNumbers = (): number[] => {
@@ -29,20 +28,15 @@ const Pagination: React.FC<PaginationProps> = ({
     const maxVisible = 5;
     
     if (totalPages <= maxVisible) {
-      // Se tem poucas páginas, mostra todas
       for (let i = 0; i < totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Lógica para mostrar páginas relevantes
       if (currentPage <= 2) {
-        // Início: 0, 1, 2, ..., last
         pages.push(0, 1, 2, -1, totalPages - 1);
       } else if (currentPage >= totalPages - 3) {
-        // Fim: 0, ..., last-2, last-1, last
         pages.push(0, -1, totalPages - 3, totalPages - 2, totalPages - 1);
       } else {
-        // Meio: 0, ..., current-1, current, current+1, ..., last
         pages.push(0, -1, currentPage - 1, currentPage, currentPage + 1, -1, totalPages - 1);
       }
     }
@@ -57,7 +51,6 @@ const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <div className="flex flex-col items-center gap-4 mt-8">
-      {/* Informações */}
       {showInfo && totalElements > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -68,14 +61,12 @@ const Pagination: React.FC<PaginationProps> = ({
         </motion.div>
       )}
 
-      {/* Navegação */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-xl p-2 border border-white/30 shadow-lg"
       >
-        {/* Botão Anterior */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 0 || loading}
@@ -85,7 +76,6 @@ const Pagination: React.FC<PaginationProps> = ({
           <span className="hidden sm:inline">Anterior</span>
         </button>
 
-        {/* Números das páginas */}
         <div className="flex items-center gap-1">
           {pageNumbers.map((pageNum, index) => {
             if (pageNum === -1) {
@@ -120,7 +110,6 @@ const Pagination: React.FC<PaginationProps> = ({
           })}
         </div>
 
-        {/* Botão Próximo */}
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages - 1 || loading}

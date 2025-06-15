@@ -36,7 +36,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Fechar dropdown quando chat modal abre
   useEffect(() => {
     if (chatAberto || chatGrupoAberto) {
       onClose();
@@ -46,7 +45,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
   useEffect(() => {
     if (isOpen) {
       fetchRemetentes();
-      // Polling menos frequente no dropdown (15 segundos)
       const interval = setInterval(fetchRemetentes, 15000);
       return () => clearInterval(interval);
     }
@@ -63,7 +61,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
       setGrupos(gruposData);
     } catch (error) {
       console.error("Erro ao buscar dados do chat:", error);
-      // Em caso de erro, manter os dados anteriores
     } finally {
       setLoading(false);
     }
@@ -71,7 +68,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
   const handleOpenChat = async (remetente: RemetenteComMensagensDTO) => {
     setUsuarioSelecionado(remetente);
     setChatAberto(true);
-    // onClose() será chamado automaticamente pelo useEffect
     try {
       await marcarConversaComoVisualizada(remetente.usuarioId);
       await fetchRemetentes();
@@ -89,7 +85,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
   const handleOpenChatGrupo = async (grupo: GrupoComMensagensDTO) => {
     setGrupoSelecionado(grupo);
     setChatGrupoAberto(true);
-    // Marcar grupo como lido será feito pelo próprio componente ChatGrupo
   };
 
   const handleCloseChatGrupo = async () => {
@@ -105,7 +100,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
 
   return (
     <>
-      {/* Botão + Dropdown agrupados em div relativa */}
       <div className="relative">
         <motion.button
           onClick={onToggle}
@@ -161,7 +155,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
                   </div>
                 ) : (
                   <div className="py-2">
-                    {/* Grupos */}
                     {grupos.length > 0 && (
                       <>
                         <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
@@ -197,7 +190,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
                       </>
                     )}
 
-                    {/* Chats Privados */}
                     {remetentes.length > 0 && (
                       <>
                         {grupos.length > 0 && (
@@ -248,7 +240,7 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
             </motion.div>
           )}
         </AnimatePresence>
-      </div>      {/* Chat modal alinhado ao topo - RENDERIZADO NO BODY */}
+      </div>
       <Portal>
         <AnimatePresence>
           {chatAberto && usuarioSelecionado && (
@@ -277,7 +269,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
             </motion.div>
           )}
 
-          {/* Chat em Grupo modal */}
           {chatGrupoAberto && grupoSelecionado && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -305,7 +296,6 @@ export default function ChatDropdown({ isOpen, onClose, onToggle, hasUnreadMessa
                   onFechar={handleCloseChatGrupo}
                   onSairGrupo={() => {
                     handleCloseChatGrupo();
-                    // Recarregar dados após sair do grupo
                     setTimeout(fetchRemetentes, 500);
                   }}
                 />

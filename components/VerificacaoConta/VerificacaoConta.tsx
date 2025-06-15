@@ -31,7 +31,7 @@ import {
 
 const VerificacaoConta = () => {
   const router = useRouter();
-  const { carregarUsuario } = usePerfil(); // Adicionar contexto para atualizar dados do perfil
+  const { carregarUsuario } = usePerfil();
 
   const [codigoEmail, setCodigoEmail] = useState("");
   const [codigoTelefone, setCodigoTelefone] = useState("");
@@ -92,7 +92,6 @@ const VerificacaoConta = () => {
       setEmailVerificado(true);
       setCodigoEmail("");
 
-      // Atualizar dados do contexto para refletir a verificação
       await carregarUsuario(true);
 
       if (telefoneVerificado) {
@@ -126,7 +125,6 @@ const VerificacaoConta = () => {
       setTelefoneVerificado(true);
       setCodigoTelefone("");
 
-      // Atualizar dados do contexto para refletir a verificação
       await carregarUsuario(true);
 
       if (emailVerificado) {
@@ -144,7 +142,6 @@ const VerificacaoConta = () => {
   if (carregando) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100 relative overflow-hidden">
-        {/* Animated Background Gradient */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-sky-100/20 via-orange-50/15 to-blue-50/25"
           animate={{
@@ -157,7 +154,6 @@ const VerificacaoConta = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Simple Floating Particles */}
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
@@ -181,7 +177,6 @@ const VerificacaoConta = () => {
           />
         ))}
 
-        {/* Floating Icons */}
         <motion.div
           className="absolute top-24 right-20"
           animate={{ 
@@ -261,9 +256,7 @@ const VerificacaoConta = () => {
     );
   }  return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-primary/5 relative overflow-hidden">
-      {/* Enhanced 3D Animated Background */}
       <div className="absolute inset-0">
-        {/* Animated Background Gradient */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
           animate={{
@@ -276,7 +269,6 @@ const VerificacaoConta = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Floating orbs */}
         <motion.div
           className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
           animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -295,7 +287,6 @@ const VerificacaoConta = () => {
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
 
-        {/* Simple Floating Particles */}
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
@@ -318,8 +309,7 @@ const VerificacaoConta = () => {
             }}
           />
         ))}
-
-        {/* Verification-themed Floating Icons */}
+  
         <motion.div
           className="absolute top-24 right-20"
           animate={{ 
@@ -414,7 +404,7 @@ const VerificacaoConta = () => {
         >
           <CheckCircle className="w-6 h-6 text-teal-500/30 drop-shadow-lg" />
         </motion.div>
-      </div>      {/* Main Content - Positioned lower with proper spacing */}
+      </div>
       <div className="flex flex-col items-center justify-center min-h-screen pt-24 pb-8 px-4 relative z-10">
         <motion.div
           className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 max-w-lg w-full overflow-hidden"
@@ -422,14 +412,13 @@ const VerificacaoConta = () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           whileHover={{ scale: 1.01, y: -2 }}
-        >          {/* Enhanced Header */}
+        >
           <motion.div
             className="bg-gradient-to-r from-primary/15 to-orange-500/15 p-8 text-center relative overflow-hidden"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            {/* Animated background pattern */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-primary/5 to-orange-500/5"
               animate={{

@@ -20,8 +20,8 @@ const NavAuthenticated = () => {
   const { token, usuario, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
-  const { hasUnreadMessages } = useUnreadMessages(5000); // 5 segundos para atualização rápida do badge global
-  const { hasUnreadGroupMessages } = useUnreadGroupMessages(30000); // 30 segundos para grupos
+  const { hasUnreadMessages } = useUnreadMessages(5000);
+  const { hasUnreadGroupMessages } = useUnreadGroupMessages(30000);
   const [chatDropdownOpen, setChatDropdownOpen] = useState(false);
 
   const isValidToken = (token: unknown): token is string => {
@@ -63,7 +63,6 @@ const NavAuthenticated = () => {
         </motion.span>
       )}
 
-      {/* Componente de Chat Global */}
       <div className="relative">
         <ChatDropdown 
           isOpen={chatDropdownOpen}

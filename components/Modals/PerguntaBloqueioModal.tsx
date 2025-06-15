@@ -61,7 +61,6 @@ export default function PerguntaBloqueioModal({
             >
               <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl transition-all">
                 
-                {/* Content */}
                 <div className="px-6 py-6">
                   <div className="flex flex-col items-center">
                     <motion.div
@@ -82,7 +81,6 @@ export default function PerguntaBloqueioModal({
                       para evitar futuros contatos?
                     </p>
 
-                    {/* Buttons */}
                     <div className="flex gap-3 w-full">
                       <motion.button
                         onClick={handleNaoBloquear}

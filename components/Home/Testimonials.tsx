@@ -96,7 +96,6 @@ const Testimonials = () => {
       transition={{ duration: 0.8 }}
       className="py-12 md:py-20 bg-gradient-to-br from-white via-orange-50/30 to-white relative overflow-hidden"
     >
-      {/* Background decoration - Responsivos */}
       <div className="absolute top-0 left-0 w-full h-full">
         <motion.div
           animate={{ 

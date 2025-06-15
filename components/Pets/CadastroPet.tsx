@@ -70,7 +70,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
   const handleSelectChange = (field: string, value: string) => {
     setPet((prev) => ({ ...prev, [field]: value }));
   };
-  // Função para comprimir imagem
   const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
@@ -78,7 +77,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
       const img = new Image();
       
       img.onload = () => {
-        // Definir tamanho máximo mantendo proporção
         const MAX_WIDTH = 1200;
         const MAX_HEIGHT = 1200;
         
@@ -99,7 +97,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
         canvas.width = width;
         canvas.height = height;
         
-        // Desenhar e comprimir
         ctx?.drawImage(img, 0, 0, width, height);
         
         canvas.toBlob(
@@ -140,7 +137,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
 
     setUploading(true);
     try {
-      // Comprimir imagem se necessário
       const finalFile = file.size > 2 * 1024 * 1024 ? await compressImage(file) : file;
       
       const imageUrl = await uploadFotoPerfil(finalFile, "PET");
@@ -154,7 +150,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
     }
   };
   const handleAvatarClick = () => {
-    // Detectar se é mobile para mostrar opções
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     if (isMobile) {
@@ -199,7 +194,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
       setSaving(false);
     }
   };  const content = (
-    <div className="relative min-h-screen overflow-hidden">          {/* Background animado */}
+    <div className="relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
         <motion.div
           className="absolute inset-0"
@@ -213,7 +208,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Simple Floating Particles */}
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
@@ -237,7 +231,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           />
         ))}
 
-        {/* Pet-themed Icons with Smooth Animations */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -343,7 +336,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        {/* Header */}
         <div className="flex items-center justify-between">
           <motion.button
             type="button"
@@ -366,8 +358,8 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             </p>
           </div>
           
-          <div className="w-12"></div> {/* Spacer para centralizar o título */}
-        </div>{/* Avatar do pet */}
+          <div className="w-12"></div>
+        </div>
         <motion.div 
           className="flex justify-center mb-8"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -422,9 +414,8 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
               onChange={handleImageUpload}
             />
           </div>
-        </motion.div>        {/* Campos do formulário */}
+        </motion.div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Nome */}
           <motion.div 
             className="lg:col-span-2"
             initial={{ opacity: 0, x: -20 }}
@@ -443,7 +434,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
               />            </div>
           </motion.div>
 
-          {/* Raça */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -461,7 +451,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             />
           </motion.div>
 
-          {/* Porte */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -500,7 +489,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
               </Select>            </div>
           </motion.div>
 
-          {/* Sexo */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -530,7 +518,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             </Select>
           </motion.div>
 
-          {/* Data de Nascimento */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -552,9 +539,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           </motion.div>
         </div>
 
-        {/* Descrição e Observações */}
         <div className="space-y-6">
-          {/* Descrição */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -577,7 +562,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
             </div>
           </motion.div>
 
-          {/* Observações */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -599,7 +583,7 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
               </div>
             </div>
           </motion.div>
-        </div>        {/* Botão de submit */}
+        </div>
         <motion.div 
           className="pt-6"
           initial={{ opacity: 0, y: 20 }}
@@ -638,7 +622,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
           </Button></motion.div>
       </motion.form>
 
-      {/* Modal de Opções de Foto para Mobile */}
       <AnimatePresence>
         {showPhotoOptions && (
           <motion.div
@@ -700,7 +683,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
     </div>
   );
 
-  // Se for edição, aplicar o OwnershipGuard
   if (petId) {
     return (
       <OwnershipGuard
@@ -714,7 +696,6 @@ const CadastroPet = ({ petId }: CadastroPetProps) => {
     );
   }
 
-  // Se for criação, renderizar diretamente
   return content;
 };
 

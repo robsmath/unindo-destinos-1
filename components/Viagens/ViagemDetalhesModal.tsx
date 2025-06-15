@@ -149,18 +149,15 @@ export default function ViagemDetalhesModal({
       const dadosPreferencias = await getPreferenciaByViagemId(viagemId);
       setPreferencias(dadosPreferencias);
 
-      // Carregar participantes para contar
       const dadosParticipantes = await getParticipantesDaViagem(viagemId);
       setParticipantes(dadosParticipantes);
 
-            // VERIFICAÇÃO SIMPLES E DIRETA: Se o usuário está na lista de participantes do grupo
       if (dadosViagem.grupoMensagemId && usuario?.id) {
         try {
           const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
           const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
           setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
         } catch (error: any) {
-          // Se der qualquer erro, assume que NÃO está no grupo (mais seguro)
           setUsuarioEstaNoGrupo(false);
         }
       } else {
@@ -168,7 +165,6 @@ export default function ViagemDetalhesModal({
       }
 
       if (!imagemViagem) {
-        // Usar a imagem da viagem carregada ou a imagem padrão
         setImagem(dadosViagem.imagemUrl || "/images/common/beach.jpg");
       }
     } catch (err) {
@@ -214,7 +210,7 @@ export default function ViagemDetalhesModal({
                     <p className="text-lg font-medium">Carregando detalhes da viagem...</p>
                   </div>
                 ) : (
-                  <>                    {/* Header com Imagem */}
+                  <>
                     <div className="relative h-64 overflow-hidden rounded-t-3xl">                      <SmartImage
                         src={imagem || "/images/common/beach.jpg"}
                         alt={viagem.destino}
@@ -222,10 +218,8 @@ export default function ViagemDetalhesModal({
                         fallbackSrc="/images/common/beach.jpg"
                       />
                       
-                      {/* Gradient Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       
-                      {/* Título sobreposto */}
                       <div className="absolute bottom-6 left-6 right-16 text-white">
                         <h2 className="text-2xl font-bold mb-2">{viagem.destino}</h2>
                         <div className="flex items-center gap-2 text-white/90">
@@ -238,9 +232,7 @@ export default function ViagemDetalhesModal({
                       </div>
                     </div>
 
-                    {/* Conteúdo Principal */}
                     <div className="p-8">
-                      {/* Status e Informações Básicas */}
                       <div className="flex flex-wrap gap-3 mb-6">
                         <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
                           viagem.status === "CONFIRMADA"
@@ -266,7 +258,6 @@ export default function ViagemDetalhesModal({
                           {viagem.categoriaViagem === "INTERNACIONAL" ? "Internacional" : "Nacional"}
                         </span>                      </div>
 
-                      {/* Informações da Viagem */}
                       <div className="space-y-4 mb-6">
                         {viagem.descricao && (
                           <div className="space-y-3">
@@ -294,7 +285,6 @@ export default function ViagemDetalhesModal({
                               </div>
                             </div>
 
-                            {/* Botão Chat da Viagem - só aparece se o usuário estiver no grupo */}
                             {usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
                               <button
                                 onClick={() => setChatGrupoAberto(true)}
@@ -308,7 +298,6 @@ export default function ViagemDetalhesModal({
                         </div>
                       </div>
 
-                      {/* Seção de Preferências */}
                       <div className="border-t border-gray-100 pt-6">
                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800">
                           <Settings className="w-5 h-5 text-primary" />
@@ -317,7 +306,6 @@ export default function ViagemDetalhesModal({
                         
                         {preferencias ? (
                           <div className="space-y-4">
-                            {/* Grid de Preferências Principais */}
                             <div className="grid grid-cols-2 gap-4">
                               <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
                                 <div className="flex items-center gap-3 mb-2">
@@ -362,7 +350,6 @@ export default function ViagemDetalhesModal({
                               )}
                             </div>
 
-                            {/* Preferências Secundárias */}
                             <div className="bg-gray-50 rounded-xl p-4">
                               <h4 className="text-sm font-medium text-gray-700 mb-3">Preferências Gerais</h4>
                               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -414,7 +401,6 @@ export default function ViagemDetalhesModal({
                               </div>
                             </div>
 
-                            {/* Aviso sobre acomodação compartilhada */}
                             {preferencias.acomodacaoCompartilhada && (
                               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                                 <div className="flex items-center gap-2 text-blue-700">
@@ -434,7 +420,6 @@ export default function ViagemDetalhesModal({
                           </div>
                         )}
 
-                        {/* Aviso sobre convite */}
                         {exibirAvisoConvite && (
                           <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
                             <div className="flex items-start gap-3">
@@ -453,7 +438,6 @@ export default function ViagemDetalhesModal({
                   </>
                 )}
 
-                {/* Botão de Fechar */}
                 <button
                   onClick={onClose}
                   className="absolute top-4 right-4 p-2 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-800 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-105"
@@ -466,8 +450,7 @@ export default function ViagemDetalhesModal({
           </div>
         </div>
       </Dialog>
-
-      {/* Chat em Grupo Modal */}
+                
       {chatGrupoAberto && viagem?.grupoMensagemId && (
         <Transition appear show={chatGrupoAberto}>
           <Dialog as="div" className="relative z-50" onClose={() => setChatGrupoAberto(false)}>

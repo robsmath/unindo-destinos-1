@@ -77,7 +77,6 @@ const EncontrePessoas = () => {
   const [minhasViagens, setMinhasViagens] = useState<MinhasViagensDTO[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Estados para paginação
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -92,7 +91,6 @@ const EncontrePessoas = () => {
   const [idadeMinimaInput, setIdadeMinimaInput] = useState("");
   const [idadeMaximaInput, setIdadeMaximaInput] = useState("");
 
-  // Hook para denúncia e bloqueio
   const {
     denunciaModalOpen,
     bloqueioModalOpen,
@@ -119,7 +117,6 @@ const EncontrePessoas = () => {
 
   const handleUsuarioBloqueadoComRemocao = () => {
     if (usuarioParaDenunciarBloquear) {
-      // Remove o usuário da lista local
       setUsuarios(prev => prev.filter(u => u.id !== usuarioParaDenunciarBloquear.id));
     }
     handleUsuarioBloqueado();
@@ -127,7 +124,6 @@ const EncontrePessoas = () => {
 
   const handleBloquearAposDenunciaComRemocao = async () => {
     if (usuarioParaDenunciarBloquear) {
-      // Remove o usuário da lista local
       setUsuarios(prev => prev.filter(u => u.id !== usuarioParaDenunciarBloquear.id));
     }
     await handleBloquearAposDenuncia();
@@ -143,7 +139,6 @@ const EncontrePessoas = () => {
     }
   }, [isAuthenticated]);
 
-  // Sincronizar inputs locais com filtros
   useEffect(() => {
     setIdadeMinimaInput(filtros.idadeMin?.toString() || "");
     setIdadeMaximaInput(filtros.idadeMax?.toString() || "");
@@ -236,7 +231,6 @@ const EncontrePessoas = () => {
         email: filtros.email || null,
       };
 
-      // Só adiciona checkboxes que estão definidos
       if (filtros.petFriendly !== undefined) filtrosLimpos.petFriendly = filtros.petFriendly;
       if (filtros.aceitaCriancas !== undefined) filtrosLimpos.aceitaCriancas = filtros.aceitaCriancas;
       if (filtros.aceitaFumantes !== undefined) filtrosLimpos.aceitaFumantes = filtros.aceitaFumantes;
@@ -246,7 +240,6 @@ const EncontrePessoas = () => {
 
       const response = await buscarUsuarios(filtrosLimpos, page, pageSize);
       
-      // Atualizar estados de paginação
       setUsuarios(response.content);
       setCurrentPage(response.number);
       setTotalPages(response.totalPages);
@@ -260,7 +253,6 @@ const EncontrePessoas = () => {
         fullError: err
       });
       
-      // Verifica se é o erro específico de não ter viagens cadastradas
       const errorMessage = err?.response?.data?.message || err?.message || "";
       
       if (errorMessage.includes("pelo menos uma viagem cadastrada")) {
@@ -302,7 +294,6 @@ const EncontrePessoas = () => {
   };
 
   const handlePageChange = (page: number) => {
-    // Scroll suave para o topo da página
     window.scrollTo({ top: 0, behavior: 'smooth' });
     buscar(page);
   };
@@ -384,9 +375,7 @@ const EncontrePessoas = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-      {/* Background Effects */}
       <div className="absolute inset-0">
-        {/* Gradient overlay */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
           animate={{
@@ -399,7 +388,6 @@ const EncontrePessoas = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Floating particles */}
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
@@ -423,7 +411,6 @@ const EncontrePessoas = () => {
           />
         ))}
 
-        {/* Animated icons */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -550,7 +537,6 @@ const EncontrePessoas = () => {
           <Filter className="w-5 h-5 text-teal-500/30 drop-shadow-lg" />
         </motion.div>
 
-        {/* Gradient orbs */}
         <motion.div
           className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
           animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -565,7 +551,6 @@ const EncontrePessoas = () => {
 
       <div className="relative z-10 py-16">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -583,7 +568,6 @@ const EncontrePessoas = () => {
             </p>
           </motion.div>
 
-          {/* Search Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -615,7 +599,6 @@ const EncontrePessoas = () => {
                 </div>
               </div>
               
-              {/* Botões de Ação */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => buscar(0)}
@@ -647,7 +630,6 @@ const EncontrePessoas = () => {
             </div>
           </motion.div>
 
-          {/* Filtros Avançados */}
           <AnimatePresence>
             {mostrarFiltros && (
               <motion.div
@@ -661,9 +643,7 @@ const EncontrePessoas = () => {
                   <h3 className="text-lg font-semibold text-gray-800">Filtros Avançados</h3>
                 </div>
                 
-                {/* Linha 1: Gênero + Acomodação + Transporte */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Gênero */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Gênero</label>
                     <select
@@ -678,8 +658,7 @@ const EncontrePessoas = () => {
                       <option value="NAO_BINARIO">Não-binário</option>
                       <option value="OUTRO">Outro</option>
                     </select>
-                  </div>
-                  {/* Tipo de Acomodação */}
+                  </div>  
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">
                       Tipo de Acomodação
@@ -707,7 +686,6 @@ const EncontrePessoas = () => {
                       ))}
                     </select>
                   </div>
-                  {/* Tipo de Transporte */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">
                       Tipo de Transporte
@@ -738,9 +716,7 @@ const EncontrePessoas = () => {
                   </div>
                 </div>
                 
-                {/* Linha 2: Idades + Valor Médio */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {/* Idade Mínima */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Mínima</label>
                     <input
@@ -769,7 +745,6 @@ const EncontrePessoas = () => {
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
-                  {/* Idade Máxima */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Máxima</label>
                     <input
@@ -798,7 +773,6 @@ const EncontrePessoas = () => {
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
-                  {/* Valor Médio Máximo */}
                   <div>
                     <ValueSlider
                       value={typeof filtros.valorMedioMax === "number" ? filtros.valorMedioMax : 0}
@@ -812,7 +786,6 @@ const EncontrePessoas = () => {
                   </div>
                 </div>
                 
-                {/* Checkboxes */}
                 <div className="mt-6">
                   <label className="text-sm font-medium text-gray-700 block mb-3">Preferências de Viagem</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -849,7 +822,6 @@ const EncontrePessoas = () => {
                   </div>
                 </div>
 
-                {/* Botões dentro dos filtros */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-gray-200">
                   <button
                     onClick={importarPreferencias}
@@ -881,7 +853,6 @@ const EncontrePessoas = () => {
             )}
           </AnimatePresence>
 
-          {/* Lista de usuários */}
           <div className="mt-8">
             {loading ? (
               <motion.div 
@@ -1013,9 +984,7 @@ const EncontrePessoas = () => {
                       </ul>
                     </div>
                     
-                    {/* Ações */}
                     <div className="space-y-3 mt-4 pt-4 border-t border-gray-100">
-                      {/* Botão Convidar */}
                       <button
                         className="bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl hover:scale-105 font-semibold flex items-center justify-center gap-2 w-full disabled:opacity-60 transition-all duration-200"
                         onClick={() => abrirModalConvite(user)}
@@ -1034,7 +1003,6 @@ const EncontrePessoas = () => {
                         )}
                       </button>
 
-                      {/* Botões de Denúncia e Bloqueio */}
                       <div className="flex justify-center">
                         <DenunciaEBloqueioButtons
                           usuario={user}
@@ -1050,7 +1018,6 @@ const EncontrePessoas = () => {
               </motion.div>
             )}
 
-            {/* Paginação */}
             {!loading && usuarios.length > 0 && (
               <Pagination
                 currentPage={currentPage}
@@ -1064,7 +1031,6 @@ const EncontrePessoas = () => {
           </div>
         </div>
 
-        {/* MODAL DE CONVITE */}
         {showModal && usuarioSelecionado && (
           <ConviteViagemModal
             isOpen={showModal}
@@ -1074,7 +1040,6 @@ const EncontrePessoas = () => {
           />
         )}
 
-        {/* MODAL DE MINI PERFIL */}
         {modalPerfilAberto && usuarioSelecionado && (
           <MiniPerfilModal
             usuario={usuarioSelecionado}
@@ -1086,7 +1051,6 @@ const EncontrePessoas = () => {
           />
         )}
 
-        {/* Modais de Denúncia e Bloqueio */}
         {usuarioParaDenunciarBloquear && (
           <>
             <DenunciaModal
@@ -1107,7 +1071,6 @@ const EncontrePessoas = () => {
           </>
         )}
 
-        {/* Modal de Pergunta de Bloqueio - renderizado separadamente */}
         {usuarioParaDenunciarBloquear && (
           <PerguntaBloqueioModal
             isOpen={perguntaBloqueioModalOpen}

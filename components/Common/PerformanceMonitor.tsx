@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-// Declaração global para gtag
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
@@ -10,11 +9,11 @@ declare global {
 }
 
 interface PerformanceMetrics {
-  fcp: number; // First Contentful Paint
-  lcp: number; // Largest Contentful Paint
-  fid: number; // First Input Delay
-  cls: number; // Cumulative Layout Shift
-  ttfb: number; // Time to First Byte
+  fcp: number;
+  lcp: number;
+  fid: number;
+  cls: number;
+  ttfb: number;
 }
 
 interface PerformanceMonitorProps {
@@ -32,13 +31,10 @@ const PerformanceMonitor = ({
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Função para coletar métricas Web Vitals
     const collectMetrics = () => {
-      // FCP - First Contentful Paint
       const paintEntries = performance.getEntriesByType('paint');
       const fcpEntry = paintEntries.find(entry => entry.name === 'first-contentful-paint');
       
-      // TTFB - Time to First Byte
       const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       const ttfb = navigationEntry ? navigationEntry.responseStart - navigationEntry.requestStart : 0;
 
@@ -51,7 +47,6 @@ const PerformanceMonitor = ({
       onMetricsUpdate?.(newMetrics);
     };
 
-    // LCP - Largest Contentful Paint
     const observeLCP = () => {
       if ('PerformanceObserver' in window) {
         const observer = new PerformanceObserver((list) => {
@@ -66,13 +61,11 @@ const PerformanceMonitor = ({
         try {
           observer.observe({ entryTypes: ['largest-contentful-paint'] });
         } catch (e) {
-          // Fallback se não suportado
           console.warn('LCP observation not supported');
         }
       }
     };
 
-    // FID - First Input Delay
     const observeFID = () => {
       if ('PerformanceObserver' in window) {
         const observer = new PerformanceObserver((list) => {
@@ -92,7 +85,6 @@ const PerformanceMonitor = ({
       }
     };
 
-    // CLS - Cumulative Layout Shift
     const observeCLS = () => {
       if ('PerformanceObserver' in window) {
         let clsValue = 0;
@@ -133,7 +125,6 @@ const PerformanceMonitor = ({
       }
     };
 
-    // Coletar informações do dispositivo
     const collectDeviceInfo = () => {
       if (enableDeviceInfo) {
         const info = {
@@ -168,18 +159,16 @@ const PerformanceMonitor = ({
       }
     };
 
-    // Aguardar carregamento completo antes de coletar métricas
     if (document.readyState === 'complete') {
       collectMetrics();
     } else {
       window.addEventListener('load', collectMetrics);
     }
 
-    // Iniciar observadores
     observeLCP();
     observeFID();
     observeCLS();
-    collectDeviceInfo();    // Enviar métricas para analytics (se configurado)
+    collectDeviceInfo();
     const sendToAnalytics = () => {
       if (typeof window !== 'undefined' && window.gtag) {
         Object.entries(metrics).forEach(([key, value]) => {
@@ -195,7 +184,6 @@ const PerformanceMonitor = ({
       }
     };
 
-    // Enviar métricas após 5 segundos
     const analyticsTimer = setTimeout(sendToAnalytics, 5000);
 
     return () => {
@@ -204,13 +192,11 @@ const PerformanceMonitor = ({
     };
   }, [onMetricsUpdate, enableDeviceInfo]);
 
-  // Log das métricas no desenvolvimento
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && Object.keys(metrics).length > 0) {
       console.group('🚀 Performance Metrics');
       console.table(metrics);
       
-      // Análise das métricas
       if (metrics.fcp && metrics.fcp > 2500) {
         console.warn('⚠️ FCP está lento (>2.5s). Considere otimizar o carregamento inicial.');
       }
@@ -237,12 +223,10 @@ const PerformanceMonitor = ({
     }
   }, [metrics, deviceInfo]);
 
-  // Componente não renderiza nada visualmente no production
   if (process.env.NODE_ENV === 'production') {
     return null;
   }
 
-  // Painel de debug para desenvolvimento
   return (
     <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg text-xs font-mono z-50 max-w-sm">
       <h3 className="font-bold mb-2 text-green-400">⚡ Performance</h3>

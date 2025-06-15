@@ -12,7 +12,6 @@ interface AnalyticsEvent {
 
 export const useAnalytics = () => {
   const trackEvent = (event: AnalyticsEvent) => {
-    // Google Analytics 4 tracking
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', event.action, {
         event_category: event.category,
@@ -22,7 +21,6 @@ export const useAnalytics = () => {
       });
     }
 
-    // Também enviar para console em desenvolvimento
     if (process.env.NODE_ENV === 'development') {
       console.log('Analytics Event:', event);
     }
@@ -87,12 +85,10 @@ export const useAnalytics = () => {
   };
 };
 
-// Hook para rastrear automaticamente eventos de acessibilidade
 export const useAccessibilityTracking = () => {
   const { trackAccessibility } = useAnalytics();
 
   useEffect(() => {
-    // Rastrear uso de teclado
     const handleKeyboardNavigation = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
         trackAccessibility('keyboard_navigation', {
@@ -102,7 +98,6 @@ export const useAccessibilityTracking = () => {
         });
       }
 
-      // Rastrear teclas de acessibilidade
       if (e.altKey || e.ctrlKey) {
         trackAccessibility('accessibility_shortcut', {
           key_combination: `${e.ctrlKey ? 'Ctrl+' : ''}${e.altKey ? 'Alt+' : ''}${e.key}`,
@@ -110,7 +105,6 @@ export const useAccessibilityTracking = () => {
       }
     };
 
-    // Rastrear mudanças de foco
     const handleFocusChange = (e: FocusEvent) => {
       if (e.target instanceof Element) {
         const element = e.target;
@@ -126,7 +120,6 @@ export const useAccessibilityTracking = () => {
       }
     };
 
-    // Rastrear preferências do usuário
     const trackUserPreferences = () => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const prefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
@@ -143,14 +136,11 @@ export const useAccessibilityTracking = () => {
       });
     };
 
-    // Adicionar listeners
     document.addEventListener('keydown', handleKeyboardNavigation);
     document.addEventListener('focusin', handleFocusChange);
 
-    // Rastrear preferências iniciais
     trackUserPreferences();
 
-    // Cleanup
     return () => {
       document.removeEventListener('keydown', handleKeyboardNavigation);
       document.removeEventListener('focusin', handleFocusChange);
@@ -158,7 +148,6 @@ export const useAccessibilityTracking = () => {
   }, [trackAccessibility]);
 };
 
-// Componente Analytics Provider
 const AnalyticsProvider = ({ children }: { children: React.ReactNode }) => {
   useAccessibilityTracking();
 

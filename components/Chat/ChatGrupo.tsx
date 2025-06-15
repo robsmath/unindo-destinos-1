@@ -73,7 +73,6 @@ export default function ChatGrupo({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageIdRef = useRef<number | undefined>(undefined);
 
-  // Carregar mensagens iniciais
   useEffect(() => {
     const carregarMensagens = async () => {
       try {
@@ -85,12 +84,10 @@ export default function ChatGrupo({
           lastMessageIdRef.current = mensagensCarregadas[mensagensCarregadas.length - 1].id;
         }
         
-        // Marcar mensagens como lidas
         await marcarMensagensComoLidas(grupoId);
       } catch (error: any) {
         console.error("Erro ao carregar mensagens do grupo:", error);
         
-        // Verificar se é erro de acesso negado
         if (error?.response?.status === 404 || 
             (error?.response?.data && typeof error.response.data === 'string' && 
              error.response.data.includes("não participa desse grupo"))) {
@@ -113,7 +110,6 @@ export default function ChatGrupo({
     }
   }, [grupoId, usuarioLogado]);
 
-  // Polling para novas mensagens
   useEffect(() => {
     if (!grupoId || !usuarioLogado) return;
 
@@ -125,7 +121,6 @@ export default function ChatGrupo({
           setMensagens(prev => [...prev, ...novasMensagens]);
           lastMessageIdRef.current = novasMensagens[novasMensagens.length - 1].id;
           
-          // Marcar como lidas se estiver visualizando
           await marcarMensagensComoLidas(grupoId);
         }
       } catch (error) {
@@ -133,17 +128,14 @@ export default function ChatGrupo({
       }
     };
 
-    // Polling a cada 5 segundos
     const interval = setInterval(buscarNovasMensagens, 5000);
     return () => clearInterval(interval);
   }, [grupoId, usuarioLogado]);
 
-  // Scroll automático para última mensagem
   useEffect(() => {
     scrollToBottom();
   }, [mensagens]);
 
-  // Detectar scroll para mostrar botão "voltar ao final"
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
@@ -183,7 +175,6 @@ export default function ChatGrupo({
     } catch (error: any) {
       console.error("Erro ao enviar mensagem:", error);
       
-      // Verificar se é erro de acesso negado
       if (error?.response?.status === 404 || 
           (error?.response?.data && typeof error.response.data === 'string' && 
            error.response.data.includes("não participa desse grupo"))) {
@@ -196,7 +187,7 @@ export default function ChatGrupo({
         onRemovidoDoGrupo?.();
       } else {
         toast.error("Erro ao enviar mensagem");
-        setNovaMensagem(conteudoMensagem); // Restaurar texto em caso de erro
+        setNovaMensagem(conteudoMensagem);
       }
     } finally {
       setEnviando(false);
@@ -234,14 +225,12 @@ export default function ChatGrupo({
       const participantes = await getParticipantesDaViagem(viagemId);
       setParticipantesViagem(participantes);
       
-      // Tentar buscar participantes atuais do grupo
       try {
         const participantesDoGrupo = await buscarParticipantesGrupo(grupoId);
         setParticipantesGrupo(participantesDoGrupo);
         console.log("✅ Participantes do grupo carregados via API");
       } catch (error) {
         console.log("⚠️ Endpoint de participantes não disponível, assumindo todos estão no grupo");
-        // Fallback: assume que todos os participantes da viagem estão no grupo
         setParticipantesGrupo(participantes.map(p => p.id));
       }
     } catch (error) {
@@ -256,7 +245,6 @@ export default function ChatGrupo({
     try {
       await adicionarParticipanteGrupo(grupoId, usuarioId);
       toast.success(`${nomeUsuario} foi adicionado ao grupo!`);
-      // Atualizar lista local
       setParticipantesGrupo(prev => [...prev, usuarioId]);
     } catch (error) {
       console.error("Erro ao adicionar participante:", error);
@@ -268,10 +256,8 @@ export default function ChatGrupo({
     try {
       await removerParticipanteGrupo(grupoId, usuarioId);
       toast.success(`${nomeUsuario} foi removido do grupo!`);
-      // Atualizar lista local
       setParticipantesGrupo(prev => prev.filter(id => id !== usuarioId));
       
-      // Se o usuário removido for o usuário atual, notificar o componente pai
       if (usuarioId === usuarioLogado?.id) {
         onRemovidoDoGrupo?.();
       }
@@ -281,7 +267,6 @@ export default function ChatGrupo({
     }
   };
 
-  // Verificar se um usuário está no grupo (baseado na lista de participantes)
   const usuarioEstaNoGrupo = (usuarioId: number) => {
     return participantesGrupo.includes(usuarioId);
   };
@@ -322,8 +307,7 @@ export default function ChatGrupo({
       });
     }
   };
-
-  // Agrupar mensagens por data
+  
   const mensagensAgrupadas = mensagens.reduce((grupos, mensagem) => {
     const data = formatarData(mensagem.dataEnvio);
     if (!grupos[data]) {

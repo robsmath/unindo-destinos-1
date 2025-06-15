@@ -176,11 +176,9 @@ const PersonalDataForm = () => {
 
   const handleInvisibilityChange = (newValue: boolean) => {
     if (newValue && !userData?.invisivel) {
-      // Se está ativando a invisibilidade pela primeira vez, mostrar modal de confirmação
       setPendingInvisibilityValue(newValue);
       setShowInvisibilityModal(true);
     } else {
-      // Se está desativando ou já estava invisível, aplicar diretamente
       if (userData) {
         setUserData({ ...userData, invisivel: newValue });
       }
@@ -571,8 +569,7 @@ const PersonalDataForm = () => {
               >
                 {validationErrors.telefone}
               </motion.p>
-            )}
-            {/* Status de verificação do telefone */}
+            )}  
             {userData.telefoneVerificado ? (
               <motion.p
                 initial={{ opacity: 0, height: 0 }}
@@ -601,7 +598,6 @@ const PersonalDataForm = () => {
               </motion.div>
             )}</motion.div>          
           
-          {/* Campo de Descrição */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -635,7 +631,6 @@ const PersonalDataForm = () => {
             </p>
           </motion.div>
           
-          {/* Toggle de Visibilidade */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -664,7 +659,6 @@ const PersonalDataForm = () => {
                 </div>
               </div>
               
-              {/* Toggle Switch */}
               <div className="relative">
                 <button
                   type="button"
@@ -775,7 +769,6 @@ const PersonalDataForm = () => {
             )}
           </motion.div>
 
-          {/* Data de Nascimento */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -835,7 +828,6 @@ const PersonalDataForm = () => {
             )}
           </motion.div>
 
-          {/* Gênero */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -905,11 +897,9 @@ const PersonalDataForm = () => {
           </motion.div>
           </div>
 
-          {/* Seção de Endereço */}
           <div className="space-y-6 pt-6 border-t border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800">Informações de Endereço</h3>
             
-            {/* CEP */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -981,9 +971,8 @@ const PersonalDataForm = () => {
                 {validationErrors.cep}
               </motion.p>
             )}
-          </motion.div>          {/* Endereço e Número em grid responsivo */}
+            </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Endereço */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1040,7 +1029,6 @@ const PersonalDataForm = () => {
                   {validationErrors.rua}
                 </motion.p>            )}          </motion.div>
 
-          {/* Número */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -1065,9 +1053,7 @@ const PersonalDataForm = () => {
             </div>            </motion.div>
           </div>
 
-          {/* Complemento e Bairro em grid responsivo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Complemento */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1092,7 +1078,6 @@ const PersonalDataForm = () => {
             </div>
           </motion.div>
 
-          {/* Bairro */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -1118,9 +1103,7 @@ const PersonalDataForm = () => {
           </motion.div>
           </div>
 
-          {/* Cidade e Estado */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Cidade */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1178,7 +1161,6 @@ const PersonalDataForm = () => {
               </motion.p>              )}
             </motion.div>
 
-            {/* Estado */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1268,7 +1250,7 @@ const PersonalDataForm = () => {
                 </motion.p>
               )}            </motion.div>
           </div>
-          </div>          {/* Botão de Salvar */}
+          </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1283,7 +1265,6 @@ const PersonalDataForm = () => {
               whileTap={{ scale: saving ? 1 : 0.98 }}
               aria-label={saving ? "Salvando alterações..." : "Salvar alterações dos dados pessoais"}
             >
-              {/* Animated Background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 initial={{ x: '-100%' }}
@@ -1300,7 +1281,6 @@ const PersonalDataForm = () => {
         </motion.form>
       </motion.div>
       
-      {/* Modal de Confirmação de Invisibilidade */}
       <AnimatePresence>
         {showInvisibilityModal && (
           <motion.div
@@ -1310,7 +1290,6 @@ const PersonalDataForm = () => {
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ backdropFilter: 'blur(8px)' }}
           >
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1320,7 +1299,6 @@ const PersonalDataForm = () => {
               onClick={cancelInvisibility}
             />
             
-            {/* Modal Content */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1334,7 +1312,6 @@ const PersonalDataForm = () => {
               className="relative w-full max-w-md mx-auto transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl"
             >
               <div className="p-6">
-                {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
                   <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full">
                     <AlertTriangle className="w-6 h-6 text-amber-600" />
@@ -1349,7 +1326,6 @@ const PersonalDataForm = () => {
                   </div>
                 </div>
                 
-                {/* Content */}
                 <div className="space-y-4 mb-6">
                   <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl border border-amber-200/50">
                     <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2 text-sm">
@@ -1381,7 +1357,6 @@ const PersonalDataForm = () => {
                   </p>
                 </div>
                 
-                {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <motion.button
                     onClick={cancelInvisibility}

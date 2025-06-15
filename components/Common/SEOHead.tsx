@@ -43,7 +43,6 @@ const SEOHead = ({
   const fullUrl = canonicalUrl || url;
   const fullImage = image.startsWith("http") ? image : `${url}${image}`;
 
-  // Dados estruturados padrão para organização
   const defaultStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -67,23 +66,19 @@ const SEOHead = ({
 
   return (
     <Head>
-      {/* Título e descrição básicos */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords.join(", ")} />
       <meta name="author" content={author} />
 
-      {/* Meta tags de indexação */}
       {noindex && <meta name="robots" content="noindex" />}
       {nofollow && <meta name="robots" content="nofollow" />}
       {(noindex || nofollow) && (
         <meta name="robots" content={`${noindex ? "noindex" : "index"},${nofollow ? "nofollow" : "follow"}`} />
       )}
 
-      {/* URL canônica */}
       <link rel="canonical" href={fullUrl} />
 
-      {/* Open Graph (Facebook) */}
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
@@ -95,7 +90,6 @@ const SEOHead = ({
       <meta property="og:site_name" content={siteName} />
       <meta property="og:locale" content={locale} />
 
-      {/* Twitter Cards */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content={twitterHandle} />
       <meta name="twitter:creator" content={twitterHandle} />
@@ -103,7 +97,6 @@ const SEOHead = ({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
 
-      {/* Meta tags específicas para artigos */}
       {type === "article" && (
         <>
           {publishedTime && <meta property="article:published_time" content={publishedTime} />}
@@ -112,26 +105,22 @@ const SEOHead = ({
         </>
       )}
 
-      {/* Meta tags para aplicativo móvel */}
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       <meta name="format-detection" content="telephone=no" />
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="apple-mobile-web-app-title" content="Unindo Destinos" />      {/* Links para PWA */}
+      <meta name="apple-mobile-web-app-title" content="Unindo Destinos" />
       <link rel="manifest" href="/manifest.json" />
       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-      {/* Meta tags para tema */}
       <meta name="theme-color" content="#2563eb" />
       <meta name="msapplication-TileColor" content="#2563eb" />
       <meta name="msapplication-config" content="/browserconfig.xml" />
 
-      {/* Preconnect para performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-      {/* Dados estruturados JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -139,22 +128,18 @@ const SEOHead = ({
         }}
       />
 
-      {/* Meta tags adicionais para SEO local (se aplicável) */}
       <meta name="geo.region" content="BR" />
       <meta name="geo.placename" content="Brasil" />
 
-      {/* Meta tags para cache */}
       <meta httpEquiv="Cache-Control" content="public, max-age=31536000" />
       <meta httpEquiv="Pragma" content="cache" />
       <meta httpEquiv="Expires" content="31536000" />
 
-      {/* Meta tags para segurança */}
       <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
       <meta httpEquiv="X-Frame-Options" content="DENY" />
       <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
       <meta httpEquiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
-      {/* Meta tags para acessibilidade */}
       <meta name="color-scheme" content="light dark" />
     </Head>
   );

@@ -65,7 +65,6 @@ const CentralSolicitacoes = () => {
   const [viagemAbertaId, setViagemAbertaId] = useState<number | null>(null);
   const [carregandoViagemId, setCarregandoViagemId] = useState<number | null>(null);
 
-  // Hook para denúncia e bloqueio
   const {
     denunciaModalOpen,
     bloqueioModalOpen,
@@ -101,7 +100,6 @@ const CentralSolicitacoes = () => {
       toast.success("Solicitação aprovada!");
       refreshData();
       invalidateCache(["viagens"]);
-      // Recarregar as viagens do usuário diretamente para garantir que a nova viagem apareça
       await recarregarViagens();
     } catch {
       toast.error("Erro ao aprovar solicitação");
@@ -175,7 +173,6 @@ const CentralSolicitacoes = () => {
     }
   };
 
-  // Encontrar os dados do usuário para o modal
   const usuarioParaPerfil = solicitacoes?.find(s => s.outroUsuarioId === perfilAbertoId);
 
   const renderCard = (s: SolicitacaoParticipacaoDTO, index: number) => (
@@ -194,9 +191,7 @@ const CentralSolicitacoes = () => {
       whileHover={{ y: -1 }}
     >
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-        {/* Content Section */}
         <div className="flex-1 space-y-3 sm:space-y-4">
-          {/* User Header */}
           <div className="flex items-start sm:items-center flex-col sm:flex-row gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
@@ -213,7 +208,6 @@ const CentralSolicitacoes = () => {
               </div>
             </div>
             
-            {/* Status Badge */}
             {s.status !== "PENDENTE" && (
               <div className="flex-shrink-0">
                 {s.status === "APROVADA" ? (
@@ -233,11 +227,9 @@ const CentralSolicitacoes = () => {
             )}
           </div>
 
-          {/* Message Content */}
           <div className="bg-gray-50/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-200/50 space-y-3">
             <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{renderMensagem(s)}</p>
             
-            {/* Custom Message from User */}
             {s.mensagem && (
               <div className="bg-white/60 rounded-lg p-3 border-l-4 border-primary/30">
                 <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Mensagem:</p>
@@ -245,7 +237,6 @@ const CentralSolicitacoes = () => {
               </div>
             )}
             
-            {/* Trip Details */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
               <div className="flex items-center gap-1">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
@@ -260,7 +251,6 @@ const CentralSolicitacoes = () => {
             </div>
           </div>
 
-          {/* Action Buttons Row */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <motion.button
               onClick={() => setPerfilAbertoId(s.outroUsuarioId)}
@@ -293,7 +283,6 @@ const CentralSolicitacoes = () => {
           </div>
         </div>
 
-        {/* Actions Section */}
         {s.status === "PENDENTE" && (
           <div className="flex flex-col gap-2 sm:gap-3 lg:min-w-[140px]">
             {["CONVITE_RECEBIDO", "SOLICITACAO_RECEBIDA"].includes(s.tipo) && (
@@ -381,7 +370,6 @@ const CentralSolicitacoes = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Header Section */}
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2">
           <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
@@ -391,7 +379,6 @@ const CentralSolicitacoes = () => {
         <p className="text-gray-600">Gerencie convites e solicitações de viagem</p>
       </div>
 
-      {/* Loading State */}
       {carregando && (
         <motion.div 
           className="text-center py-12"
@@ -405,7 +392,6 @@ const CentralSolicitacoes = () => {
         </motion.div>
       )}
 
-      {/* Empty State */}
       {!carregando && pendentes.length === 0 && historico.length === 0 && (
         <motion.div 
           className="text-center py-12"
@@ -423,7 +409,6 @@ const CentralSolicitacoes = () => {
         </motion.div>
       )}
 
-      {/* Pending Requests */}
       {!carregando && pendentes.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -445,7 +430,6 @@ const CentralSolicitacoes = () => {
         </motion.div>
       )}
 
-      {/* History Section */}
       {!carregando && historico.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -487,7 +471,6 @@ const CentralSolicitacoes = () => {
         </motion.div>
       )}
 
-      {/* Modals */}
       {perfilAbertoId && usuarioParaPerfil && (
         <PerfilUsuarioModal
           usuarioId={perfilAbertoId}
@@ -516,8 +499,7 @@ const CentralSolicitacoes = () => {
           imagemViagem={undefined}
         />
       )}
-
-      {/* Modais de Denúncia e Bloqueio */}
+  
       {usuarioSelecionado && (
         <>
           <DenunciaModal

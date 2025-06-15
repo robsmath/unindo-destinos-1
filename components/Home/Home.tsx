@@ -12,7 +12,6 @@ import { useAuth } from "@/app/context/AuthContext";
 import HomeLogada from "./HomeLogada";
 import LoadingScreen from "@/components/Common/LoadingScreen";
 
-// Carregamento dinâmico dos componentes mais pesados
 const AnimatedStats = dynamic(() => import("./AnimatedStats"), {
   loading: () => <div className="h-32 w-full animate-pulse bg-gray-100 rounded-2xl" />,
   ssr: false,
@@ -36,19 +35,15 @@ export default function Home() {
   useSmoothScroll();
 
   useEffect(() => {
-    // Verifica se é navegação interna (usuário já estava logado e navegou)
     const isInternalNavigation = sessionStorage.getItem('internalNavigation');
     
     if (isAuthenticated && isInternalNavigation === 'true') {
-      // Se está logado e é navegação interna, pula o loading
       setIsLoading(false);
       setIsInitialLoad(false);
     } else {
-      // Se não está logado ou é primeira abertura do site, mostra loading
       setIsInitialLoad(true);
     }
 
-    // Marca que usuário está navegando internamente se estiver logado
     if (isAuthenticated) {
       sessionStorage.setItem('internalNavigation', 'true');
     }
@@ -57,7 +52,6 @@ export default function Home() {
   const handleLoadingComplete = () => {
     setIsLoading(false);
     setIsInitialLoad(false);
-    // Marca navegação interna se estiver logado
     if (isAuthenticated) {
       sessionStorage.setItem('internalNavigation', 'true');
     }
@@ -72,7 +66,6 @@ export default function Home() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  // Detectar mobile para ajustar animações custosas
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 640);
@@ -97,7 +90,6 @@ export default function Home() {
     }
   };
 
-  // Se o usuário está autenticado, mostrar a home específica para usuários logados
   if (isAuthenticated) {
     return <HomeLogada />;
   }
@@ -110,15 +102,13 @@ export default function Home() {
       </AnimatePresence>
 
       {(!isLoading || !isInitialLoad) && (
-        <div ref={containerRef} className="relative">      {/* Hero Section com Parallax */}
+        <div ref={containerRef} className="relative">
       <motion.section 
         style={{ y: heroY, opacity: heroOpacity }}
         className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5 pt-20 md:pt-0"
       >
-        {/* Background Gradient Animation */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-orange-500/5 to-primary/10 animate-pulse" />
         
-        {/* Floating Elements – desativados em mobile para performance */}
         {!isMobile && (
           <motion.div
             animate={{ 
@@ -152,7 +142,7 @@ export default function Home() {
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center w-full max-w-7xl">
           <EnhancedHero />
-        </div>        {/* Scroll Indicator - Responsivo */}
+        </div>
         {!isMobile && (
         <motion.div
           animate={{ y: [0, 10, 0] }}
@@ -168,7 +158,7 @@ export default function Home() {
           </div>
         </motion.div>
         )}
-      </motion.section>      {/* About Section */}
+      </motion.section>
       <motion.section 
         {...fadeInUp}
         className="py-12 md:py-20 bg-white relative overflow-hidden"
@@ -226,8 +216,7 @@ export default function Home() {
           </motion.div>        </div>
       </motion.section>
 
-      {/* Animated Stats Section */}
-      <AnimatedStats />      {/* Carousel Section */}
+      <AnimatedStats />
       <motion.section 
         {...fadeInUp}
         className="py-12 md:py-20 bg-gradient-to-br from-gray-50 to-white relative"
@@ -251,8 +240,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Testimonials Section */}
-      <Testimonials />      {/* CTA Section */}
+      <Testimonials />
       <motion.section 
         {...fadeInUp}
         className="py-12 md:py-20 bg-gradient-to-r from-primary via-orange-500 to-primary relative overflow-hidden"

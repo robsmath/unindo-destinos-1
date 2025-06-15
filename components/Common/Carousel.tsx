@@ -35,7 +35,6 @@ const travelThemes = [
   "San Andres Colombia",
 ];
 
-// Fallback images in case Unsplash API fails
 const fallbackImages = [
   "/images/destinations/paris.jpg",
   "/images/destinations/rome.jpg", 
@@ -54,7 +53,6 @@ export default function Carousel() {
   const controls = useAnimationControls();
   const x = useMotionValue(0);
 
-  // Update window width on resize
   useEffect(() => {
     const updateWindowWidth = () => {
       setWindowWidth(window.innerWidth);
@@ -65,26 +63,25 @@ export default function Carousel() {
     return () => window.removeEventListener('resize', updateWindowWidth);
   }, []);
 
-  // Get responsive dimensions based on screen size
   const getImageDimensions = useCallback(() => {
-    if (windowWidth < 640) { // Mobile
+    if (windowWidth < 640) {
       return { width: 240, height: 160 };
-    } else if (windowWidth < 768) { // Small tablet
+    } else if (windowWidth < 768) { 
       return { width: 280, height: 180 };
-    } else if (windowWidth < 1024) { // Tablet
+    } else if (windowWidth < 1024) {
       return { width: 320, height: 200 };
-    } else { // Desktop
+    } else {
       return { width: 360, height: 220 };
     }
-  }, [windowWidth]);  // Get animation parameters based on screen size
+  }, [windowWidth]);
   const getAnimationParams = useCallback(() => {
-    const imageWidth = getImageDimensions().width + 16; // width + margin
+    const imageWidth = getImageDimensions().width + 16;
     const visibleImages = Math.ceil(windowWidth / imageWidth);
     const totalDistance = images.length * imageWidth;
     
     return {
       distance: -totalDistance,
-      duration: windowWidth < 768 ? 60 : 80, // Even slower and more relaxing
+      duration: windowWidth < 768 ? 60 : 80,
     };
   }, [windowWidth, images.length, getImageDimensions]);
 
@@ -100,7 +97,6 @@ export default function Carousel() {
         return;
       }
 
-      // Limit API calls on mobile to improve performance
       const themesToFetch = windowWidth < 768 ? travelThemes.slice(0, 8) : travelThemes;
 
       for (const theme of themesToFetch) {
@@ -116,12 +112,11 @@ export default function Carousel() {
               headers: {
                 Authorization: `Client-ID ${accessKey}`,
               },
-              timeout: 5000, // 5 second timeout
+              timeout: 5000,
             }
           );
 
           if (response.data.results.length > 0) {
-            // Use small size for mobile, regular for desktop
             const imageUrl = windowWidth < 768 
               ? response.data.results[0].urls.small 
               : response.data.results[0].urls.regular;
@@ -129,11 +124,9 @@ export default function Carousel() {
           }
         } catch (error) {
           console.warn(`Erro ao carregar imagem para: ${theme}`, error);
-          // Continue with other images
         }
       }
 
-      // If we have some images, use them; otherwise, use fallback
       if (fetchedImages.length > 0) {
         setImages(fetchedImages);
       } else {
@@ -154,7 +147,6 @@ export default function Carousel() {
     }
   }, [fetchImages, windowWidth]);
 
-  // Start animation when images are loaded
   useEffect(() => {
     if (images.length > 0 && !isLoading) {
       const { distance, duration } = getAnimationParams();
@@ -199,7 +191,6 @@ export default function Carousel() {
         animate={controls}
         style={{ x }}
       >
-        {/* Duplicate images for seamless loop */}
         {[...images, ...images].map((src, index) => (
           <div
             key={index}
@@ -221,18 +212,15 @@ export default function Carousel() {
                 quality={windowWidth < 768 ? 75 : 85}
                 onError={(e) => {
                   console.warn(`Erro ao carregar imagem: ${src}`);
-                  // Could implement fallback image here
                 }}
               />
               
-              {/* Overlay for better text contrast if needed */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
           </div>
         ))}
       </motion.div>
       
-      {/* Gradient overlays for smooth edges */}
       <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
     </div>

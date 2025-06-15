@@ -13,7 +13,6 @@ const PWANotifications = () => {
 
   useEffect(() => {
     if (isInstallable) {
-      // Mostrar prompt de instalação após 10 segundos
       const timer = setTimeout(() => {
         setShowInstallPrompt(true);
       }, 10000);
@@ -48,7 +47,6 @@ const PWANotifications = () => {
   return (
     <>
       <AnimatePresence>
-        {/* Notificação de Instalação PWA */}
         {showInstallPrompt && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
@@ -95,7 +93,6 @@ const PWANotifications = () => {
           </motion.div>
         )}
 
-        {/* Notificação de Status Offline */}
         {showOfflineNotice && (
           <motion.div
             initial={{ y: -100, opacity: 0 }}
@@ -114,7 +111,6 @@ const PWANotifications = () => {
           </motion.div>
         )}
 
-        {/* Notificação de Atualização Disponível */}
         {showUpdatePrompt && (
           <motion.div
             initial={{ y: 100, opacity: 0 }}
@@ -162,7 +158,6 @@ const PWANotifications = () => {
         )}
       </AnimatePresence>
 
-      {/* Indicador de Status de Conexão Fixo */}
       <div className="fixed top-4 right-4 z-40">
         <AnimatePresence>
           {!isOnline && (

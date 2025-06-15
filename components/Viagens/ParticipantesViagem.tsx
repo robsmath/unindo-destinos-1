@@ -38,7 +38,6 @@ const ParticipantesViagem = () => {
   const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
   const { getUnreadCountForGroup, refreshGroups } = useUnreadGroupMessages(5000);
 
-  // Hook para denúncia e bloqueio
   const {
     denunciaModalOpen,
     bloqueioModalOpen,
@@ -85,7 +84,6 @@ const ParticipantesViagem = () => {
   };
 
   const handleAvaliacaoEnviada = () => {
-    // Adiciona o participante à lista de avaliados
     if (usuarioParaAvaliar) {
       setParticipantesAvaliados(prev => new Set(prev).add(usuarioParaAvaliar.id));
     }
@@ -94,7 +92,6 @@ const ParticipantesViagem = () => {
 
   const handleUsuarioBloqueadoComRemocao = () => {
     if (usuarioSelecionado) {
-      // Remove o usuário da lista local
       setParticipantes(prev => prev.filter(p => p.id !== usuarioSelecionado.id));
     }
     handleUsuarioBloqueado();
@@ -102,7 +99,6 @@ const ParticipantesViagem = () => {
 
   const handleBloquearAposDenunciaComRemocao = async () => {
     if (usuarioSelecionado) {
-      // Remove o usuário da lista local
       setParticipantes(prev => prev.filter(p => p.id !== usuarioSelecionado.id));
     }
     await handleBloquearAposDenuncia();
@@ -111,7 +107,6 @@ const ParticipantesViagem = () => {
   useEffect(() => {
     const fetchDados = async () => {
       try {
-        // Carregar dados da viagem e participantes
         const [dadosViagem, dadosParticipantes] = await Promise.all([
           getViagemById(Number(id)),
           getParticipantesDaViagem(Number(id))
@@ -120,21 +115,18 @@ const ParticipantesViagem = () => {
         setViagem(dadosViagem);
         setParticipantes(dadosParticipantes);
 
-        // VERIFICAÇÃO SIMPLES E DIRETA: Se o usuário está na lista de participantes do grupo
         if (dadosViagem.grupoMensagemId && usuario?.id) {
           try {
             const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
             const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
             setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
           } catch (error: any) {
-            // Se der qualquer erro, assume que NÃO está no grupo (mais seguro)
             setUsuarioEstaNoGrupo(false);
           }
         } else {
           setUsuarioEstaNoGrupo(false);
         }
 
-        // Nada necessário aqui, o hook global já cuida do polling
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
       } finally {
@@ -144,7 +136,6 @@ const ParticipantesViagem = () => {
 
     fetchDados();
 
-    // Cleanup não necessário, o hook global cuida disso
   }, [id, usuario]);
 
 
@@ -157,22 +148,18 @@ const ParticipantesViagem = () => {
     return a.criador ? -1 : 1;
   });
 
-  // Verificar se a viagem está concluída para exibir botão de avaliação
   const viagemConcluida = viagem?.status === "CONCLUIDA";
 
-  // Função para verificar se pode avaliar um participante
   const podeAvaliar = (participante: UsuarioBuscaDTO) => {
     return viagemConcluida && 
-           participante.id !== usuario?.id && // Não pode avaliar a si mesmo
-           participantes.some(p => p.id === usuario?.id) && // Deve ser participante da viagem
-           !participantesAvaliados.has(participante.id); // Não pode ter avaliado já
+           participante.id !== usuario?.id &&
+           participantes.some(p => p.id === usuario?.id) &&
+           !participantesAvaliados.has(participante.id);
   };
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-      {/* Background Effects */}
       <div className="absolute inset-0">
-        {/* Animated gradient background */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/10 to-primary/5 pointer-events-none"
           animate={{
@@ -185,7 +172,6 @@ const ParticipantesViagem = () => {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Floating orbs */}
         <motion.div
           className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
           animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -198,7 +184,6 @@ const ParticipantesViagem = () => {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        {/* Floating travel icons */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -341,7 +326,6 @@ const ParticipantesViagem = () => {
           <Users className="w-8 h-8 text-emerald-500/30 drop-shadow-lg" />
         </motion.div>
 
-        {/* Floating particles */}
         {Array.from({ length: 15 }).map((_, i) => (
           <motion.div
             key={i}
@@ -365,7 +349,6 @@ const ParticipantesViagem = () => {
           />
         ))}
 
-        {/* Grid pattern overlay */}
         <div 
           className="absolute inset-0 opacity-40"
           style={{
@@ -375,14 +358,12 @@ const ParticipantesViagem = () => {
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pt-16 pb-16">
-        {/* Header Section Integrado */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-12"
         >
-          {/* Badge e Título mais próximos */}
           <div className="text-center">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -420,7 +401,6 @@ const ParticipantesViagem = () => {
               </motion.h1>
             </div>
 
-            {/* Botão Chat da Viagem - só aparece se o usuário estiver no grupo */}
             {viagem && usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -431,7 +411,6 @@ const ParticipantesViagem = () => {
                 <button
                   onClick={() => {
                     setChatGrupoAberto(true);
-                    // As mensagens são marcadas como lidas dentro do próprio componente ChatGrupo
                   }}
                   className="relative inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary to-orange-500 text-white rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-medium"
                 >
@@ -461,7 +440,6 @@ const ParticipantesViagem = () => {
           </div>
         </motion.div>
 
-        {/* Loading State */}
         {carregando && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -491,7 +469,6 @@ const ParticipantesViagem = () => {
           </motion.div>
         )}
 
-        {/* Content */}
         {!carregando && (
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -558,7 +535,6 @@ const ParticipantesViagem = () => {
         )}
       </div>
 
-      {/* Modal do Chat */}
       <AnimatePresence>
         {chatAberto && participanteSelecionado && (
           <motion.div
@@ -585,7 +561,6 @@ const ParticipantesViagem = () => {
         )}
       </AnimatePresence>
 
-      {/* Modais de Denúncia e Bloqueio */}
       {usuarioSelecionado && (
         <>
           <DenunciaModal
@@ -606,7 +581,6 @@ const ParticipantesViagem = () => {
         </>
       )}
 
-      {/* Modal de Pergunta de Bloqueio - renderizado separadamente */}
       {usuarioSelecionado && (
         <PerguntaBloqueioModal
           isOpen={perguntaBloqueioModalOpen}
@@ -617,7 +591,6 @@ const ParticipantesViagem = () => {
         />
       )}
 
-      {/* Modal de Avaliação */}
       {modalAvaliacaoAberto && usuarioParaAvaliar && viagem && (
         <ModalAvaliacao
           isOpen={modalAvaliacaoAberto}
@@ -628,7 +601,6 @@ const ParticipantesViagem = () => {
         />
       )}
 
-      {/* Modal do Chat em Grupo */}
       <AnimatePresence>
         {chatGrupoAberto && viagem?.grupoMensagemId && (
           <motion.div

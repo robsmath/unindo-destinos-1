@@ -7,11 +7,9 @@ export const useReducedMotion = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Detectar preferência de movimento reduzido
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setShouldReduceMotion(mediaQuery.matches);
 
-    // Detectar mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -36,7 +34,7 @@ export const useReducedMotion = () => {
   }, []);
 
   return { 
-    shouldReduceMotion: shouldReduceMotion || isMobile, // Reduzir movimento em mobile também
+    shouldReduceMotion: shouldReduceMotion || isMobile,
     isMobile 
   };
 }; 

@@ -6,7 +6,6 @@ import { Shield, Lock, Eye, Database, Users, FileText } from "lucide-react";
 const PoliticaPrivacidade = () => {
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-      {/* Animated Background */}
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-primary/5 via-orange-500/5 to-transparent"
@@ -22,7 +21,6 @@ const PoliticaPrivacidade = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         />
         
-        {/* Floating Security Elements */}
         {[Shield, Lock, Eye, Database, Users].map((Icon, i) => (
           <motion.div
             key={i}
@@ -47,7 +45,6 @@ const PoliticaPrivacidade = () => {
           </motion.div>
         ))}
 
-        {/* Large floating orbs */}
         <motion.div
           className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-blue-500/10 to-primary/10 rounded-full blur-3xl"
           animate={{ 
@@ -70,7 +67,6 @@ const PoliticaPrivacidade = () => {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-20">
-        {/* Cabeçalho */}
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -104,7 +100,6 @@ const PoliticaPrivacidade = () => {
           </p>
         </motion.div>
 
-        {/* Conteúdo */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl border border-white/30 shadow-lg p-10 text-gray-700 leading-relaxed space-y-8 text-justify">
           
           <div className="border-l-4 border-blue-500 pl-6 bg-blue-50/50 rounded-r-lg p-4 mb-8">

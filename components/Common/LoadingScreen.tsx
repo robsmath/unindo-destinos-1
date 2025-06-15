@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 interface LoadingScreenProps {
   onComplete: () => void;
-  minLoadTime?: number; // Optional minimum loading time
+  minLoadTime?: number;
 }
 
 export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: LoadingScreenProps) {
@@ -18,16 +18,15 @@ export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: Loadin
         if (prev >= 100) {
           clearInterval(timer);
           
-          // Ensure minimum loading time for smooth UX
           const elapsedTime = Date.now() - startTime;
           const remainingTime = Math.max(0, minLoadTime - elapsedTime);
           
           setTimeout(onComplete, Math.min(remainingTime, 600));
           return 100;
         }
-        return prev + 2; // Slower increment for better loading feel
+        return prev + 2;
       });
-    }, 50); // Slower interval for smoother progression
+    }, 50);
 
     return () => clearInterval(timer);
   }, [onComplete, startTime, minLoadTime]);
@@ -38,7 +37,7 @@ export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: Loadin
       transition={{ duration: 0.5 }}
       className="fixed inset-0 z-50 bg-gradient-to-br from-primary via-orange-500 to-primary flex items-center justify-center px-4"
     >
-      <div className="text-center text-white max-w-sm w-full">        {/* Logo Animation */}
+      <div className="text-center text-white max-w-sm w-full">
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -54,7 +53,6 @@ export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: Loadin
           </div>
         </motion.div>
 
-        {/* Loading Text */}
         <motion.h2
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -64,7 +62,6 @@ export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: Loadin
           Unindo Destinos
         </motion.h2>
 
-        {/* Progress Bar */}
         <div className="w-full max-w-64 h-2 bg-white/20 rounded-full mx-auto mb-4">
           <motion.div
             initial={{ width: 0 }}
@@ -74,7 +71,6 @@ export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: Loadin
           />
         </div>
 
-        {/* Percentage */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -84,7 +80,6 @@ export default function LoadingScreen({ onComplete, minLoadTime = 3000 }: Loadin
           {count}%
         </motion.p>
 
-        {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

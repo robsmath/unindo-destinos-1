@@ -45,7 +45,6 @@ class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
-    // Log error to console in development
     if (process.env.NODE_ENV === 'development') {
       console.group('🚨 Error Boundary Caught an Error');
       console.error('Error:', error);
@@ -54,20 +53,16 @@ class ErrorBoundary extends Component<Props, State> {
       console.groupEnd();
     }
 
-    // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
 
-    // Send error to monitoring service in production
     if (process.env.NODE_ENV === 'production') {
       this.reportError(error, errorInfo);
     }
   }
 
   private reportError = (error: Error, errorInfo: ErrorInfo) => {
-    // Here you would send the error to your monitoring service
-    // Example: Sentry, LogRocket, etc.
     const errorReport = {
       errorId: this.state.errorId,
       message: error.message,
@@ -78,7 +73,6 @@ class ErrorBoundary extends Component<Props, State> {
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
     };
 
-    // Send to your error reporting service
     console.log('Error reported:', errorReport);
   };
 
@@ -120,12 +114,10 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback if provided
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default error UI
       return (
         <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 flex items-center justify-center p-4">
           <motion.div
@@ -134,7 +126,6 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
             transition={{ duration: 0.6 }}
             className="max-w-2xl w-full"
           >
-            {/* Error Icon */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -152,7 +143,6 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
               </p>
             </motion.div>
 
-            {/* Error Details Card */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -196,7 +186,6 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
               </div>
             </motion.div>
 
-            {/* Action Buttons */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -231,7 +220,6 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
               </Button>
             </motion.div>
 
-            {/* Development-only stack trace */}
             {process.env.NODE_ENV === 'development' && this.state.error?.stack && (
               <motion.details
                 initial={{ opacity: 0 }}
@@ -267,7 +255,6 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'Unknown'}
 
 export default ErrorBoundary;
 
-// Hook para reportar erros manualmente
 export const useErrorReporting = () => {
   const reportError = (error: Error, context?: string) => {
     const errorReport = {
@@ -284,7 +271,6 @@ export const useErrorReporting = () => {
       console.error('Manual Error Report:', errorReport);
     }
 
-    // Send to your error reporting service
     console.log('Manual error reported:', errorReport);
   };
 

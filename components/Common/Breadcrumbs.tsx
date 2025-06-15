@@ -19,7 +19,6 @@ interface BreadcrumbsProps {
 const Breadcrumbs = ({ items, className = "", showHome = true }: BreadcrumbsProps) => {
   const pathname = usePathname();
 
-  // Gerar breadcrumbs automaticamente baseado na URL se não fornecidos
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const pathSegments = pathname.split('/').filter(segment => segment);
     const breadcrumbs: BreadcrumbItem[] = [];
@@ -36,7 +35,6 @@ const Breadcrumbs = ({ items, className = "", showHome = true }: BreadcrumbsProp
       const href = '/' + pathSegments.slice(0, index + 1).join('/');
       const isLast = index === pathSegments.length - 1;
       
-      // Mapear segmentos para labels mais amigáveis
       const labelMap: { [key: string]: string } = {
         'profile': 'Perfil',
         'viagens': 'Viagens',

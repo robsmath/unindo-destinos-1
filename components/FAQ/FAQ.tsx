@@ -157,7 +157,6 @@ const FAQ = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-sky-50 via-orange-50 to-blue-100">
-      {/* Animated Background */}
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-primary/5 via-orange-500/5 to-transparent"
@@ -173,7 +172,6 @@ const FAQ = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         />
         
-        {/* Floating Elements */}
         {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
@@ -201,7 +199,6 @@ const FAQ = () => {
           />
         ))}
 
-        {/* Large floating orbs */}
         <motion.div
           className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl"
           animate={{ 
@@ -222,7 +219,6 @@ const FAQ = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 3 }}
         />
 
-        {/* Question mark floating icons */}
         {[...Array(6)].map((_, i) => (
           <motion.div
             key={`question-${i}`}
@@ -249,7 +245,6 @@ const FAQ = () => {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-16">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -299,14 +294,12 @@ const FAQ = () => {
           </motion.p>
         </motion.div>
 
-        {/* Search and Filters */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
           className="mb-12"
         >
-          {/* Search Bar */}
           <div className="relative mb-8 max-w-2xl mx-auto">
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-2xl blur-xl"
@@ -339,7 +332,6 @@ const FAQ = () => {
             </div>
           </div>
 
-          {/* Category Filter */}
           <div className="flex flex-wrap justify-center gap-3">
             {categories.map((category, index) => (
               <motion.button
@@ -362,7 +354,6 @@ const FAQ = () => {
           </div>
         </motion.div>
 
-        {/* FAQ Items */}
         <motion.div 
           className="space-y-4"
           initial={{ opacity: 0 }}
@@ -474,8 +465,7 @@ const FAQ = () => {
             )}
           </AnimatePresence>
         </motion.div>
-
-        {/* Bottom CTA */}
+            
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

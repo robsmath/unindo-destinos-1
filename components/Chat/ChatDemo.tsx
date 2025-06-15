@@ -23,7 +23,6 @@ const ChatDemo = () => {
           </h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Status Global */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-gradient-to-br from-primary/10 to-orange-500/10 rounded-xl p-6 border border-primary/20"
@@ -44,7 +43,6 @@ const ChatDemo = () => {
               </div>
             </motion.div>
 
-            {/* Funcionalidades */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200"
@@ -73,7 +71,6 @@ const ChatDemo = () => {
               </ul>
             </motion.div>
 
-            {/* Polling Info */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200"
@@ -90,7 +87,6 @@ const ChatDemo = () => {
             </motion.div>
           </div>
 
-          {/* Detalhes das Mensagens */}
           <div className="border-t border-gray-200 pt-6">
             <button
               onClick={() => setShowDetails(!showDetails)}
@@ -134,7 +130,6 @@ const ChatDemo = () => {
             )}
           </div>
 
-          {/* Instruções */}
           <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
             <h3 className="font-semibold text-blue-800 mb-3">Como Testar:</h3>
             <ol className="list-decimal list-inside space-y-2 text-sm text-blue-700">

@@ -25,7 +25,6 @@ const NavUnauthenticated = () => {
               Entrar
             </span>
             
-            {/* Magic hover background */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-primary/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500"
               initial={{ scale: 0, rotate: 180 }}
@@ -33,7 +32,6 @@ const NavUnauthenticated = () => {
               transition={{ duration: 0.4, ease: "easeOut" }}
             />
             
-            {/* Shimmer effect */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100"
               animate={{ x: ["-100%", "100%"] }}
@@ -58,7 +56,6 @@ const NavUnauthenticated = () => {
               Criar Conta
             </span>
             
-            {/* Pulsing background */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
               animate={{ 
@@ -72,7 +69,6 @@ const NavUnauthenticated = () => {
               }}
             />
             
-            {/* Sparkle effect */}
             <motion.div
               className="absolute inset-0"
               initial={{ opacity: 0 }}

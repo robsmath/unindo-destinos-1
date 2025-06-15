@@ -53,7 +53,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     dataInicio: "",
     dataFim: "",
     estilo: "AVENTURA",
-    status: "RASCUNHO", // Viagens novas sempre começam como rascunho
+    status: "RASCUNHO",
     descricao: "",
     categoriaViagem: "NACIONAL",
     numeroMaximoParticipantes: undefined,
@@ -90,10 +90,9 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
         const urlImagem = await fetchImagemPaisagemDestino(form.destino, form.categoriaViagem);
         const imagemFinal = urlImagem || "/images/common/beach.jpg";
         setImagemDestino(imagemFinal);
-        // Atualizar o form com a nova URL da imagem
         setForm((prev) => ({
           ...prev,
-          imagemUrl: urlImagem // Salvar apenas URLs válidas, não a imagem padrão
+          imagemUrl: urlImagem
         }));
       }
     };
@@ -145,7 +144,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
         try {
           const viagem = await getViagemById(id);
           
-          // Definir o proprietário da viagem
           setVoyageOwner(viagem.criadorViagemId);
           
           setForm({
@@ -154,7 +152,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             dataFim: viagem.dataFim,
             estilo: viagem.estilo,
             status: viagem.status,
-            categoriaViagem: viagem.categoriaViagem ?? "NACIONAL", // Mantido para compatibilidade com API
+            categoriaViagem: viagem.categoriaViagem ?? "NACIONAL",
             descricao: viagem.descricao || "",
             numeroMaximoParticipantes: viagem.numeroMaximoParticipantes,
             imagemUrl: viagem.imagemUrl
@@ -182,16 +180,13 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
               destino: `${cidadeParte} - ${paisesTraduzidos[paisIngles || ""] || paisParte}`,
             }));
           }
-          // Priorizar a imagem salva no banco de dados
           if (viagem.imagemUrl) {
             setImagemDestino(viagem.imagemUrl);
           } else {
-            // Fallback para buscar nova imagem apenas se não houver imagemUrl
             const descricaoCustom = localStorage.getItem(`imagemCustom-${viagem.id}`);
             const imagem = await getImage(descricaoCustom || viagem.destino, viagem.categoriaViagem);
             const imagemFinal = imagem || "/images/common/beach.jpg";
             setImagemDestino(imagemFinal);
-            // Atualizar o form com a nova URL caso tenha sido buscada
             if (imagem) {
               setForm(prev => ({ ...prev, imagemUrl: imagem }));
             }
@@ -220,7 +215,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     
     let processedValue: string | number | undefined = value;
     
-    // Tratamento especial para número máximo de participantes
     if (name === "numeroMaximoParticipantes") {
       if (value === "" || value === "0") {
         processedValue = undefined;
@@ -235,11 +229,9 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     }));
   };
 
-  // Handler específico para número de participantes - aceita apenas inteiros
   const handleParticipantesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     
-    // Permite apenas números inteiros (sem decimais)
     if (value === "" || /^[1-9]\d*$/.test(value)) {
       const processedValue = value === "" ? undefined : parseInt(value, 10);
       setForm((prev) => ({
@@ -247,8 +239,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
         numeroMaximoParticipantes: processedValue,
       }));
     }
-    // Se não é um número inteiro válido, não atualiza o campo
-  };// Handler específico para textarea de descrição
+  };
   const handleDescricaoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target;
     setForm((prev) => ({
@@ -266,7 +257,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       [name]: type === "number" ? (value === "" ? null : Number(value)) : value,
     }));
 
-    // Se o usuário começou a preencher preferências, esconder o aviso
     if (semPreferencias) {
       setSemPreferencias(false);
     }
@@ -317,7 +307,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
           const viagemAtualizada = await editarViagem(id, { ...viagemRequest, id });
           viagemId = id;
           
-          // Atualizar o form com o status retornado do backend (pode ter sido validado)
           setForm(prev => ({ ...prev, status: viagemAtualizada.status }));
           
           toast.success("Viagem atualizada com sucesso!", { position: "top-center" });
@@ -329,17 +318,14 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
             throw new Error("Erro ao cadastrar viagem: ID não retornado ou inválido.");
           }
 
-          // Atualizar o form com o status retornado do backend (pode ter sido validado)
           setForm(prev => ({ ...prev, status: viagemSalva.status }));
 
           toast.success("Viagem cadastrada com sucesso!", { position: "top-center" });
-        }        // Sempre salvar as preferências
+        }       
         try {
-          console.log("Salvando preferências:", preferencias); // Debug
           await salvarPreferenciasViagem(viagemId, preferencias);
           toast.success("Preferências salvas com sucesso!", { position: "top-center" });
         } catch (prefError) {
-          console.error("Erro ao salvar preferências:", prefError);
           toast.warning("Viagem salva, mas houve um problema ao salvar as preferências.");
         }
 
@@ -1113,7 +1099,6 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     );
   }
 
-  // Se for criação, renderizar diretamente
   return content;
 };
 

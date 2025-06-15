@@ -99,7 +99,6 @@ export default function DenunciaModal({
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
               <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-gray-50 shadow-2xl transition-all border border-gray-200">
-                {/* Header */}
                 <div className="relative px-6 pt-6 pb-4">
                   <motion.button
                     onClick={handleClose}
@@ -129,11 +128,9 @@ export default function DenunciaModal({
                   </div>
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleSubmit} className="px-6 pb-6">
                   <div className="space-y-4">
                     
-                    {/* Motivo */}
                     <div>
                       <label htmlFor="motivo" className="block text-sm font-semibold text-gray-700 mb-2">
                         Motivo da denúncia *
@@ -154,7 +151,6 @@ export default function DenunciaModal({
                       </select>
                     </div>
 
-                    {/* Descrição */}
                     <div>
                       <label htmlFor="descricao" className="block text-sm font-semibold text-gray-700 mb-2">
                         Descrição detalhada *
@@ -176,7 +172,6 @@ export default function DenunciaModal({
 
                   </div>
 
-                  {/* Buttons */}
                   <div className="flex gap-3 mt-6">
                     <button
                       type="button"

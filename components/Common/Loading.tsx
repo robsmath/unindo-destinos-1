@@ -57,7 +57,6 @@ const Loading = ({
 
   const loadingContent = (
     <div className="flex flex-col items-center justify-center space-y-4">
-      {/* Animação do ícone */}
       <motion.div
         className={`${getSize()} flex items-center justify-center bg-primary/10 rounded-full`}
         animate={{
@@ -73,7 +72,6 @@ const Loading = ({
         {getIcon()}
       </motion.div>
 
-      {/* Pontos de carregamento animados */}
       <div className="flex space-x-1">
         {[0, 1, 2].map((index) => (
           <motion.div
@@ -92,7 +90,6 @@ const Loading = ({
         ))}
       </div>
 
-      {/* Mensagem */}
       <motion.p
         className="text-sm text-gray-600 dark:text-gray-400 text-center max-w-xs"
         initial={{ opacity: 0 }}
@@ -102,7 +99,6 @@ const Loading = ({
         {getMessage()}
       </motion.p>
 
-      {/* Barra de progresso opcional */}
       {type === "booking" && (
         <div className="w-48 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <motion.div

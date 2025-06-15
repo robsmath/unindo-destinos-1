@@ -54,7 +54,7 @@ const MinhasPreferencias = () => {
     setSalvando(true);    try {
       const metodo = preferencias ? atualizarPreferenciasDoUsuario : salvarPreferenciasDoUsuario;
       await metodo(preferenciasEditaveis);
-      await carregarPreferencias(true); // Força o recarregamento das preferências
+      await carregarPreferencias(true);
       toast.success("Preferências salvas com sucesso!");
     } catch (error) {
       toast.error("Erro ao salvar preferências.");
@@ -78,7 +78,6 @@ const MinhasPreferencias = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Header Section */}
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2">
           <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
@@ -88,7 +87,6 @@ const MinhasPreferencias = () => {
         <p className="text-gray-600">Configure suas preferências para encontrar companheiros ideais</p>
       </div>
 
-      {/* Alert for first time users */}
       {!preferencias && (
         <motion.div 
           className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 shadow-lg"
@@ -110,7 +108,6 @@ const MinhasPreferencias = () => {
         </motion.div>
       )}
 
-      {/* Form Container */}
       <motion.div 
         className="bg-white/80 backdrop-blur-md rounded-2xl border border-white/30 shadow-xl overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
@@ -128,7 +125,6 @@ const MinhasPreferencias = () => {
             handlePreferenceChange={handleChange}
           />
 
-          {/* Save Button */}
           <motion.div className="mt-8 pt-6 border-t border-gray-200/50">
             <motion.button
               onClick={handleSubmit}
@@ -137,7 +133,6 @@ const MinhasPreferencias = () => {
               whileHover={{ scale: salvando ? 1 : 1.02, y: salvando ? 0 : -2 }}
               whileTap={{ scale: salvando ? 1 : 0.98 }}
             >
-              {/* Animated Background */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-orange-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 initial={{ x: '-100%' }}

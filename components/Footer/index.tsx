@@ -51,7 +51,6 @@ const Footer = () => {
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-      {/* Magic background effects */}
       <div className="absolute inset-0">
         <motion.div
           className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 via-orange-500/5 to-transparent"
@@ -65,7 +64,6 @@ const Footer = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         
-        {/* Floating orbs */}
         <motion.div
           className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-full blur-3xl"
           animate={{ 
@@ -88,9 +86,8 @@ const Footer = () => {
       </div>
 
       <div className="relative z-10 mx-auto max-w-c-1390 px-4 md:px-8 2xl:px-0">
-        {/* Main Footer Content */}
         <div className="py-20 lg:py-25">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-4 lg:gap-8">            {/* Brand Section */}
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-4 lg:gap-8">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -156,7 +153,6 @@ const Footer = () => {
               </motion.div>
             </motion.div>
 
-            {/* Quick Links */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -202,7 +198,6 @@ const Footer = () => {
               </div>
             </motion.div>
 
-            {/* Support Links */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -248,7 +243,6 @@ const Footer = () => {
               </div>
             </motion.div>
 
-            {/* Newsletter Section */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -327,7 +321,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Divisor com gradiente */}
         <motion.div
           className="relative my-16"
           initial={{ opacity: 0, scaleX: 0 }}
@@ -343,7 +336,6 @@ const Footer = () => {
           />
         </motion.div>
 
-        {/* Footer Bottom */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -351,7 +343,6 @@ const Footer = () => {
           viewport={{ once: true }}
           className="flex flex-col items-center justify-between gap-8 lg:flex-row lg:gap-0"
         >
-          {/* Copyright */}
           <motion.div
             className="text-center lg:text-left"
             initial={{ opacity: 0, x: -20 }}
@@ -366,7 +357,6 @@ const Footer = () => {
             </p>
           </motion.div>
 
-          {/* Social Links */}
           <motion.div
             className="flex items-center gap-4"
             initial={{ opacity: 0, x: 20 }}
@@ -389,14 +379,12 @@ const Footer = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
                 aria-label={`Seguir no ${social.name}`}
-              >
-                {/* Hover background effect */}
+              > 
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-primary/20 to-orange-500/20 
                            rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   whileHover={{ scale: 1.2 }}
                 />
-                  {/* Icon */}
                 <svg
                   width="20"
                   height="20"
@@ -407,7 +395,6 @@ const Footer = () => {
                   dangerouslySetInnerHTML={{ __html: `<path d="${social.icon}" fill="currentColor" />` }}
                 />
 
-                {/* Sparkle effect */}
                 <motion.div
                   className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full opacity-0 
                            group-hover:opacity-100 transition-opacity duration-300"

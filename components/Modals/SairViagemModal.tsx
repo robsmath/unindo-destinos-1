@@ -70,7 +70,6 @@ export default function SairViagemModal({
             >
               <DialogPanel className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl transition-all">
                 
-                {/* Header */}
                 <div className="relative px-6 pt-6 pb-4">
                   <motion.button
                     onClick={onClose}
@@ -101,7 +100,6 @@ export default function SairViagemModal({
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="px-6">
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
                     <div className="flex items-start gap-3">
@@ -120,7 +118,6 @@ export default function SairViagemModal({
                     </div>
                   </div>
 
-                  {/* Buttons */}
                   <div className="flex gap-3 pb-6">
                     <button
                       type="button"

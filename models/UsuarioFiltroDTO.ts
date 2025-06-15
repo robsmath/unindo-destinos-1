@@ -19,4 +19,7 @@ export interface UsuarioFiltroDTO {
   tipoTransporte?: string;
 
   apenasVerificados?: boolean;
+
+  idsQueEuBloqueei?: number[];
+  idsQueMeBloquearam?: number[];
 }

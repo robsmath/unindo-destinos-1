@@ -71,7 +71,6 @@ const EncontreViagens = () => {
   const [loading, setLoading] = useState(false);
   const [carregandoTela, setCarregandoTela] = useState(true);
   
-  // Estados para paginação
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -93,7 +92,6 @@ const EncontreViagens = () => {
     }
   }, [isAuthenticated]);
 
-  // Sincronizar inputs locais com filtros
   useEffect(() => {
     setIdadeMinimaInput(filtros.idadeMinima?.toString() || "");
     setIdadeMaximaInput(filtros.idadeMaxima?.toString() || "");
@@ -119,7 +117,6 @@ const EncontreViagens = () => {
       valorMedioMax: valor,
     }));
   };
-  // Função removida - agora usa viagem.imagemUrl diretamente 
   const buscar = async (page: number = 0) => {
     const idadeMin = filtros.idadeMinima;
     const idadeMax = filtros.idadeMaxima;
@@ -141,7 +138,6 @@ const EncontreViagens = () => {
       
       const res = await buscarViagens(filtrosParaEnviar, page, pageSize);
       
-      // Atualizar estados de paginação
       setViagens(res.content);
       setCurrentPage(res.number);
       setTotalPages(res.totalPages);
@@ -182,7 +178,6 @@ const EncontreViagens = () => {
   };
 
   const handlePageChange = (page: number) => {
-    // Scroll suave para o topo da página
     window.scrollTo({ top: 0, behavior: 'smooth' });
     buscar(page);
   };const formatarData = (dataISO: string) => {
@@ -268,14 +263,12 @@ const EncontreViagens = () => {
         return;
       }
 
-      // Mapear tipos de acomodação compatíveis
       const tipoAcomodacaoMapeado = (() => {
         const acomodacao = prefs.tipoAcomodacao;
         const compativel = ["HOSTEL", "HOTEL", "AIRBNB", "CAMPING", "NAO_TENHO_PREFERENCIA"];
         return compativel.includes(acomodacao) ? acomodacao as ViagemFiltroDTO["tipoAcomodacao"] : undefined;
       })();
 
-      // Mapear tipos de transporte compatíveis
       const tipoTransporteMapeado = (() => {
         const transporte = prefs.tipoTransporte;
         const compativel = ["AVIAO", "CARRO", "TREM", "NAVIO", "NAO_TENHO_PREFERENCIA"];
@@ -411,7 +404,6 @@ const EncontreViagens = () => {
             <span className="truncate">Criador: {formatarNomeCompleto(viagem.criadorNome)}</span>
           </div>
 
-          {/* Preferências da viagem */}
           <div className="flex flex-wrap gap-1 mt-2">
             {viagem.petFriendly && (
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
@@ -456,7 +448,6 @@ const EncontreViagens = () => {
           </div>
         </div>
 
-        {/* Ações */}
         <div className="mt-4 pt-4 border-t border-gray-100">
           <motion.button
             className="w-full bg-gradient-to-r from-primary to-orange-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
@@ -476,9 +467,7 @@ const EncontreViagens = () => {
   );
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-orange-50 via-white to-primary/5">
-      {/* Background Effects */}
       <div className="absolute inset-0">
-        {/* Gradient overlay */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-primary/5 via-orange-500/5 to-primary/5"
           animate={{
@@ -491,7 +480,6 @@ const EncontreViagens = () => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Floating particles */}
         {Array.from({ length: 12 }).map((_, i) => (
           <motion.div
             key={i}
@@ -515,7 +503,6 @@ const EncontreViagens = () => {
           />
         ))}
 
-        {/* Animated icons */}
         <motion.div
           className="absolute top-32 right-16"
           animate={{ 
@@ -642,7 +629,6 @@ const EncontreViagens = () => {
           <SlidersHorizontal className="w-5 h-5 text-teal-500/30 drop-shadow-lg" />
         </motion.div>
 
-        {/* Gradient orbs */}
         <motion.div
           className="absolute top-20 left-10 w-40 h-40 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none"
           animate={{ y: [0, -30, 0], scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -657,7 +643,6 @@ const EncontreViagens = () => {
 
       <div className="relative z-10 py-16">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -675,7 +660,6 @@ const EncontreViagens = () => {
             </p>
           </motion.div>
 
-          {/* Search Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -704,7 +688,6 @@ const EncontreViagens = () => {
                 </div>
               </div>
               
-              {/* Botões de Ação */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => buscar(0)}
@@ -736,7 +719,6 @@ const EncontreViagens = () => {
             </div>
           </motion.div>
 
-          {/* Filtros Avançados */}
           <AnimatePresence>
             {mostrarFiltros && (
               <motion.div
@@ -750,9 +732,7 @@ const EncontreViagens = () => {
                   <h3 className="text-lg font-semibold text-gray-800">Filtros Avançados</h3>
                 </div>
                 
-                {/* Linha 1: Gênero + Tipo de Acomodação + Tipo de Transporte */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Gênero Preferido */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Gênero Preferido</label>
                     <select
@@ -768,7 +748,6 @@ const EncontreViagens = () => {
                       <option value="TANTO_FAZ">Tanto Faz</option>
                     </select>
                   </div>
-                  {/* Tipo de Acomodação */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Tipo de Acomodação</label>
                     <select
@@ -784,7 +763,6 @@ const EncontreViagens = () => {
                       <option value="CAMPING">Camping</option>
                     </select>
                   </div>
-                  {/* Tipo de Transporte */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Tipo de Transporte</label>
                     <select
@@ -803,9 +781,7 @@ const EncontreViagens = () => {
                   </div>
                 </div>
                 
-                {/* Linha 2: Tipo do destino + Estilo + Status */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {/* Tipo do destino */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Tipo do destino</label>
                     <select
@@ -819,7 +795,6 @@ const EncontreViagens = () => {
                       <option value="INTERNACIONAL">Internacional</option>
                     </select>
                   </div>
-                  {/* Estilo */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Estilo</label>
                     <select
@@ -845,7 +820,6 @@ const EncontreViagens = () => {
                       <option value="NAO_TENHO_PREFERENCIA">✈️ Sem Preferência</option>
                     </select>
                   </div>
-                  {/* Status */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Status</label>
                     <select
@@ -861,9 +835,7 @@ const EncontreViagens = () => {
                   </div>
                 </div>
                 
-                {/* Linha 3: Idades + Valor */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {/* Idade Mínima */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Mínima</label>
                     <input
@@ -892,7 +864,6 @@ const EncontreViagens = () => {
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
-                  {/* Idade Máxima */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Idade Máxima</label>
                     <input
@@ -921,7 +892,6 @@ const EncontreViagens = () => {
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
-                  {/* Valor máximo */}
                   <div>
                     <ValueSlider
                       value={filtros.valorMedioMax || 0}
@@ -935,9 +905,7 @@ const EncontreViagens = () => {
                   </div>
                 </div>
                 
-                {/* Linha 4: Datas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  {/* Data Inicial (de) */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (de)</label>
                     <input
@@ -948,7 +916,6 @@ const EncontreViagens = () => {
                       className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
-                  {/* Data Inicial (até) */}
                   <div>
                     <label className="text-sm font-medium text-gray-700 block mb-2">Data Inicial (até)</label>
                     <input
@@ -961,7 +928,6 @@ const EncontreViagens = () => {
                   </div>
                 </div>
 
-                {/* Checkboxes de Preferências */}
                 <div className="mt-6">
                   <label className="text-sm font-medium text-gray-700 block mb-3">Preferências de Viagem</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -987,7 +953,6 @@ const EncontreViagens = () => {
                   </div>
                 </div>
 
-                {/* Botões dentro dos filtros */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-6 border-t border-gray-200">
                   <button
                     onClick={importarPreferencias}
@@ -1019,7 +984,6 @@ const EncontreViagens = () => {
             )}
           </AnimatePresence>
 
-          {/* Lista de viagens */}
           <div className="mt-8">
             {loading ? (
               <motion.div 

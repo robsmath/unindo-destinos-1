@@ -35,9 +35,9 @@ export default function ConviteViagemModal({
     () =>
       viagens.filter(
         (v) =>
-          v.criador && // 🔥 Só as que você é criador
-          ["RASCUNHO", "PENDENTE", "CONFIRMADA"].includes(v.viagem.status) && // 🔥 E com status permitido
-          (!v.viagem.numeroMaximoParticipantes || v.quantidadeParticipantes < v.viagem.numeroMaximoParticipantes) // 🔥 E que não estão lotadas
+          v.criador &&
+          ["RASCUNHO", "PENDENTE", "CONFIRMADA"].includes(v.viagem.status) &&
+          (!v.viagem.numeroMaximoParticipantes || v.quantidadeParticipantes < v.viagem.numeroMaximoParticipantes)
       ),
     [viagens]
   );
@@ -53,7 +53,6 @@ export default function ConviteViagemModal({
       await enviarConvite(Number(viagemSelecionadaId), usuario.id, mensagem || undefined);
       toast.success("Convite enviado com sucesso!");
       onClose();
-      // Reset form
       setViagemSelecionadaId("");
       setMensagem("");
     } catch (err: any) {
@@ -83,7 +82,6 @@ export default function ConviteViagemModal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop */}
           <motion.div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
@@ -92,7 +90,6 @@ export default function ConviteViagemModal({
             onClick={handleClose}
           />
 
-          {/* Modal Content */}
           <motion.div
             className="relative w-full max-w-lg bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -100,7 +97,6 @@ export default function ConviteViagemModal({
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            {/* Header */}
             <div className="relative bg-gradient-to-r from-primary to-orange-500 text-white p-6">
               <motion.button
                 onClick={handleClose}
@@ -131,9 +127,7 @@ export default function ConviteViagemModal({
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Trip Selection */}
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-gray-700">
                   Selecionar viagem
@@ -164,7 +158,6 @@ export default function ConviteViagemModal({
                   </div>
                 </div>
 
-                {/* Trip Details Preview */}
                 {viagemSelecionadaId && (
                   <motion.div
                     className="bg-primary/5 border border-primary/20 rounded-xl p-4"
@@ -202,7 +195,6 @@ export default function ConviteViagemModal({
                 )}
               </div>
 
-              {/* Message Input */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <MessageCircle className="w-4 h-4 text-primary" />
@@ -221,7 +213,6 @@ export default function ConviteViagemModal({
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-3 pt-4">
                 <motion.button
                   onClick={handleClose}

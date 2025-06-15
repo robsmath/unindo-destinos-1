@@ -67,9 +67,8 @@ export default function ConfiguracoesPage() {
   const [carregandoBloqueados, setCarregandoBloqueados] = useState(false);
   const [desbloqueandoId, setDesbloqueandoId] = useState<number | null>(null);
   
-  // Estados para deletar conta
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteStep, setDeleteStep] = useState(1); // 1: Aviso inicial, 2: Confirmação de senha
+  const [deleteStep, setDeleteStep] = useState(1);
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -289,7 +288,6 @@ export default function ConfiguracoesPage() {
       </div>
       
       <div className="space-y-4">
-        {/* Zona de Perigo - Deletar Conta */}
         <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
@@ -327,7 +325,6 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
 
-        {/* Aviso de Funcionalidade em Desenvolvimento */}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
           <div className="flex items-center gap-3">
             <Settings className="w-5 h-5 text-blue-600" />
