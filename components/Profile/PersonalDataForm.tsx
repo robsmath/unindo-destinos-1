@@ -14,7 +14,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { toast } from "sonner";
-import { Loader2, EyeOff, Eye, AlertTriangle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface ValidationErrors {
@@ -31,8 +31,6 @@ const PersonalDataForm = () => {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [announcements, setAnnouncements] = useState<string[]>([]);
-  const [showInvisibilityModal, setShowInvisibilityModal] = useState(false);
-  const [pendingInvisibilityValue, setPendingInvisibilityValue] = useState(false);
 
   const announceToScreenReader = (message: string) => {
     setAnnouncements(prev => [...prev, message]);
@@ -174,30 +172,7 @@ const PersonalDataForm = () => {
     }
   };
 
-  const handleInvisibilityChange = (newValue: boolean) => {
-    if (newValue && !userData?.invisivel) {
-      setPendingInvisibilityValue(newValue);
-      setShowInvisibilityModal(true);
-    } else {
-      if (userData) {
-        setUserData({ ...userData, invisivel: newValue });
-      }
-    }
-  };
 
-  const confirmInvisibility = () => {
-    if (userData) {
-      setUserData({ ...userData, invisivel: pendingInvisibilityValue });
-    }
-    setShowInvisibilityModal(false);
-    setPendingInvisibilityValue(false);
-    announceToScreenReader("Perfil configurado como invisível");
-  };
-
-  const cancelInvisibility = () => {
-    setShowInvisibilityModal(false);
-    setPendingInvisibilityValue(false);
-  };
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -285,7 +260,8 @@ const PersonalDataForm = () => {
     }    setSaving(true);
     
     try {
-      await updateUsuarioLogado(userData);
+      const dataToUpdate = { ...userData, invisivel: false };
+      await updateUsuarioLogado(dataToUpdate);
       await carregarUsuario(true);
       
       toast.success("Dados atualizados com sucesso!");
@@ -629,75 +605,6 @@ const PersonalDataForm = () => {
             <p id="descricao-help" className="text-sm text-gray-500">
               Esta descrição aparecerá no seu perfil e nos cards de busca. Seja autêntico e compartilhe o que te torna único!
             </p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.37 }}
-            className="space-y-4 p-6 bg-gradient-to-r from-gray-50/80 to-blue-50/80 rounded-2xl border border-gray-100"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 rounded-full">
-                  {userData.invisivel ? (
-                    <EyeOff className="w-5 h-5 text-gray-600" />
-                  ) : (
-                    <Eye className="w-5 h-5 text-blue-600" />
-                  )}
-                </div>
-                <div>
-                  <label 
-                    htmlFor="invisivel-toggle" 
-                    className="text-sm font-medium text-gray-700 cursor-pointer"
-                  >
-                    Ficar invisível nas buscas
-                  </label>
-                  <p className="text-xs text-gray-500">
-                    Controle sua visibilidade no sistema
-                  </p>
-                </div>
-              </div>
-              
-              <div className="relative">
-                <button
-                  type="button"
-                  id="invisivel-toggle"
-                  onClick={() => handleInvisibilityChange(!userData.invisivel)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                    userData.invisivel 
-                      ? 'bg-blue-600' 
-                      : 'bg-gray-200'
-                  }`}
-                  role="switch"
-                  aria-checked={userData.invisivel}
-                  aria-labelledby="invisivel-toggle"
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      userData.invisivel ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-            
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ 
-                opacity: 1, 
-                height: "auto",
-                transition: { delay: 0.1 }
-              }}
-              className="pt-2 border-t border-gray-200"
-            >
-              <p className="text-xs text-gray-500 flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                <span>
-                  Ao ativar essa opção, seu perfil e suas viagens não aparecerão para outros usuários nas buscas do sistema.
-                </span>
-              </p>
-            </motion.div>
           </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1281,105 +1188,7 @@ const PersonalDataForm = () => {
         </motion.form>
       </motion.div>
       
-      <AnimatePresence>
-        {showInvisibilityModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backdropFilter: 'blur(8px)' }}
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={cancelInvisibility}
-            />
-            
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 50 }}
-              transition={{ 
-                type: "spring", 
-                damping: 25, 
-                stiffness: 400,
-                duration: 0.3
-              }}
-              className="relative w-full max-w-md mx-auto transform overflow-hidden rounded-3xl bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl"
-            >
-              <div className="p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full">
-                    <AlertTriangle className="w-6 h-6 text-amber-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900">
-                      Ficar Invisível
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Confirme sua escolha
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4 mb-6">
-                  <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl border border-amber-200/50">
-                    <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2 text-sm">
-                      <EyeOff className="w-4 h-4" />
-                      O que acontece quando você fica invisível?
-                    </h4>
-                    <ul className="text-sm text-amber-700 space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
-                        Seu perfil não aparecerá nas buscas de outros usuários
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
-                        Suas viagens criadas também ficarão invisíveis
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
-                        Você ainda pode ver e participar de outras viagens
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></span>
-                        Esta configuração pode ser alterada a qualquer momento
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Tem certeza de que deseja ativar o modo invisível? Esta ação pode ser desfeita a qualquer momento retornando a esta configuração.
-                  </p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <motion.button
-                    onClick={cancelInvisibility}
-                    className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all duration-200 border border-gray-200"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Cancelar
-                  </motion.button>
-                  <motion.button
-                    onClick={confirmInvisibility}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Confirmar
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
     </>
   );
 };

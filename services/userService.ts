@@ -41,6 +41,12 @@ export const deletarConta = async (): Promise<void> => {
   await api.delete("/usuarios/me");
 };
 
+export const deletarContaComSenha = async (senha: string): Promise<void> => {
+  await api.post("/usuarios/me/deletar-conta", null, {
+    params: { senha }
+  });
+};
+
 export const validarSenhaParaDeletar = async (senha: string): Promise<void> => {
   await api.post("/usuarios/me/validar-senha", { senha });
 };
@@ -70,4 +76,8 @@ export const buscarUsuariosSemPaginacao = async (
 export const getUsuarioById = async (id: number): Promise<UsuarioBuscaDTO> => {
   const response = await api.get<ApiResponse<UsuarioBuscaDTO>>(`/usuarios/${id}`);
   return response.data.data;
+};
+
+export const atualizarVisibilidade = async (invisivel: boolean): Promise<void> => {
+  await api.put(`/usuarios/me/visibilidade?invisivel=${invisivel}`);
 };
