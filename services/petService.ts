@@ -24,6 +24,22 @@ export const getMeusPets = async (): Promise<PetDTO[]> => {
   return response.data.data;
 };
 
+export const getPetsByUsuarioId = async (usuarioId: number): Promise<PetDTO[]> => {
+  try {
+    // Usa o mesmo padrão do álbum de fotos: endpoint direto sem ApiResponse wrapper
+    const response = await api.get<PetDTO[]>(`/pets/usuario/${usuarioId}`);
+    return response.data;
+  } catch (error: any) {
+    // Se endpoint não existir ou usuário não tiver pets, retorna array vazio
+    if (error.response?.status === 404 || error.response?.status === 403) {
+      return [];
+    }
+    // Para outros erros, relança a exceção
+    console.error(`Erro ao buscar pets do usuário ${usuarioId}:`, error);
+    return [];
+  }
+};
+
 export const deletarPet = async (id: number): Promise<void> => {
   await api.delete(`/pets/${id}`);
 };

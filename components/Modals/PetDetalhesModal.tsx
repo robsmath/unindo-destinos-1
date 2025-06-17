@@ -13,6 +13,7 @@ interface Props {
   pet: PetDTO | null;
   isOpen: boolean;
   onClose: () => void;
+  isOwner?: boolean;
 }
 
 const formatarDataNascimento = (data?: string) => {
@@ -58,7 +59,7 @@ const obterPorteFormatado = (porte?: string) => {
   }
 };
 
-export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
+export default function PetDetalhesModal({ pet, isOpen, onClose, isOwner = true }: Props) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
 
@@ -215,20 +216,22 @@ export default function PetDetalhesModal({ pet, isOpen, onClose }: Props) {
                     )}
                   </motion.div>
 
-                  <motion.div 
-                    className="mt-6 pt-4 border-t border-gray-200/50"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Button
-                      onClick={handleEditar}
-                      className="w-full bg-gradient-to-r from-primary to-orange-500 text-white hover:scale-105 transition-all duration-200 flex items-center gap-2 py-3"
+                  {isOwner && (
+                    <motion.div 
+                      className="mt-6 pt-4 border-t border-gray-200/50"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
                     >
-                      <FaEdit className="w-4 h-4" />
-                      Editar Informações
-                    </Button>
-                  </motion.div>
+                      <Button
+                        onClick={handleEditar}
+                        className="w-full bg-gradient-to-r from-primary to-orange-500 text-white hover:scale-105 transition-all duration-200 flex items-center gap-2 py-3"
+                      >
+                        <FaEdit className="w-4 h-4" />
+                        Editar Informações
+                      </Button>
+                    </motion.div>
+                  )}
                 </div>
               </DialogPanel>
             </TransitionChild>

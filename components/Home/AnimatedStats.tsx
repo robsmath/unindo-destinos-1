@@ -23,7 +23,7 @@ const StatItem: React.FC<StatItemProps> = ({ value, label, suffix = "", duration
       const updateCount = () => {
         const now = Date.now();
         const progress = Math.min((now - startTime) / (duration * 1000), 1);
-        const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic easing
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
         
         setCount(Math.floor(easedProgress * value));
 

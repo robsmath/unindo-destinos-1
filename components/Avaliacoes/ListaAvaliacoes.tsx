@@ -2,17 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Star, Calendar, MessageCircle, User } from "lucide-react";
+import { Star, Calendar, MessageCircle, User, MapPin } from "lucide-react";
 import { buscarAvaliacoesPorUsuario } from "@/services/avaliacaoService";
+import { getViagemById } from "@/services/viagemService";
 import { AvaliacaoDTO } from "@/models/AvaliacaoDTO";
+import { ViagemDTO } from "@/models/ViagemDTO";
 import StarRating from "@/components/Common/StarRating";
 
 interface ListaAvaliacoesProps {
   usuarioId: number;
 }
 
+interface AvaliacaoComViagem extends AvaliacaoDTO {
+  viagem?: ViagemDTO;
+}
+
 export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
-  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoDTO[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoComViagem[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -25,7 +31,21 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
       setCarregando(true);
       setErro(null);
       const dados = await buscarAvaliacoesPorUsuario(usuarioId);
-      setAvaliacoes(dados);
+      
+      // Buscar informações das viagens para cada avaliação
+      const avaliacoesComViagem = await Promise.all(
+        dados.map(async (avaliacao) => {
+          try {
+            const viagem = await getViagemById(avaliacao.viagemId);
+            return { ...avaliacao, viagem };
+          } catch (error) {
+            console.error(`Erro ao buscar viagem ${avaliacao.viagemId}:`, error);
+            return avaliacao; // Retorna a avaliação sem as informações da viagem
+          }
+        })
+      );
+      
+      setAvaliacoes(avaliacoesComViagem);
     } catch (error) {
       console.error("Erro ao carregar avaliações:", error);
       setErro("Erro ao carregar avaliações");
@@ -37,6 +57,21 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
   const formatarData = (dataISO: string) => {
     const data = new Date(dataISO);
     return data.toLocaleDateString("pt-BR");
+  };
+
+  const formatarPeriodoViagem = (dataInicio?: string, dataFim?: string) => {
+    if (!dataInicio || !dataFim) return null;
+    
+    const inicio = new Date(dataInicio);
+    const fim = new Date(dataFim);
+    
+    const mesmoMes = inicio.getMonth() === fim.getMonth() && inicio.getFullYear() === fim.getFullYear();
+    
+    if (mesmoMes) {
+      return `${inicio.getDate()} a ${fim.getDate()}/${(fim.getMonth() + 1).toString().padStart(2, '0')}/${fim.getFullYear()}`;
+    }
+    
+    return `${inicio.toLocaleDateString("pt-BR")} a ${fim.toLocaleDateString("pt-BR")}`;
   };
 
   const calcularMediaAvaliacoes = () => {
@@ -104,7 +139,7 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <h3 className="text-lg font-bold text-gray-800 mb-2">
-              {avaliacoes.length} avaliação{avaliacoes.length !== 1 ? "ões" : ""}
+              {avaliacoes.length} {avaliacoes.length === 1 ? "avaliação" : "avaliações"}
             </h3>
             <div className="flex items-center gap-2">
               <StarRating rating={Number(calcularMediaAvaliacoes())} size="md" />
@@ -141,12 +176,21 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
                   alt={avaliacao.nomeAvaliador}
                   className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
                 />
-                <div>
+                <div className="flex-1">
                   <h4 className="font-semibold text-gray-800">{avaliacao.nomeAvaliador}</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                     <Calendar className="w-4 h-4" />
                     {formatarData(avaliacao.dataCriacao)}
                   </div>
+                  {avaliacao.viagem && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <MapPin className="w-3 h-3" />
+                      <span>{avaliacao.viagem.destino}</span>
+                      {formatarPeriodoViagem(avaliacao.viagem.dataInicio, avaliacao.viagem.dataFim) && (
+                        <span className="ml-1">• {formatarPeriodoViagem(avaliacao.viagem.dataInicio, avaliacao.viagem.dataFim)}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               

@@ -1,15 +1,17 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
+import { PetDTO } from "@/models/PetDTO";
 import { Dialog, DialogPanel, Transition, TransitionChild, TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
-import { FaCheckCircle, FaTimes } from "react-icons/fa";
-import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed, Star, ImageIcon } from "lucide-react";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaCheckCircle, FaTimes, FaExclamationTriangle, FaPaw, FaMars, FaVenus } from "react-icons/fa";
+import { Hotel, Car, Heart, Baby, Cigarette, Wine, Bed, Star, ImageIcon, Dog, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DenunciaEBloqueioButtons from "@/components/Common/DenunciaEBloqueioButtons";
 import ListaAvaliacoes from "@/components/Avaliacoes/ListaAvaliacoes";
 import AlbumDeFotos from "@/components/Profile/AlbumDeFotos";
+import PetDetalhesModal from "@/components/Modals/PetDetalhesModal";
+import { getPetsByUsuarioId } from "@/services/petService";
 
 interface Props {
   usuario: UsuarioBuscaDTO;
@@ -41,6 +43,11 @@ export default function MiniPerfilModal({
   onDenunciar,
   onBloquear
 }: Props) {
+  const [pets, setPets] = useState<PetDTO[]>([]);
+  const [loadingPets, setLoadingPets] = useState(false);
+  const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null);
+  const [petModalOpen, setPetModalOpen] = useState(false);
+
   const semPreferencias =
     !usuario.tipoAcomodacao &&
     !usuario.tipoTransporte &&
@@ -53,6 +60,54 @@ export default function MiniPerfilModal({
   const semDescricao = !usuario.descricao || usuario.descricao.trim() === "";
 
   const deveExibirAviso = semPreferencias && semDescricao;
+
+  useEffect(() => {
+    if (isOpen) {
+      carregarPetsDoUsuario();
+    }
+  }, [isOpen, usuario.id]);
+
+  const carregarPetsDoUsuario = async () => {
+    setLoadingPets(true);
+    try {
+      const petsDoUsuario = await getPetsByUsuarioId(usuario.id);
+      setPets(petsDoUsuario);
+    } catch (error) {
+      console.error("Erro ao carregar pets do usuário:", error);
+      setPets([]);
+    } finally {
+      setLoadingPets(false);
+    }
+  };
+
+  const handleAbrirPetModal = (pet: PetDTO) => {
+    setSelectedPet(pet);
+    setPetModalOpen(true);
+  };
+
+  const handleFecharPetModal = () => {
+    setPetModalOpen(false);
+    setSelectedPet(null);
+  };
+
+  const obterPorteFormatado = (porte?: string) => {
+    if (!porte) return "Porte não informado";
+    
+    switch (porte.toLowerCase()) {
+      case 'pequeno':
+      case 'small':
+        return 'Pequeno';
+      case 'medio':
+      case 'médio':
+      case 'medium':
+        return 'Médio';
+      case 'grande':
+      case 'large':
+        return 'Grande';
+      default:
+        return porte;
+    }
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -147,6 +202,19 @@ export default function MiniPerfilModal({
                         )
                       }
                     >
+                      <FaPaw className="w-4 h-4" />
+                      Pets
+                    </Tab>
+                    <Tab
+                      className={({ selected }) =>
+                        classNames(
+                          "px-6 py-3 text-sm font-medium focus:outline-none flex items-center gap-2",
+                          selected
+                            ? "text-primary border-b-2 border-primary"
+                            : "text-gray-600 hover:text-gray-800"
+                        )
+                      }
+                    >
                       <Star className="w-4 h-4" />
                       Avaliações
                     </Tab>
@@ -218,6 +286,87 @@ export default function MiniPerfilModal({
                       <AlbumDeFotos isOwner={false} usuarioId={usuario.id} />
                     </TabPanel>
 
+                    <TabPanel className="p-6">
+                      {loadingPets ? (
+                        <div className="flex flex-col items-center justify-center py-8">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+                          <p className="text-gray-600">Carregando pets...</p>
+                        </div>
+                      ) : pets.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FaPaw className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <p className="text-gray-600">Este usuário não possui pets cadastrados.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          {pets.map((pet) => (
+                            <div
+                              key={pet.id}
+                              onClick={() => handleAbrirPetModal(pet)}
+                              className="bg-white rounded-2xl border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105"
+                            >
+                              <div className="flex flex-col items-center text-center">
+                                {pet.foto ? (
+                                  <div className="w-16 h-16 mb-3">
+                                    <div className="bg-gradient-to-r from-primary to-orange-500 rounded-full p-0.5 w-full h-full">
+                                      <div className="bg-white rounded-full p-0.5 w-full h-full">
+                                        <img
+                                          src={pet.foto}
+                                          alt={pet.nome}
+                                          className="w-full h-full rounded-full object-cover"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="w-16 h-16 mb-3">
+                                    <div className="bg-gradient-to-r from-primary to-orange-500 rounded-full p-0.5 w-full h-full">
+                                      <div className="bg-white rounded-full p-0.5 w-full h-full">
+                                        <div className="w-full h-full bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-full flex items-center justify-center">
+                                          <FaPaw className="w-6 h-6 text-primary" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                <h4 className="font-semibold text-gray-800 mb-1">{pet.nome}</h4>
+                                
+                                <div className="space-y-1 text-xs text-gray-600">
+                                  {pet.raca && (
+                                    <div className="flex items-center justify-center gap-1">
+                                      <Dog className="w-3 h-3" />
+                                      <span>{pet.raca}</span>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex items-center justify-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                      {pet.sexo === 'MACHO' ? (
+                                        <FaMars className="w-3 h-3 text-blue-500" />
+                                      ) : (
+                                        <FaVenus className="w-3 h-3 text-pink-500" />
+                                      )}
+                                      <span>{pet.sexo === 'MACHO' ? 'Macho' : 'Fêmea'}</span>
+                                    </div>
+                                    
+                                    {pet.porte && (
+                                      <div className="flex items-center gap-1">
+                                        <Heart className="w-3 h-3 text-red-500" />
+                                        <span>{obterPorteFormatado(pet.porte)}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </TabPanel>
+
                     <TabPanel className="p-0">
                       <div className="max-h-96 overflow-y-auto">
                         <ListaAvaliacoes usuarioId={usuario.id} />
@@ -254,6 +403,13 @@ export default function MiniPerfilModal({
           </div>
         </div>
       </Dialog>
+
+      <PetDetalhesModal
+        pet={selectedPet}
+        isOpen={petModalOpen}
+        onClose={handleFecharPetModal}
+        isOwner={false}
+      />
     </Transition>
   );
 }

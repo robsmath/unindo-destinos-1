@@ -12,7 +12,7 @@ import {
   baixarRoteiroPdf,
   clearRoteiroCache,
 } from "@/services/roteiroService";
-import { getViagemById } from "@/services/viagemService";
+import { getViagemById, getParticipantesDaViagem } from "@/services/viagemService";
 import LoadingOverlay from "@/components/Common/LoadingOverlay";
 import EnviarRoteiroModal from "@/components/Modals/EnviarRoteiroModal";
 import { usePerfil } from "@/app/context/PerfilContext";
@@ -39,7 +39,6 @@ import {
   Target
 } from "lucide-react";
 import { ViagemDTO } from "@/models/ViagemDTO";
-import OwnershipGuard from "@/components/Common/OwnershipGuard";
 
 type TipoViagem = "ECONOMICA" | "CONFORTAVEL" | "LUXO";
 
@@ -69,6 +68,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
   const [souCriador, setSouCriador] = useState(false);
   const [limiteGeracaoAtingido, setLimiteGeracaoAtingido] = useState(false);
   const [viagemOwnerId, setViagemOwnerId] = useState<number | undefined>(undefined);
+  const [usuarioTemAcesso, setUsuarioTemAcesso] = useState<boolean | null>(null);
+  const [ehParticipante, setEhParticipante] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -106,10 +107,20 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           }
         }
         
-        const viagemData = await getViagemById(Number(viagemId));
+        const [viagemData, participantes] = await Promise.all([
+          getViagemById(Number(viagemId)),
+          getParticipantesDaViagem(Number(viagemId))
+        ]);
+        
         setViagem(viagemData);
         setViagemOwnerId(viagemData.criadorViagemId);
-        setSouCriador(viagemData.criadorViagemId === usuario?.id);
+        
+        const usuarioEhCriador = viagemData.criadorViagemId === usuario?.id;
+        const usuarioEhParticipante = participantes.some(p => p.id === usuario?.id);
+        
+        setSouCriador(usuarioEhCriador);
+        setEhParticipante(usuarioEhParticipante);
+        setUsuarioTemAcesso(usuarioEhCriador || usuarioEhParticipante);
         const roteiro = await getRoteiroByViagemId(Number(viagemId));
         if (roteiro) {
           setRoteiroId(roteiro.id);
@@ -140,6 +151,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         
         if (error?.response?.status === 404) {
           setRoteiroInexistente(true);
+        } else if (error?.response?.status === 403) {
+          setUsuarioTemAcesso(false);
         } else {
           toast.error("Erro ao carregar dados da viagem");
           setRoteiroInexistente(true);
@@ -434,7 +447,69 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
     }
   };
 
-  const content = (
+  if (usuarioTemAcesso === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-pink-50 to-red-100">
+        <motion.div
+          className="text-center space-y-6 p-8 bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md mx-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="w-20 h-20 mx-auto bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
+            <AlertTriangle className="w-10 h-10 text-white" />
+          </div>
+          
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">
+              Acesso Negado
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
+              Você não tem permissão para acessar este roteiro. 
+              Apenas o criador da viagem e participantes podem visualizar.
+            </p>
+          </div>
+
+          <motion.button
+            onClick={() => router.push("/profile?tab=viagens")}
+            className="flex items-center gap-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para Minhas Viagens
+          </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (usuarioTemAcesso === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
+        <motion.div
+          className="text-center space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-primary to-orange-500 rounded-full flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Verificando permissões...
+            </h2>
+            <p className="text-gray-600">
+              Aguarde enquanto verificamos se você tem acesso a este roteiro.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
     <>
       <AnimatePresence>
         {(loading || loadingPdf || loadingEmail) && (
@@ -680,13 +755,17 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
               
               {!roteiroInexistente && (
                 <motion.div 
-                  className="flex items-center gap-2 px-4 py-2 bg-green-100/80 backdrop-blur-sm text-green-700 rounded-2xl text-sm font-medium shadow-lg border border-green-200/50"
+                  className={`flex items-center gap-2 px-4 py-2 backdrop-blur-sm rounded-2xl text-sm font-medium shadow-lg border ${
+                    souCriador 
+                      ? "bg-green-100/80 text-green-700 border-green-200/50"
+                      : "bg-blue-100/80 text-blue-700 border-blue-200/50"
+                  }`}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  Roteiro Criado
+                  {souCriador ? "Roteiro Criado" : "Visualizando Roteiro"}
                 </motion.div>
               )}
             </div>
@@ -788,7 +867,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.6, delay: 0.3 }}
                         >
-                          {souCriador ? "Roteiro criado com sucesso!" : "Roteiro visualizado com sucesso!"}
+                          {souCriador ? "Roteiro criado com sucesso!" : "Visualizando roteiro da viagem"}
                         </motion.h3>
                         <motion.p 
                           className="text-emerald-700"
@@ -798,7 +877,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                         >
                           {souCriador 
                             ? "Seu roteiro personalizado está pronto. Você pode editá-lo, baixar em PDF ou compartilhar com outros participantes."
-                            : "Você pode visualizar o roteiro, baixar em PDF ou enviar para seu e-mail. Como participante, você tem acesso limitado de edição."
+                            : "Como participante desta viagem, você pode visualizar o roteiro, baixar em PDF e enviar para seu e-mail. Apenas o criador da viagem pode fazer edições."
                           }
                         </motion.p>
                       </div>
@@ -1197,17 +1276,6 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
         )}
       </AnimatePresence>
     </>
-  );
-
-  return (
-    <OwnershipGuard
-      resourceOwnerId={viagemOwnerId}
-      resourceType="roteiro"
-      resourceId={viagemId}
-      fallbackRoute="/profile?tab=viagens"
-    >
-      {content}
-    </OwnershipGuard>
   );
 };
 

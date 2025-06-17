@@ -56,7 +56,6 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
       </label>
       
       <div className="space-y-3">
-        {/* Display do valor */}
         <motion.div 
           className="text-center"
           animate={{ scale: isDragging ? 1.05 : 1 }}
@@ -71,7 +70,6 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
           </span>
         </motion.div>
 
-        {/* Slider customizado */}
         <div className="relative">
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <motion.div 
@@ -101,7 +99,6 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
             }}
           />
           
-          {/* Thumb customizado */}
           <motion.div
             className={`absolute top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white shadow-lg transition-all duration-200 ${
               value > 0 
@@ -119,7 +116,6 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
           />
         </div>
 
-        {/* Labels de min/max */}
         <div className="flex justify-between text-xs text-gray-500">
           <span>{formatValue(min)}</span>
           <span>{formatValue(max)}</span>
