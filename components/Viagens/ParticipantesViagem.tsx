@@ -34,9 +34,9 @@ const ParticipantesViagem = () => {
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
   const [usuarioParaAvaliar, setUsuarioParaAvaliar] = useState<UsuarioBuscaDTO | null>(null);
   const [participantesAvaliados, setParticipantesAvaliados] = useState<Set<number>>(new Set());
-  const [usuarioEstaNoGrupo, setUsuarioEstaNoGrupo] = useState(true);
+  const [usuarioEstaNoGrupo, setUsuarioEstaNoGrupo] = useState(false);
   const { getUnreadCountForUser, markConversationAsRead } = useUnreadMessages(5000);
-  const { getUnreadCountForGroup, refreshGroups } = useUnreadGroupMessages(5000);
+  const { getUnreadCountForGroup, refreshGroups } = useUnreadGroupMessages(10000);
 
   const {
     denunciaModalOpen,
@@ -115,12 +115,21 @@ const ParticipantesViagem = () => {
         setViagem(dadosViagem);
         setParticipantes(dadosParticipantes);
 
+        // Verificar se o usuário está no grupo de mensagens
         if (dadosViagem.grupoMensagemId && usuario?.id) {
-          try {
-            const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
-            const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
-            setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
-          } catch (error: any) {
+          // Primeiro verificar se o usuário é participante da viagem
+          const usuarioEhParticipante = dadosParticipantes.some(p => p.id === usuario.id);
+          
+          if (usuarioEhParticipante) {
+            try {
+              const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
+              const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
+              setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
+            } catch (error: any) {
+              // Se der erro na API, assumir que o usuário está no grupo se ele é participante da viagem
+              setUsuarioEstaNoGrupo(true);
+            }
+          } else {
             setUsuarioEstaNoGrupo(false);
           }
         } else {
@@ -401,7 +410,7 @@ const ParticipantesViagem = () => {
               </motion.h1>
             </div>
 
-            {viagem && usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
+            {viagem && usuario && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

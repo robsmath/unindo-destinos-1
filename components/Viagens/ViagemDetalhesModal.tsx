@@ -124,7 +124,7 @@ export default function ViagemDetalhesModal({
   const [imagem, setImagem] = useState<string>("");
   const [carregando, setCarregando] = useState(false);
   const [chatGrupoAberto, setChatGrupoAberto] = useState(false);
-  const [usuarioEstaNoGrupo, setUsuarioEstaNoGrupo] = useState(true);
+  const [usuarioEstaNoGrupo, setUsuarioEstaNoGrupo] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -140,7 +140,9 @@ export default function ViagemDetalhesModal({
     if (imagemViagem) {
       setImagem(imagemViagem);
     }
-  }, [imagemViagem]);const carregarDados = async () => {
+  }, [imagemViagem]);
+
+  const carregarDados = async () => {
     setCarregando(true);
     try {
       const dadosViagem = await getViagemById(viagemId);
@@ -152,12 +154,21 @@ export default function ViagemDetalhesModal({
       const dadosParticipantes = await getParticipantesDaViagem(viagemId);
       setParticipantes(dadosParticipantes);
 
+      // Verificar se o usuário está no grupo de mensagens
       if (dadosViagem.grupoMensagemId && usuario?.id) {
-        try {
-          const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
-          const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
-          setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
-        } catch (error: any) {
+        // Primeiro verificar se o usuário é participante da viagem
+        const usuarioEhParticipante = dadosParticipantes.some(p => p.id === usuario.id);
+        
+        if (usuarioEhParticipante) {
+          try {
+            const participantesGrupo = await buscarParticipantesGrupo(dadosViagem.grupoMensagemId);
+            const usuarioEstaNoGrupo = participantesGrupo.includes(usuario.id);
+            setUsuarioEstaNoGrupo(usuarioEstaNoGrupo);
+          } catch (error: any) {
+            // Se der erro na API, assumir que o usuário está no grupo se ele é participante da viagem
+            setUsuarioEstaNoGrupo(true);
+          }
+        } else {
           setUsuarioEstaNoGrupo(false);
         }
       } else {
@@ -285,7 +296,7 @@ export default function ViagemDetalhesModal({
                               </div>
                             </div>
 
-                            {usuario && participantes.some(p => p.id === usuario.id) && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
+                            {usuario && viagem.grupoMensagemId && usuarioEstaNoGrupo && (
                               <button
                                 onClick={() => setChatGrupoAberto(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"

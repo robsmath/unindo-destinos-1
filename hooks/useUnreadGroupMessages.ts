@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { buscarGruposComMensagensNaoLidas } from '@/services/mensagemGrupoService';
 import { GrupoComMensagensDTO } from '@/models/GrupoComMensagensDTO';
 
-export const useUnreadGroupMessages = (pollingInterval = 30000) => {
+export const useUnreadGroupMessages = (pollingInterval = 15000) => {
   const [grupos, setGrupos] = useState<GrupoComMensagensDTO[]>([]);
   const [loading, setLoading] = useState(false);
 

@@ -21,7 +21,7 @@ const NavAuthenticated = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
   const { hasUnreadMessages } = useUnreadMessages(5000);
-  const { hasUnreadGroupMessages } = useUnreadGroupMessages(30000);
+  const { hasUnreadGroupMessages } = useUnreadGroupMessages(10000);
   const [chatDropdownOpen, setChatDropdownOpen] = useState(false);
 
   const isValidToken = (token: unknown): token is string => {
@@ -48,8 +48,6 @@ const NavAuthenticated = () => {
       }
     }
   }, [token, usuario]);
-
-
 
   return (
     <div className="relative flex items-center gap-4">
