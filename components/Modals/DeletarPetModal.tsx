@@ -3,40 +3,41 @@
 import { Fragment, useState } from "react";
 import { Dialog, DialogPanel, Transition, TransitionChild } from "@headlessui/react";
 import { motion } from "framer-motion";
-import { X, Shield, ShieldX, AlertTriangle } from "lucide-react";
-import { bloquearUsuario } from "@/services/usuarioBloqueadoService";
+import { X, Trash2, AlertTriangle } from "lucide-react";
+import { FaPaw } from "react-icons/fa";
+import { deletarPet } from "@/services/petService";
 import { toast } from "sonner";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  usuarioId: number;
-  usuarioNome: string;
-  onUsuarioBloqueado?: () => void;
+  petId: number;
+  petNome: string;
+  onDeletarConfirmado?: () => void;
 }
 
-export default function BloqueioModal({ 
+export default function DeletarPetModal({ 
   isOpen, 
   onClose, 
-  usuarioId, 
-  usuarioNome, 
-  onUsuarioBloqueado 
+  petId, 
+  petNome, 
+  onDeletarConfirmado 
 }: Props) {
   const [loading, setLoading] = useState(false);
 
-  const handleBloquear = async () => {
+  const handleDeletar = async () => {
     setLoading(true);
     
     try {
-      await bloquearUsuario(usuarioId);
+      await deletarPet(petId);
       
-      toast.success(`${usuarioNome} foi bloqueado com sucesso!`);
+      toast.success(`${petNome} foi removido com sucesso!`);
       onClose();
-      onUsuarioBloqueado?.();
+      onDeletarConfirmado?.();
       
     } catch (error) {
-      console.error("Erro ao bloquear usuário:", error);
-      toast.error("Erro ao bloquear usuário. Tente novamente.");
+      console.error("Erro ao deletar pet:", error);
+      toast.error("Erro ao deletar pet. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -80,47 +81,46 @@ export default function BloqueioModal({
                     <X className="w-5 h-5" />
                   </motion.button>
 
-                  <div className="flex flex-col items-center">
+                  <div className="text-center">
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ delay: 0.1 }}
-                      className="w-16 h-16 bg-gradient-to-br from-red-50 to-red-100 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
+                      className="w-16 h-16 bg-gradient-to-br from-red-50 to-red-100 rounded-2xl flex items-center justify-center mb-4 shadow-lg mx-auto"
                     >
-                      <ShieldX className="w-8 h-8 text-red-600" />
+                      <Trash2 className="w-8 h-8 text-red-600" />
                     </motion.div>
                     
                     <h2 className="text-xl font-bold text-gray-900 mb-2">
-                      Bloquear Usuário
+                      Deletar Pet
                     </h2>
                     <p className="text-sm text-gray-600 text-center">
-                      Tem certeza que deseja bloquear{" "}
-                      <span className="font-semibold text-gray-800">{usuarioNome}</span>?
+                      Tem certeza que deseja deletar{" "}
+                      <span className="font-semibold text-gray-800">{petNome}</span>{" "}
+                      permanentemente?
                     </p>
                   </div>
                 </div>
 
-                <div className="px-6 pb-2">
+                <div className="px-6">
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
                       <div className="text-left">
                         <h4 className="text-sm font-semibold text-amber-800 mb-1">
-                          O que acontece ao bloquear?
+                          O que acontece ao deletar?
                         </h4>
                         <ul className="text-xs text-amber-700 space-y-1">
-                          <li>• O usuário não poderá mais te contatar</li>
-                          <li>• Vocês não aparecerão nas buscas um do outro</li>
-                          <li>• Conversas existentes ficarão ocultas</li>
-                          <li>• Ele será removido de todas as suas viagens</li>
-                          <li>• Você será removido de todas as viagens dele</li>
-                          <li>• Você pode desbloqueá-lo a qualquer momento</li>
+                          <li>• Todos os dados do pet serão removidos permanentemente</li>
+                          <li>• As fotos e informações não poderão ser recuperadas</li>
+                          <li>• Esta ação não pode ser desfeita</li>
+                          <li>• O pet será removido do seu perfil</li>
                         </ul>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 pb-6">
                     <button
                       type="button"
                       onClick={onClose}
@@ -129,7 +129,7 @@ export default function BloqueioModal({
                       Cancelar
                     </button>
                     <motion.button
-                      onClick={handleBloquear}
+                      onClick={handleDeletar}
                       disabled={loading}
                       className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
                       whileHover={!loading ? { scale: 1.02 } : {}}
@@ -139,8 +139,8 @@ export default function BloqueioModal({
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
-                          <Shield className="w-4 h-4" />
-                          Bloquear
+                          <Trash2 className="w-4 h-4" />
+                          Deletar
                         </>
                       )}
                     </motion.button>

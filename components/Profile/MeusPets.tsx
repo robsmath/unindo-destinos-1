@@ -11,14 +11,16 @@ import { FaPaw, FaMars, FaVenus } from "react-icons/fa";
 import { Dog, Heart } from "lucide-react";
 import { useTabData } from "./hooks/useTabData";
 import PetDetalhesModal from "@/components/Modals/PetDetalhesModal";
+import DeletarPetModal from "@/components/Modals/DeletarPetModal";
 
 const MeusPets = () => {
   const router = useRouter();
   const [selectedPet, setSelectedPet] = useState<PetDTO | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deletandoPetId, setDeletandoPetId] = useState<number | null>(null);
+  const [deletarModalAberto, setDeletarModalAberto] = useState(false);
+  const [petParaDeletar, setPetParaDeletar] = useState<{ id: number; nome: string } | null>(null);
   
-  const { data: pets, loading, loadData } = useTabData<PetDTO[]>(async () => {
+  const { data: pets, loading, loadData, refreshData } = useTabData<PetDTO[]>(async () => {
     try {
       return await getMeusPets();
     } catch (err) {
@@ -40,22 +42,16 @@ const MeusPets = () => {
     router.push(`/pets/editar/${id}`);
   };
 
-  const handleDeletarPet = async (id: number, nome: string) => {
-    if (!confirm(`Tem certeza que deseja deletar o pet "${nome}"? Esta ação não pode ser desfeita.`)) {
-      return;
-    }
+  const handleDeletarPet = (id: number, nome: string) => {
+    setPetParaDeletar({ id, nome });
+    setDeletarModalAberto(true);
+  };
 
-    setDeletandoPetId(id);
-    try {
-      await deletarPet(id);
-      toast.success(`Pet ${nome} deletado com sucesso!`);
-      loadData();
-    } catch (error) {
-      console.error("Erro ao deletar pet:", error);
-      toast.error("Erro ao deletar pet. Tente novamente.");
-    } finally {
-      setDeletandoPetId(null);
-    }
+  const handleDeletarConfirmado = async () => {
+    // Força recarregamento dos dados para atualizar a lista
+    await refreshData();
+    setPetParaDeletar(null);
+    setDeletarModalAberto(false);
   };
 
   const handleAbrirModal = (pet: PetDTO) => {
@@ -232,17 +228,12 @@ const MeusPets = () => {
                       e.stopPropagation();
                       handleDeletarPet(pet.id!, pet.nome);
                     }}
-                    disabled={deletandoPetId === pet.id}
-                    className="flex-1 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm py-2 px-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                    whileHover={deletandoPetId !== pet.id ? { scale: 1.02 } : {}}
-                    whileTap={deletandoPetId !== pet.id ? { scale: 0.98 } : {}}
+                    className="flex-1 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm py-2 px-4 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {deletandoPetId === pet.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                    {deletandoPetId === pet.id ? "Deletando..." : "Deletar"}
+                    <Trash2 className="w-4 h-4" />
+                    Deletar
                   </motion.button>
                 </div>
               </div>
@@ -281,6 +272,19 @@ const MeusPets = () => {
         isOpen={isModalOpen}
         onClose={handleFecharModal}
       />
+
+      {petParaDeletar && (
+        <DeletarPetModal
+          isOpen={deletarModalAberto}
+          onClose={() => {
+            setDeletarModalAberto(false);
+            setPetParaDeletar(null);
+          }}
+          petId={petParaDeletar.id}
+          petNome={petParaDeletar.nome}
+          onDeletarConfirmado={handleDeletarConfirmado}
+        />
+      )}
     </motion.div>
   );
 };
