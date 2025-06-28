@@ -31,6 +31,7 @@ import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { useAuth } from "@/app/context/AuthContext";
 import paisesTraduzidos from "@/models/paisesTraduzidos";
 import OwnershipGuard from "@/components/Common/OwnershipGuard";
+import { getPaisesRestCountries } from "@/services/countriesApiService";
 
 interface CadastroViagemProps {
   viagemId?: string;
@@ -81,6 +82,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [paises, setPaises] = useState<string[]>([]);
   const [estados, setEstados] = useState<{ id: number; sigla: string; nome: string }[]>([]);
   const [cidades, setCidades] = useState<string[]>([]);
+  const [loadingPaises, setLoadingPaises] = useState(false);
 
   const id = viagemId ? Number(viagemId) : null;
 
@@ -110,13 +112,37 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
     useEffect(() => {
     const fetchDados = async () => {
       if (form.categoriaViagem === "NACIONAL") {
-        const estadosRes = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
-        const estadosJson = await estadosRes.json();
-        setEstados(estadosJson.map((e) => ({ id: e.id, sigla: e.sigla, nome: e.nome })));
+        try {
+          const estadosRes = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados");
+          if (!estadosRes.ok) {
+            throw new Error(`HTTP error! status: ${estadosRes.status}`);
+          }
+          const estadosJson = await estadosRes.json();
+          setEstados(estadosJson.map((e) => ({ id: e.id, sigla: e.sigla, nome: e.nome })));
+        } catch (error) {
+          console.error("Erro ao carregar estados:", error);
+          toast.error("Erro ao carregar lista de estados");
+        }
       } else {
-        const paisesRes = await fetch("https://restcountries.com/v3.1/all");
-        const paisesJson = await paisesRes.json();
-        setPaises(paisesJson.map((p) => p.name.common).sort());
+        setLoadingPaises(true);
+        try {
+          const paisesLista = await getPaisesRestCountries();
+          setPaises(paisesLista);
+          
+          // Verificar se usou fallback
+          const totalPaisesEsperados = Object.keys(paisesTraduzidos).length;
+          if (paisesLista.length === totalPaisesEsperados) {
+            // Provavelmente usou fallback
+            toast.info("Lista de países carregada localmente");
+          }
+        } catch (error) {
+          console.error("Erro ao carregar países:", error);
+          // Em último caso, usar lista estática
+          setPaises(Object.keys(paisesTraduzidos).sort());
+          toast.error("Erro ao carregar países. Usando lista local.");
+        } finally {
+          setLoadingPaises(false);
+        }
       }
     };
     fetchDados();
@@ -605,15 +631,23 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                               const destino = cidade ? `${cidade} - ${paisTraduzido}` : paisTraduzido;
                               setForm(prev => ({ ...prev, destino }));
                             }}
-                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80"
+                            disabled={loadingPaises}
+                            className="w-full px-4 py-4 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-gray-900 appearance-none cursor-pointer group-hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <option value="">Selecione um país</option>
-                            {paises.map((pais) => (
+                            <option value="">
+                              {loadingPaises ? "Carregando países..." : "Selecione um país"}
+                            </option>
+                            {!loadingPaises && paises.map((pais) => (
                               <option key={pais} value={pais}>
                                 {paisesTraduzidos[pais] || pais}
                               </option>
                             ))}
                           </select>
+                          {loadingPaises && (
+                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                            </div>
+                          )}
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                         </div>
 
