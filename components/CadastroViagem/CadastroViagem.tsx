@@ -1,7 +1,7 @@
 "use client";
 
 import { cadastrarViagem, editarViagem, getViagemById } from "@/services/viagemService";
-import { salvarPreferenciasViagem, getPreferenciaByViagemId } from "@/services/preferenciasService";
+import { salvarPreferenciasViagem, getPreferenciaByViagemId, getPreferenciasDoUsuario } from "@/services/preferenciasService";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,8 @@ import {
   Map,
   Compass,
   Luggage,
-  MessageCircle
+  MessageCircle,
+  RefreshCw
 } from "lucide-react";
 import PreferenciasForm from "@/components/Common/PreferenciasForm";
 import { useAuth } from "@/app/context/AuthContext";
@@ -44,6 +45,7 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
   const [showPreferences, setShowPreferences] = useState(false);
   const [semPreferencias, setSemPreferencias] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [carregandoPreferencias, setCarregandoPreferencias] = useState(false);
   const [cidadeInternacional, setCidadeInternacional] = useState("");
   const [consultaImagem, setConsultaImagem] = useState<{ [key: number]: string }>({});
   const [paisSelecionado, setPaisSelecionado] = useState("");
@@ -287,6 +289,44 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
       setSemPreferencias(false);
     }
       };
+
+  const importarPreferencias = async () => {
+    setCarregandoPreferencias(true);
+    try {
+      const prefs = await getPreferenciasDoUsuario();
+      if (!prefs) {
+        toast.info("Nenhuma preferência encontrada para importar.");
+        return;
+      }
+
+      setPreferencias((prev) => ({
+        ...prev,
+        generoPreferido: prefs.generoPreferido,
+        petFriendly: prefs.petFriendly,
+        aceitaCriancas: prefs.aceitaCriancas,
+        aceitaFumantes: prefs.aceitaFumantes,
+        aceitaBebidasAlcoolicas: prefs.aceitaBebidasAlcoolicas,
+        acomodacaoCompartilhada: prefs.acomodacaoCompartilhada,
+        estiloViagem: prefs.estiloViagem,
+        tipoAcomodacao: prefs.tipoAcomodacao,
+        tipoTransporte: prefs.tipoTransporte,
+        idadeMinima: prefs.idadeMinima,
+        idadeMaxima: prefs.idadeMaxima,
+        valorMedioViagem: prefs.valorMedioViagem,
+      }));
+
+      if (semPreferencias) {
+        setSemPreferencias(false);
+      }
+      
+      toast.success("Preferências importadas com sucesso!");
+    } catch (err) {
+      console.error("Erro ao buscar preferências do usuário:", err);
+      toast.error("Erro ao importar preferências.");
+    } finally {
+      setCarregandoPreferencias(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -969,6 +1009,33 @@ const CadastroViagem = ({ viagemId }: CadastroViagemProps) => {
                                 </div>
                               </motion.div>
                             )}
+                            
+                            <div className="mb-6">
+                              <motion.button
+                                type="button"
+                                onClick={importarPreferencias}
+                                disabled={carregandoPreferencias}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-all duration-200 font-medium w-full md:w-auto disabled:opacity-70 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                              >
+                                {carregandoPreferencias ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Importando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <RefreshCw className="w-4 h-4" />
+                                    Importar Preferências Pessoais
+                                  </>
+                                )}
+                              </motion.button>
+                              <p className="text-xs text-gray-500 mt-2">
+                                💡 Importa suas preferências pessoais já cadastradas no seu perfil para esta viagem
+                              </p>
+                            </div>
+                            
                             <PreferenciasForm
                               preferencias={preferencias}
                               handlePreferenceChange={handlePreferenceChange}

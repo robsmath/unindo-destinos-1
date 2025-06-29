@@ -18,18 +18,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { solicitarParticipacao } from "@/services/solicitacaoService";
+import { formatarDataViagem, formatarPeriodoViagem } from "@/utils/dateUtils";
 
 interface Props {
   viagem: ViagemBuscaDTO | null;
   isOpen: boolean;
   onClose: () => void;
 }
-
-const formatarData = (dataISO: string) => {
-  if (!dataISO) return "Data inválida";
-  const data = new Date(dataISO);
-  return !isNaN(data.getTime()) ? data.toLocaleDateString("pt-BR") : "Data inválida";
-};
 
 const formatarNomeCompleto = (nomeCompleto: string) => {
   if (!nomeCompleto) return "Nome não informado";
@@ -180,7 +175,7 @@ export default function ViagemCardModal({ viagem, isOpen, onClose }: Props) {
                     <div>
                       <p className="text-sm text-gray-600">Período</p>
                       <p className="font-semibold text-gray-800">
-                        {formatarData(viagem.dataInicio)} até {formatarData(viagem.dataFim)}
+                        {formatarPeriodoViagem(viagem.dataInicio, viagem.dataFim)}
                       </p>
                     </div>
                   </div>

@@ -11,6 +11,7 @@ import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
 import SairViagemModal from "@/components/Modals/SairViagemModal";
 import SmartImage from "@/components/Common/SmartImage";
 import { useCacheInvalidation } from "@/components/Profile/hooks/useCacheInvalidation";
+import { formatarPeriodoViagem } from "@/utils/dateUtils";
 import { 
   Loader2, 
   Edit, 
@@ -287,7 +288,7 @@ const MinhasViagens = () => {
                   
                   <p className="text-sm text-gray-600 mb-4 flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    {new Date(viagem.dataInicio + "T12:00:00").toLocaleDateString("pt-BR")} - {new Date(viagem.dataFim + "T12:00:00").toLocaleDateString("pt-BR")}
+                                                        {formatarPeriodoViagem(viagem.dataInicio, viagem.dataFim)}
                   </p>
 
                   <div className="flex justify-between items-center gap-3">

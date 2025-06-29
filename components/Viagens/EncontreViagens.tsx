@@ -32,6 +32,7 @@ import ViagemDetalhesModal from "@/components/Viagens/ViagemDetalhesModal";
 import ValueSlider from "@/components/Common/ValueSlider";
 import Pagination from "@/components/Common/Pagination";
 import { getPreferenciasDoUsuario } from "@/services/preferenciasService";
+import { formatarDataViagem, formatarPeriodoViagem } from "@/utils/dateUtils";
 
 function limparFiltros(obj: any) {
   const novo: any = {};
@@ -180,10 +181,6 @@ const EncontreViagens = () => {
   const handlePageChange = (page: number) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     buscar(page);
-  };const formatarData = (dataISO: string) => {
-    if (!dataISO) return "Data inválida";
-    const data = new Date(dataISO);
-    return !isNaN(data.getTime()) ? data.toLocaleDateString("pt-BR") : "Data inválida";
   };
 
   const formatarNomeCompleto = (nomeCompleto: string) => {
@@ -388,7 +385,7 @@ const EncontreViagens = () => {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="truncate">
-              {formatarData(viagem.dataInicio)} - {formatarData(viagem.dataFim)}
+              {formatarPeriodoViagem(viagem.dataInicio, viagem.dataFim)}
             </span>
           </div>
 
@@ -1063,7 +1060,7 @@ const EncontreViagens = () => {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
                           <span className="truncate">
-                            {formatarData(viagem.dataInicio)} - {formatarData(viagem.dataFim)}
+                            {formatarPeriodoViagem(viagem.dataInicio, viagem.dataFim)}
                           </span>
                         </div>
 

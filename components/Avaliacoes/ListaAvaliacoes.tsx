@@ -8,6 +8,7 @@ import { getViagemById } from "@/services/viagemService";
 import { AvaliacaoDTO } from "@/models/AvaliacaoDTO";
 import { ViagemDTO } from "@/models/ViagemDTO";
 import StarRating from "@/components/Common/StarRating";
+import { formatarDataViagem } from "@/utils/dateUtils";
 
 interface ListaAvaliacoesProps {
   usuarioId: number;
@@ -55,8 +56,7 @@ export default function ListaAvaliacoes({ usuarioId }: ListaAvaliacoesProps) {
   };
 
   const formatarData = (dataISO: string) => {
-    const data = new Date(dataISO);
-    return data.toLocaleDateString("pt-BR");
+    return formatarDataViagem(dataISO);
   };
 
   const formatarPeriodoViagem = (dataInicio?: string, dataFim?: string) => {

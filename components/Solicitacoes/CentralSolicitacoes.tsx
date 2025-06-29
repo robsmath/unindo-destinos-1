@@ -10,6 +10,7 @@ import {
 } from "@/services/solicitacaoService";
 import { SolicitacaoParticipacaoDTO } from "@/models/SolicitacaoParticipacaoDTO";
 import { toast } from "sonner";
+import { formatarDataViagem, formatarPeriodoViagem } from "@/utils/dateUtils";
 import {
   Loader2,
   CheckCircle,
@@ -136,8 +137,8 @@ const CentralSolicitacoes = () => {
 
   const renderMensagem = (s: SolicitacaoParticipacaoDTO) => {
     const nome = s.outroUsuarioNome.split(" ").slice(0, 2).join(" ");
-    const dataInicio = new Date(s.dataInicio).toLocaleDateString();
-    const dataFim = new Date(s.dataFim).toLocaleDateString();
+            const dataInicio = formatarDataViagem(s.dataInicio);
+        const dataFim = formatarDataViagem(s.dataFim);
 
     switch (s.tipo) {
       case "CONVITE_RECEBIDO":
@@ -245,7 +246,7 @@ const CentralSolicitacoes = () => {
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                 <span className="truncate">
-                  {new Date(s.dataInicio).toLocaleDateString()} - {new Date(s.dataFim).toLocaleDateString()}
+                  {formatarPeriodoViagem(s.dataInicio, s.dataFim)}
                 </span>
               </div>
             </div>

@@ -7,6 +7,7 @@ import { UsuarioBuscaDTO } from "@/models/UsuarioBuscaDTO";
 import { Loader2, X, Send, Calendar, MapPin, MessageCircle, User } from "lucide-react";
 import { toast } from "sonner";
 import { enviarConvite } from "@/services/solicitacaoService";
+import { formatarDataViagem, formatarPeriodoViagem } from "@/utils/dateUtils";
 
 interface Props {
   isOpen: boolean;
@@ -14,12 +15,6 @@ interface Props {
   usuario: UsuarioBuscaDTO;
   viagens: MinhasViagensDTO[];
 }
-
-const formatarData = (dataISO: string) => {
-  if (!dataISO) return "Data inválida";
-  const data = new Date(dataISO);
-  return !isNaN(data.getTime()) ? data.toLocaleDateString("pt-BR") : "Data inválida";
-};
 
 export default function ConviteViagemModal({
   isOpen,
@@ -145,11 +140,11 @@ export default function ConviteViagemModal({
                         Nenhuma viagem disponível para convites
                       </option>
                     )}
-                    {viagensFiltradas.map((v) => (
-                      <option key={v.viagem.id} value={v.viagem.id}>
-                        {v.viagem.destino} ({formatarData(v.viagem.dataInicio)} - {formatarData(v.viagem.dataFim)})
-                      </option>
-                    ))}
+                                          {viagensFiltradas.map((v) => (
+                        <option key={v.viagem.id} value={v.viagem.id}>
+                          {v.viagem.destino} ({formatarPeriodoViagem(v.viagem.dataInicio, v.viagem.dataFim)})
+                        </option>
+                      ))}
                   </select>
                   <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +172,7 @@ export default function ConviteViagemModal({
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Calendar className="w-4 h-4 text-primary" />
                             <span>
-                              {formatarData(viagemSelecionada.viagem.dataInicio)} até {formatarData(viagemSelecionada.viagem.dataFim)}
+                              {formatarPeriodoViagem(viagemSelecionada.viagem.dataInicio, viagemSelecionada.viagem.dataFim)}
                             </span>
                           </div>
                           {viagemSelecionada.viagem.numeroMaximoParticipantes && (

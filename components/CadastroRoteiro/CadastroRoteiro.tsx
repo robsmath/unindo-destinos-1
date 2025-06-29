@@ -16,6 +16,7 @@ import { getViagemById, getParticipantesDaViagem } from "@/services/viagemServic
 import LoadingOverlay from "@/components/Common/LoadingOverlay";
 import EnviarRoteiroModal from "@/components/Modals/EnviarRoteiroModal";
 import { usePerfil } from "@/app/context/PerfilContext";
+import { formatarDataViagem } from "@/utils/dateUtils";
 import { 
   Loader2, 
   CheckCircle2, 
@@ -145,6 +146,9 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
           setRoteiroInexistente(false);
         } else {
           setRoteiroInexistente(true);
+          // Inicializa com um dia vazio para criação manual
+          setDiasRoteiro([{ titulo: "", descricao: "" }]);
+          setObservacoesFinais("");
         }
       } catch (error) {
         console.error("Erro ao carregar dados da viagem:", error);
@@ -258,6 +262,56 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
       });
     } catch {
       toast.error("Erro ao atualizar o roteiro.", {
+        icon: <AlertTriangle className="text-red-600" />,
+      });
+    } finally {
+      setLoadingSalvar(false);
+    }
+  };
+
+  const criarRoteiroManual = async () => {
+    if (!viagemId) return;
+
+    // Validação: verifica se há pelo menos um dia com título ou descrição
+    const temConteudo = diasRoteiro.some(dia => dia.titulo.trim() || dia.descricao.trim());
+    if (!temConteudo) {
+      toast.error("Adicione pelo menos um dia com título ou descrição para criar o roteiro.", {
+        icon: <AlertTriangle className="text-red-600" />,
+      });
+      return;
+    }
+
+    try {
+      setLoadingSalvar(true);
+      const valorEmNumero = parseFloat(valorEstimado.replace(/\D/g, "")) / 100;
+      
+      // Primeiro cria um roteiro básico via IA apenas para gerar o registro
+      await gerarRoteiroComIa(Number(viagemId), { 
+        observacao: "Roteiro criado manualmente", 
+        tipoViagem
+      });
+
+      // Busca o roteiro criado
+      const roteiro = await getRoteiroByViagemId(Number(viagemId));
+      if (roteiro) {
+        setRoteiroId(roteiro.id);
+        
+        // Agora atualiza com os dados manuais do usuário
+        await atualizarRoteiro(roteiro.id, {
+          observacao,
+          valorEstimado: valorEmNumero,
+          tipoViagem,
+          descricao: montarDescricaoFromDias(),
+        });
+        
+        setRoteiroInexistente(false);
+        toast.success("Roteiro criado com sucesso!", {
+          icon: <CheckCircle2 className="text-green-600" />,
+        });
+      }
+    } catch (error: any) {
+      console.error("Erro ao criar roteiro:", error);
+      toast.error("Erro ao criar o roteiro. Tente novamente.", {
         icon: <AlertTriangle className="text-red-600" />,
       });
     } finally {
@@ -840,7 +894,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.6, delay: 0.4 }}
                         >
-                          Nenhum roteiro foi cadastrado para esta viagem ainda. Crie o seu roteiro personalizado agora!
+                          Nenhum roteiro foi cadastrado para esta viagem ainda. Você pode criar manualmente dia por dia ou gerar automaticamente com IA!
                         </motion.p>
                       </div>
                     </div>
@@ -1037,9 +1091,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                                 {loading ? "Gerando..." : limiteGeracaoAtingido ? "Limite Atingido" : "Gerar com IA"}
                               </motion.button>
                             ) : (
-                              !roteiroInexistente && (
                                 <motion.button
-                                  onClick={salvarRoteiroManual}
+                                  onClick={roteiroInexistente ? criarRoteiroManual : salvarRoteiroManual}
                                   disabled={loadingSalvar}
                                   whileHover={{ scale: 1.02 }}
                                   whileTap={{ scale: 0.98 }}                                  className="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl px-6 py-3 font-medium transition-all duration-200 disabled:opacity-50"
@@ -1049,9 +1102,8 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                                   ) : (
                                     <Save className="h-5 w-5" />
                                   )}
-                                  {loadingSalvar ? "Salvando..." : "Salvar Roteiro"}
+                                  {loadingSalvar ? "Salvando..." : roteiroInexistente ? "Criar Roteiro" : "Salvar Roteiro"}
                                 </motion.button>
-                              )
                             )}
                           </div>
                         </div>
@@ -1078,13 +1130,13 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                           <div>
                             <span className="text-gray-600">Data de Início:</span>
                             <p className="font-medium text-gray-900">
-                              {new Date(viagem.dataInicio).toLocaleDateString("pt-BR")}
+                              {formatarDataViagem(viagem.dataInicio)}
                             </p>
                           </div>
                           <div>
                             <span className="text-gray-600">Data de Fim:</span>
                             <p className="font-medium text-gray-900">
-                              {new Date(viagem.dataFim).toLocaleDateString("pt-BR")}
+                              {formatarDataViagem(viagem.dataFim)}
                             </p>
                           </div>
                         </div>
@@ -1166,7 +1218,7 @@ const CadastroRoteiro: React.FC<Props> = ({ viagemId }) => {
                   </motion.div>
                 </div>
 
-                {modoCriacao === "MANUAL" && !roteiroInexistente && souCriador && (
+                {modoCriacao === "MANUAL" && souCriador && (
                   <motion.div 
                     className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}

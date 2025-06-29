@@ -21,6 +21,7 @@ import SmartImage from "@/components/Common/SmartImage";
 import { useAuth } from "@/app/context/AuthContext";
 import ChatGrupo from "@/components/Chat/ChatGrupo";
 import { buscarParticipantesGrupo } from "@/services/mensagemGrupoService";
+import { formatarDataViagem } from "@/utils/dateUtils";
 import { 
   Loader2, 
   X,
@@ -236,8 +237,7 @@ export default function ViagemDetalhesModal({
                         <div className="flex items-center gap-2 text-white/90">
                           <Calendar className="w-4 h-4" />
                           <span className="text-sm">
-                            {new Date(viagem.dataInicio).toLocaleDateString()} até{" "}
-                            {new Date(viagem.dataFim).toLocaleDateString()}
+                            {formatarDataViagem(viagem.dataInicio)} até {formatarDataViagem(viagem.dataFim)}
                           </span>
                         </div>
                       </div>

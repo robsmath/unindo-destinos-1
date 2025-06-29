@@ -1,9 +1,7 @@
 import api from "./api";
 
-// Função para forçar limpeza de cache específico
 export const clearRoteiroCache = async (viagemId: number): Promise<void> => {
   if (typeof window !== 'undefined') {
-    // Limpar cache do sessionStorage
     const cacheKeys = [
       `roteiro_cache_${viagemId}`,
       `fresh_data_${viagemId}`,
@@ -15,7 +13,6 @@ export const clearRoteiroCache = async (viagemId: number): Promise<void> => {
       localStorage.removeItem(key);
     });
     
-    // Limpar cache do service worker se disponível
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         action: 'CLEAR_CACHE',
@@ -23,7 +20,6 @@ export const clearRoteiroCache = async (viagemId: number): Promise<void> => {
       });
     }
     
-    // Forçar limpeza do cache HTTP do navegador
     try {
       if ('caches' in window) {
         const cacheNames = await caches.keys();
@@ -86,7 +82,6 @@ export const getRoteiroByViagemId = async (
   viagemId: number
 ): Promise<RoteiroResponseDTO | null> => {
   try {
-    // Adiciona timestamp único e headers no-cache para evitar qualquer cache
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(7);
     const url = `/roteiros/viagem/${viagemId}?_t=${timestamp}&_r=${random}`;
