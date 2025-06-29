@@ -1,9 +1,11 @@
 export const formatarDataViagem = (dataISO: string): string => {
   if (!dataISO) return "Data inválida";
   
-  let data = new Date(dataISO);
+  let data: Date;
   
-  if (isNaN(data.getTime())) {
+  if (dataISO.includes('T') || dataISO.includes('Z')) {
+    data = new Date(dataISO);
+  } else {
     data = new Date(dataISO + "T12:00:00");
   }
   
@@ -16,9 +18,11 @@ export const formatarDataViagem = (dataISO: string): string => {
 export const formatarDataCompleta = (dataISO: string): string => {
   if (!dataISO) return "Data inválida";
   
-  let data = new Date(dataISO);
+  let data: Date;
   
-  if (isNaN(data.getTime())) {
+  if (dataISO.includes('T') || dataISO.includes('Z')) {
+    data = new Date(dataISO);
+  } else {
     data = new Date(dataISO + "T12:00:00");
   }
   
@@ -48,9 +52,11 @@ export const formatarPeriodoViagem = (dataInicio: string, dataFim: string): stri
 export const criarDataSegura = (dataISO: string): Date => {
   if (!dataISO) return new Date();
   
-  let data = new Date(dataISO);
+  let data: Date;
   
-  if (isNaN(data.getTime())) {
+  if (dataISO.includes('T') || dataISO.includes('Z')) {
+    data = new Date(dataISO);
+  } else {
     data = new Date(dataISO + "T12:00:00");
   }
   
